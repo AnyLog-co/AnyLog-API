@@ -2,7 +2,12 @@
 The following are some sample functions for AnyLog Network that would assist in processes other than start-up
 https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
 """
-import rest 
+import os
+import sys 
+
+rest_dir = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
+sys.path.insert(om rest_dir) 
+import get as rest 
 
 def get_event_log(conn:str, timeout:float=10, auth:tuple=None, exception:bool=True):
     """
@@ -203,23 +208,3 @@ def execute_query(conn:str, db_name:str, cmd:str, timeout:float=10, auth:tuple=N
     output = rest.get(conn=conn, cmd=cmd, timeout=timeout, auth=auth, exception=exception, remote_query=True)
     print(output) 
 
-if __name__ == '__main__': 
-    conn = '20.97.12.66:2049' 
-    timeout=10
-    auth=None
-    exception=False 
-    db_name="aiops" 
-
-    #get_event_log(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_query=True)
-    #get_error_log(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None)
-    #get_node_status(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None)
-    #get_streaming(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None)
-    #get_rest(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None) 
-    #get_processes(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None) 
-    #get_queries_time(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None)
-    #get_tables(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None, db_name='*')
-    #execute_query(conn=conn, db_name="aiops", cmd="select count(*) from fic11_fb_fsetpointvalue;", timeout=timeout, auth=auth, exception=exception)
-    
-    # Requires conn to Operator node 
-    #get_row_count(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_node=None) 
-    #get_operator(conn=conn, timeout=timeout, auth=auth, exception=exception, remote_query=True)

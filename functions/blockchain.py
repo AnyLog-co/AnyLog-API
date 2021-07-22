@@ -1,4 +1,9 @@
-import rest 
+import os
+import sys 
+
+rest_dir = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
+sys.path.insert(om rest_dir) 
+
 def __convert_table(default_dbms:str, tables:str, cluster:bool=True)->str:
     """
     Given a list of tables, if cluster is enabled convert to proper format
