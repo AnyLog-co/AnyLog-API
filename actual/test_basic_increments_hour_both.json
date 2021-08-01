@@ -1,0 +1,10 @@
+{"device_name": "GOOGLE_PING", "min(timestamp)": "2021-07-24 10:20:26.830382", "max(timestamp)": "2021-07-24 10:27:03.131114", "min(value)": "6.0", "avg(value)": "20.142857142857142", "max(value)": "36.0", "count(*)": "7"}
+{"device_name": "Catalyst 3500XL", "min(timestamp)": "2021-07-24 10:18:14.735669", "max(timestamp)": "2021-07-24 10:27:25.153290", "min(value)": "12.0", "avg(value)": "30.75", "max(value)": "41.0", "count(*)": "8"}
+{"device_name": "VM Lit SL NMS", "min(timestamp)": "2021-07-24 10:18:58.765161", "max(timestamp)": "2021-07-24 10:27:47.175477", "min(value)": "0.0", "avg(value)": "4.0", "max(value)": "9.0", "count(*)": "5"}
+{"device_name": "ADVA FSP3000R7", "min(timestamp)": "2021-07-24 10:16:24.652293", "max(timestamp)": "2021-07-24 10:25:57.078372", "min(value)": "1.0", "avg(value)": "2.25", "max(value)": "3.0", "count(*)": "8"}
+{"device_name": "Ubiquiti OLT", "min(timestamp)": "2021-07-24 10:17:08.676983", "max(timestamp)": "2021-07-24 10:24:06.988608", "min(value)": "9.0", "avg(value)": "27.75", "max(value)": "39.0", "count(*)": "4"}
+{"device_name": "ADVA FSP3000R7", "min(timestamp)": "2021-07-24 15:26:26.209948", "max(timestamp)": "2021-07-24 15:31:56.450905", "min(value)": "1.0", "avg(value)": "2.2", "max(value)": "3.0", "count(*)": "5"}
+{"device_name": "GOOGLE_PING", "min(timestamp)": "2021-07-24 15:26:48.232100", "max(timestamp)": "2021-07-24 15:35:58.652292", "min(value)": "7.0", "avg(value)": "17.625", "max(value)": "33.0", "count(*)": "8"}
+{"device_name": "Ubiquiti OLT", "min(timestamp)": "2021-07-24 15:26:04.196794", "max(timestamp)": "2021-07-24 15:34:52.595314", "min(value)": "0.0", "avg(value)": "29.571428571428573", "max(value)": "47.0", "count(*)": "7"}
+{"device_name": "VM Lit SL NMS", "min(timestamp)": "2021-07-24 15:29:22.337549", "max(timestamp)": "2021-07-24 15:36:42.675162", "min(value)": "4.0", "avg(value)": "5.5", "max(value)": "7.0", "count(*)": "2"}
+{"device_name": "Catalyst 3500XL", "min(timestamp)": "2021-07-24 15:27:54.275983", "max(timestamp)": "2021-07-24 15:37:04.677924", "min(value)": "5.0", "avg(value)": "26.88888888888889", "max(value)": "48.0", "count(*)": "9"}

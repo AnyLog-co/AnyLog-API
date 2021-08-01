@@ -1,0 +1,5 @@
+{"device_name": "GOOGLE_PING", "min(timestamp)": "2021-07-27 18:21:51.501906", "max(timestamp)": "2021-07-27 18:31:23.971486", "min(value)": "4.0", "avg(value)": "17.5", "max(value)": "28.0", "count(*)": "8"}
+{"device_name": "Ubiquiti OLT", "min(timestamp)": "2021-07-27 18:22:57.558865", "max(timestamp)": "2021-07-27 18:32:52.044455", "min(value)": "6.0", "avg(value)": "24.857142857142858", "max(value)": "48.0", "count(*)": "7"}
+{"device_name": "ADVA FSP3000R7", "min(timestamp)": "2021-07-27 18:24:25.639393", "max(timestamp)": "2021-07-27 18:33:14.066663", "min(value)": "0.0", "avg(value)": "1.9", "max(value)": "3.0", "count(*)": "10"}
+{"device_name": "Catalyst 3500XL", "min(timestamp)": "2021-07-27 18:25:09.674571", "max(timestamp)": "2021-07-27 18:30:39.939362", "min(value)": "0.0", "avg(value)": "27.0", "max(value)": "47.0", "count(*)": "3"}
+{"device_name": "VM Lit SL NMS", "min(timestamp)": "2021-07-27 18:25:53.714003", "max(timestamp)": "2021-07-27 18:32:30.022249", "min(value)": "3.0", "avg(value)": "6.5", "max(value)": "10.0", "count(*)": "4"}

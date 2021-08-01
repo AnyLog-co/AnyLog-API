@@ -1,0 +1,11 @@
+{"min(timestamp)": "2021-07-22 20:54:04.524044", "max(timestamp)": "2021-07-22 22:05:15.183979", "min(value)": "0.0", "avg(value)": "14.903225806451612", "max(value)": "48.0", "count(*)": "62"}
+{"min(timestamp)": "2021-07-23 10:48:36.176391", "max(timestamp)": "2021-07-23 10:59:58.671822", "min(value)": "0.0", "avg(value)": "13.15625", "max(value)": "41.0", "count(*)": "32"}
+{"min(timestamp)": "2021-07-23 15:47:26.221968", "max(timestamp)": "2021-07-23 15:58:48.743118", "min(value)": "0.0", "avg(value)": "15.65625", "max(value)": "41.0", "count(*)": "32"}
+{"min(timestamp)": "2021-07-24 10:16:24.652293", "max(timestamp)": "2021-07-24 10:27:47.175477", "min(value)": "0.0", "avg(value)": "16.75", "max(value)": "41.0", "count(*)": "32"}
+{"min(timestamp)": "2021-07-24 15:26:04.196794", "max(timestamp)": "2021-07-24 15:37:04.677924", "min(value)": "0.0", "avg(value)": "19.741935483870968", "max(value)": "48.0", "count(*)": "31"}
+{"min(timestamp)": "2021-07-25 04:45:22.964117", "max(timestamp)": "2021-07-25 04:56:45.523991", "min(value)": "0.0", "avg(value)": "11.75", "max(value)": "46.0", "count(*)": "32"}
+{"min(timestamp)": "2021-07-25 21:38:47.348763", "max(timestamp)": "2021-07-25 21:50:09.872501", "min(value)": "0.0", "avg(value)": "15.0", "max(value)": "48.0", "count(*)": "32"}
+{"min(timestamp)": "2021-07-26 06:35:23.767322", "max(timestamp)": "2021-07-26 06:46:46.264369", "min(value)": "0.0", "avg(value)": "13.28125", "max(value)": "45.0", "count(*)": "32"}
+{"min(timestamp)": "2021-07-26 22:52:38.405842", "max(timestamp)": "2021-07-26 23:04:00.963999", "min(value)": "0.0", "avg(value)": "16.875", "max(value)": "48.0", "count(*)": "32"}
+{"min(timestamp)": "2021-07-27 05:03:04.077106", "max(timestamp)": "2021-07-27 05:14:04.634370", "min(value)": "0.0", "avg(value)": "18.322580645161292", "max(value)": "45.0", "count(*)": "31"}
+{"min(timestamp)": "2021-07-27 18:21:51.501906", "max(timestamp)": "2021-07-27 18:33:14.066663", "min(value)": "0.0", "avg(value)": "13.75", "max(value)": "48.0", "count(*)": "32"}
