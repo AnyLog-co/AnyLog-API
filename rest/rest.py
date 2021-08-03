@@ -1,4 +1,6 @@
+import json 
 import requests 
+
 """
 The folloowing are the base support for AnyLog via REST 
 - GET: extract information from AnyLog (information + queries)
@@ -91,7 +93,10 @@ def post_policy(conn:str, policy:str, master_node:str, auth:tuple=None, timeout:
         "User-Agent": "AnyLog/1.23" 
     }
 
+    if isinstance(policy, dict): # convert policy to str if dict
+        policy = json.dumps(policy) 
     raw_data="<policy=%s>" % policy 
+
     try:
         r = requests.post('http://%s' % conn, headers=headers, timeout=timeout, auth=auth, data=raw_data) 
     except Exception as e: 
