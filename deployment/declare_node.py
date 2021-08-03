@@ -10,12 +10,15 @@ def declare_node(config:dict)->dict:
          node 
      """
      node = {
-         'name':      config['node_name'], 
          'ip':        config['external_ip'],
          'local_ip':  config['ip'],
          'port':      config['anylog_server_port'],
          'rest_port': config['anylog_rest_port'], 
      }
+     if 'node_name' in config: 
+        node['name'] = config['node_name']
+     elif 'node_type' in config: 
+        node['name'] = config['node_type'] 
      if 'hostname' in  config: 
          node['hostname'] = config['hostname']
      if 'location' in config: 
