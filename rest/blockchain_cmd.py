@@ -65,19 +65,30 @@ def check_table(conn:str, db_name:str, table_name:str, auth:tuple=None, timeout:
     return status 
 
 
-def pull_json(conn:str, master_node:str='local', db_name:str, table_name:str, auth:tuple=None, timeout:int=30)->bool: 
+def pull_json(conn:str, master_node:str='local', auth:tuple=None, timeout:int=30)->bool: 
     """
-    Check if table exists blockchain 
+    pull json from blockchain
     :args: 
         conn:str - REST connection info
         master_node:str - master node
-        db_name:str - database you'd like to use
-        table_name:str - table you'd like to ccheck
         auth:tuple - Authentication information
         timeout:int - REST timeout
     :param: 
         cmd:str - command to execute 
         status:bool
     """
+    status = True
+    status = True
     cmd = "blockchain pull to json !blockchain_file"
+    if master_node != 'local': 
+        cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
+
+    if rest.post(conn=conn, command=cmd, auth=auth, timeout=timeout) == True: 
+        if master_node != 'local': 
+            cmd = 'run client (%s) file get !!blockchain_file !blockchain_file'
+            status = rest.post(conn=conn, command=cmd, auth=auth, timeout=timeout) 
+    else: 
+        status = False 
+
+    return status 
 

@@ -1,13 +1,31 @@
 import rest 
 
-def get_help(conn:str, command:str=None, auth:tuple=None, timeout:int=30): 
+def __get_error(r, error)->bool: 
+    """
+    Print error if case
+    :args: 
+        r, error - results from GET request
+    :params: 
+        status:bool 
+    :return:
+        status 
+    """
+    status = False
+    if r == False and isinstance(error, str): 
+        print('Failed to excute GET on %s (Error: %s)' % (conn.conn, error)) 
+        status = True
+    elif r == False and isinstance(error, int):
+        print('Failed to execute GET on %s due to network error %s' % (conn.conn, error))
+        status = True
+
+    return status 
+ 
+def get_help(conn:rest.AnyLogConnect, command:str=None): 
     """
     Execute 'help' against AnyLog. If command is set get help regarding command
     :args: 
-        conn:str - REST connection
+        conn:rest.AnyLogConnect - Connection to AnyLog 
         command:str - command to get help on 
-        auth:tuple - REST authentication
-        timeout:int - REST timeout
     :note: 
         function prints results rather than return it
     """
@@ -15,37 +33,33 @@ def get_help(conn:str, command:str=None, auth:tuple=None, timeout:int=30):
     help_stmt = 'help'     
     if command != None: 
         help_stmt += " " + command
-    r, error = rest.get(conn=conn, command=help_stmt, auth=auth, query=False, timeout=timeout)
-    if r == False: 
-        print('Failed to execute GET against %s (Error: %s)' % (conn, e))
-    elif r.status_code != 200: 
-        print('Failed to execute GET against %s due to network error %s' % (conn, r.status_code))
-    else: 
+
+    r, error = conn.get(command=help_stmt)
+    if __get_error(r, error) == False: 
         try: 
             print(r.text)
         except Exception as e: 
             print('Failed to extract help information (Error: %s) ' % e)
 
-def get_status(conn:str, auth:tuple=None, timeout:int=30)->bool: 
+def get_status(conn:rest.AnyLogConnect)->bool: 
     """
     Execute get status
     :args: 
-        conn:str - REST connection
-        auth:tuple - REST authentication
-        timeout:int - REST timeout
+        conn:rest.AnyLogConnect - Connection to AnyLog 
     :params: 
         status:bool
     :return: 
         stattus
     """
     status = True
-    r, error = rest.get(conn=conn, command='get status', auth=auth, query=False, timeout=timeout)
+    r, error = conn.get(command='get status', query=False)
     
-    if r == False or r.status_code != 200: 
-        status = False 
-    else: 
+    if __get_error(r, error) == False: 
        if 'running' not in r.text or 'not' in r.text: 
            status = False
+    else: 
+        status = False 
+
     return status
 
 def get_dictionary(conn:str, auth:tuple=None, timeout:int=30)->dict: 

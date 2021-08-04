@@ -24,6 +24,8 @@ def master_init(conn:str, config_data:dict):
             status = dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', auth=None, timeout=30)
             if status == False: 
                 print('Failed to create table table ledger') 
+        else:
+            blockchain_cmd.pull_json(conn=conn, master_node:str='local', auth=None, timeout=30) 
 
     # if config == {} then it wlll connect via SQLite 
     status = dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', auth=None, timeout=30) 
@@ -37,4 +39,5 @@ def master_init(conn:str, config_data:dict):
         if rest.post_policy(conn=conn, policy=node, master_node=config['master_node'], auth=None, timeout=30) == False: 
             print('Failed to declare node on %s' % config['master_node'] 
 
-
+    # Add Sync process 
+    status = blockchain_cmd.sync_blockchain(conn=conn, 
