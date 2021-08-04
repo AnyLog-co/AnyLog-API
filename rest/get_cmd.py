@@ -16,14 +16,15 @@ def get_help(conn:str, command:str=None, auth:tuple=None, timeout:int=30):
     if command != None: 
         help_stmt += " " + command
     r, error = rest.get(conn=conn, command=help_stmt, auth=auth, query=False, timeout=timeout)
-    
-    if r != False or r.status_code == 200: 
+    if r == False: 
+        print('Failed to execute GET against %s (Error: %s)' % (conn, e))
+    elif r.status_code != 200: 
+        print('Failed to execute GET against %s due to network error %s' % (conn, r.status_code))
+    else: 
         try: 
             print(r.text)
         except Exception as e: 
             print('Failed to extract help information (Error: %s) ' % e)
-    else: 
-        print('Command against %s faild (Error: %s)' % (conn, e))
 
 def get_status(conn:str, auth:tuple=None, timeout:int=30)->bool: 
     """

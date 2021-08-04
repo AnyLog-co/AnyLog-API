@@ -9,20 +9,23 @@ def declare_node(config:dict)->dict:
      :return: 
          node 
      """
-     node = {
+     if 'node_type' not in config: 
+         return {} 
+
+     node = {config['node_type']: 
          'ip':        config['external_ip'],
          'local_ip':  config['ip'],
-         'port':      config['anylog_server_port'],
-         'rest_port': config['anylog_rest_port'], 
+         'port':      int(config['anylog_server_port']),
+         'rest_port': int(config['anylog_rest_port']), 
      }
      if 'node_name' in config: 
-        node['name'] = config['node_name']
+        node[config['node_type']]['name'] = config['node_name']
      elif 'node_type' in config: 
-        node['name'] = config['node_type'] 
+        node[config['node_type']]['name'] = config['node_type'] 
      if 'hostname' in  config: 
-         node['hostname'] = config['hostname']
+         node[config['node_type']]['hostname'] = config['hostname']
      if 'location' in config: 
-         node['loc'] = config['location'] 
+         node[config['node_type']]['loc'] = config['location'] 
 
     return node 
 
@@ -37,13 +40,13 @@ def  declare_operator(node:dict, config:dict, cluster_id:str=None)->dict:
         node
     """
     if 'member_id' in config: 
-        node['member_id'] = config['member_id']
+        node[config['node_type']]['member_id'] = config['member_id']
     if cluster_id != None: 
-        node['cluster_id'] = cluster_id
+        node[config['node_type']]['cluster_id'] = cluster_id
     else: 
         if 'default_dbms' in config: 
-            node['default_dbms'] = config['default_dbms']
+            node[config['node_type']]['default_dbms'] = config['default_dbms']
         if 'table' in config: 
-            node['table'] = config['table'] 
+            node[config['node_type']]['table'] = config['table'] 
 
     return node

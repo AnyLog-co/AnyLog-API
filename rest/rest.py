@@ -106,4 +106,3 @@ def post_policy(conn:str, policy:str, master_node:str, auth:tuple=None, timeout:
             status = False 
 
     return status 
-:
