@@ -61,24 +61,22 @@ class AnyLogConnect:
         :return: 
             status, error
         """
-        status = True
         error = None 
         headers = {
             'command': command,
             'User-Agent': 'AnyLog/1.23'
         }
-
         try: 
-            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, tiemout=self.timeout)
+            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
         except Exception as e: 
             error = str(e)  
-            status = False 
+            r = False 
         else: 
             if r.status_code != 200: 
                 error = int(r.status_code)
-                status = False
+                r = False
 
-        return status, error 
+        return r, error 
 
 
     def post_policy(self, policy:str, master_node:str)->(bool, str):

@@ -2,8 +2,6 @@ import argparse
 import os 
 import sys 
 
-#import master 
-
 config_dir = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/config'))
 rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
@@ -14,8 +12,10 @@ sys.path.insert(0, support_dir)
 
 import get_cmd
 
-from read_config  import read_config
-from rest import AnyLogConnect
+from import_config import import_config
+from post_config   import post_config 
+from read_config   import read_config
+from rest          import AnyLogConnect
  
 def deployment(): 
     """
@@ -42,46 +42,36 @@ def deployment():
     parser.add_argument('-e', '--exception', type=bool,  nargs='?', const=True,    default=False, help='print exception errors')
     args = parser.parse_args()
     
+    
+    # Connect to AnyLog REST 
     anylog_conn = AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
-    print(get_cmd.get_status(conn=anylog_conn))
 
-    """
-    # Extract information from configuration file 
+    # Validate REST node is accessible 
+    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) == False: 
+        print('Failed to get status from %s, cannot continue' % args.rest_conn)
+        exit(1) 
+
+    # Update configuration file on AnyLog: 
+    # --> read config file 
+    # --> add hostname
+    # --> PULL config from AnyLog
+    # --> POST full config to AnyLog 
     config_file = os.path.expandvars(os.path.expanduser(args.config_file))
     if os.path.isfile(config_file): 
         config = read_config(config_file) 
     if not os.path.isfile(config_file) or config == {}: 
         print('Failed to extract config from %s' % config_file) 
         exit(1) 
-
-    if not get_cmd.get_status(args.rest_conn): 
-        print('Failed to connect to AnyLog instance using %s' % args.rest_conn)
-        exit(1) 
     
-    # Add pre-existing config from AnyLog
-    config.update(get_cmd.get_dictionary(args.rest_conn))
- 
-    hostname = get_cmd.get_hostname(args.rest_conn)
+    hostname = get_cmd.get_hostname(conn=anylog_conn, exception=args.exception) 
     if hostname != None: 
         config['hostname'] = hostname
 
-    if 'location' not in config: 
-        config['location'] = get_location() 
-    print(config) 
-    exit(1) 
-    # Deploy node based on node_type 
-    if config['node_type'] == 'master': 
-        #master.master_init(config) 
-        pass
-    elif config['node_type'] == 'operator': 
-        pass 
-    elif config['node_type'] == 'query': 
-        pass 
-    elif config['node_type'] == 'publisher': 
-        pass 
-    else: 
-        print('Invalid node type: %s' % config['node_type']) 
-        exit(1) 
-    """
+    config.update(import_config(conn=anylog_conn, exception=args.exception))
+
+    if post_config(conn=anylog_conn, config=config, exception=args.exception) == False: 
+        print('Failed to POST config into AnyLog Node on %s' % args.rest_conn)
+    
+
 if __name__ == '__main__': 
-    deployment()
+    deployment() 
