@@ -3,6 +3,7 @@ import os
 import sys 
 
 import master 
+import query
 
 rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
@@ -31,6 +32,7 @@ def deployment():
         -h, --help                      show this help message and exit
         -a, --auth          AUTH        REST authentication information (default: None)
         -t, --timeout       TIMEOUT     REST timeout period (default: 30)
+        -l, --location      LOCATION    If set to True & location not in config, add lat/long coordinates for new policies
         -e, --exception     EXCEPTION   print exception errors (default: False)
     :params: 
        anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
@@ -42,6 +44,7 @@ def deployment():
     parser.add_argument('config_file',       type=str,   default=None,             help='AnyLog INI config file')
     parser.add_argument('-a', '--auth',      type=tuple, default=None,             help='REST authentication information') 
     parser.add_argument('-t', '--timeout',   type=int,   default=30,               help='REST timeout period') 
+    parser.add_argument('-l', '--location',  type=bool,  nargs='?', const=True,    default=False, help='If set to True & location not in config, add lat/long coordinates for new policies') 
     parser.add_argument('-e', '--exception', type=bool,  nargs='?', const=True,    default=False, help='print exception errors')
     args = parser.parse_args()
     
@@ -80,9 +83,9 @@ def deployment():
 
     if 'node_type' in config_data: 
         if config_data['node_type'] == 'master': 
-            status = master.master_init(conn=anylog_conn, config=config_data, exception=args.exception) 
+            status = master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
         elif config_data['node_type'] == 'query': 
-            pass 
+            status = query.query_init(conn=anylog_conn, config=config_data, exception=args.exception) 
         elif config_data['node_typ'] == 'publisher':
             pass 
         elif config_data['node_type'] == 'operator': 

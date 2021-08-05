@@ -85,13 +85,17 @@ def pull_json(conn:rest.AnyLogConnect, master_node:str='local', exception:bool=F
     """
     status = True
     cmd = "blockchain pull to json !blockchain_file"
+    if master_node != 'local': 
+        cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
 
     r, error = conn.post(command=cmd)
     if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
         if master_node != 'local':
-            cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
-            r, error = conn.post(conn=conn, command=cmd)
+            cmd = 'run client (%s) file get !!blockchain_file !blockchain_file' % master_node
+            r, error = conn.post(command=cmd)
             status = errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception)
+            if status == False: 
+                status = True
     else: 
         status = False 
 
@@ -150,7 +154,7 @@ def blockchain_sync(conn:rest.AnyLogConnect, source:str, time:str, connection:st
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Blockchain Sync')[-1].split('\r')[0] and status == True: 
         cmd = 'run blockchain sync where source=%s and time=%s and dest=file' % (source, time) 
         if source == 'master': 
-            cmd += " connection=%s" % connection
+            cmd += " and connection=%s" % connection
 
         r, error = conn.post(command=cmd)
         if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 

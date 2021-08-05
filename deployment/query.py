@@ -11,11 +11,11 @@ import get_cmd
 import post_cmd
 import rest 
 
-def master_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def query_init(conn:rest.AnyLogConnect, config:dict, exception:bool=False): 
     """
-    Deploy a master node instance via REST 
+    Deploy a query node instance via REST 
     :definition: 
-        A "notary" system between other nodes in the network via either a public or private blockchain
+        Nodes dedicated to query and BI activity
     :args:
        anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
        config:dict - config data (from file + hostname + AnyLog) 
@@ -33,23 +33,13 @@ def master_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, except
     if dbms_list == 'No DBMS connections found': 
         new_system = True
     if new_system == True or 'system_query' not in dbms_list: 
-        status = dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception) 
+        status = dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception) 
         if status == False: 
             print('Failed to start system_query database') 
-    if new_system == True or 'blockchain' not in dbms_list: 
-        status = dbms_cmd.connect_dbms(conn=conn, config=config, db_name='blockchain', exception=exception) 
-        if status == False: 
-            print('Failed to start blockchain database') 
-    # Create table ledger 
-    if status == True and dbms_cmd.check_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception) == False: 
-        # Create ledger if not exists 
-        status = dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception)
-        if status == False: 
-            print('Failed to create table blockchain.ledger') 
 
     # Pull blockchain & declare node if not exists 
-    if blockchain_cmd.pull_json(conn=conn, master_node='local', exception=exception) == True: 
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='master', where=['ip=%s' % config['external_ip']], exception=exception) 
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) == True: 
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='query', where=['ip=%s' % config['external_ip']], exception=exception) 
         if blockchain == {} or blockchain == []: 
             if 'master_node' in config: 
                 new_policy = declare_node.declare_node(config=config) 
@@ -57,17 +47,16 @@ def master_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, except
             else: 
                 print('Unable to declare policy, missing master_node in config')
 
-            if status == True and blockchain_cmd.pull_json(conn=conn, master_node='local', exception=exception) == True: 
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='master', where=['ip=%s' % config['external_ip']], exception=exception) 
+            if status == True and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) == True: 
+                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='query', where=['ip=%s' % config['external_ip']], exception=exception) 
                 if len(blockchain) == 0: 
                     print('Failed to declare policy')
-
+    
     # blockchain sync 
-    status = blockchain_cmd.blockchain_sync(conn=conn, source='dbms', time='1 minute', connection=None, exception=exception)
+    status = blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception)
     if status == False: 
         print('Failed to set blockchain sync process') 
 
     # Post scheduler 1 
     if not post_cmd.post_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1') 
-
