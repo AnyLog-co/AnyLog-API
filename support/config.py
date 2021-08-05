@@ -1,4 +1,3 @@
-import ast 
 import configparser
 import os
 import sys 
@@ -36,13 +35,10 @@ def read_config(config_file:str)->dict:
     try: 
         for section in config.sections():
             for key in config[section]:
-                try: 
-                    value = ast.literal_eval(config[section][key]) 
-                except: 
-                    value = config[section][key]
-                data[key] = value
+                data[key] = config[section][key] 
     except Exception as e:
         print('Failed to extract variables from config file (Error: %s)' % e)
+
     return data 
 
    
@@ -89,7 +85,7 @@ def import_config(conn:rest.AnyLogConnect, exception:bool=False)->dict:
     if dictionary != None: 
         for value in dictionary.split('\n'):
             if value != '\r' and value != '':  
-                data[value.split(':')[0].rstrip().lstrip()] = value.split(':')[-1].split('\r')[0].rstrip().lstrip()
+                data[value.split(':', )[0].rstrip().lstrip()] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
 
     return data 
 

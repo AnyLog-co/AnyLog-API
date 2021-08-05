@@ -93,7 +93,55 @@ def get_hostname(conn:rest.AnyLogConnect, exception:bool=False)->str:
         try: 
             hostname = r.text
         except Exception as e: 
-            print('Failed to extract hostname from %s (Error: %s)' % (conn, e))
+            if exception == True: 
+                print('Failed to extract hostname from %s (Error: %s)' % (conn.conn, e))
 
     return hostname
+
+def get_processes(conn:rest.AnyLogConnect, exception:bool=False)->str: 
+    """
+    Get running processes 
+    :args: 
+        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        exception:bool - whether to print errors to screen 
+    :params: 
+        output:str - raw content from query 
+    :return: 
+        output 
+    """
+    output = None 
+    r, error = conn.get(command='get processes', query=False)
+    if errors.get_error(conn.conn, command='get processes', r=r, error=error, exception=exception) == False: 
+        try: 
+            output = r.text
+        except Exception as e: 
+            if exception == True: 
+                print('Failed to get list of processes from %s (Error: %s)' % (conn.conn, e))
+    return output 
+
+def get_scheduler(conn:rest.AnyLogConnect, scheduler_name:str=None, exception:bool=False)->str: 
+    """
+    Get scheduler 
+    :args: 
+        conn:rest.AnyLogConnect - connection to AnyLog REST
+        scheduler_name:str - name or ID of scheduled process 
+        exception:bool - whether to print errors to screen 
+    :params: 
+        cmd:str - command to execute
+        output:Str - raw content from query
+    :return: 
+        output
+    """
+    cmd='get scheduler' 
+    if scheduler_name != None: 
+        cmd += ' %s' % scheduler_name
+    r, error = conn.get(command=cmd, query=False)
+    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+        try: 
+            output = r.text
+        except Exception as e: 
+            if exception == True: 
+                print('Failed to get information from scheduler from %s (Error: %s)' % (conn.conn, e))
+    return output 
+
 

@@ -93,7 +93,6 @@ class AnyLogConnect:
         :return: 
             status, error
         """ 
-        status = True 
         error = None
         headers = { 
             "command": "blockchain push !policy", 
@@ -102,18 +101,14 @@ class AnyLogConnect:
             "User-Agent": "AnyLog/1.23" 
         }
 
-        if isinstance(policy, dict): # convert policy to str if dict
-            policy = json.dumps(policy) 
-        raw_data="<policy=%s>" % policy 
-
         try:
-            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout, data=raw_data) 
+            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout, data=policy) 
         except Exception as e: 
             error = str(e)
-            status = False 
+            r = False 
         else: 
             if r.status_code != 200: 
                 error = int(r.status_code)
-                status = False 
+                r = False 
 
-        return status, error
+        return r, error

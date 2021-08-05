@@ -2,6 +2,8 @@ import argparse
 import os 
 import sys 
 
+import master 
+
 rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
 
@@ -67,16 +69,18 @@ def deployment():
     hostname = get_cmd.get_hostname(conn=anylog_conn, exception=args.exception) 
     if hostname != None: 
         config_data['hostname'] = hostname
-
-    config_data.update(config.import_config(conn=anylog_conn, exception=args.exception))
+    
+    import_config = config.import_config(conn=anylog_conn, exception=args.exception)
+    for key in import_config:
+        if key not in config_data: 
+            config_data[key] = import_config[key] 
 
     if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False: 
         print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
-    print(config_data) 
     if 'node_type' in config_data: 
         if config_data['node_type'] == 'master': 
-            pass 
+            status = master.master_init(conn=anylog_conn, config=config_data, exception=args.exception) 
         elif config_data['node_type'] == 'query': 
             pass 
         elif config_data['node_typ'] == 'publisher':

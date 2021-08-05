@@ -1,7 +1,16 @@
-import ast
+import json 
+import os 
 import rest 
+import sys 
 
-def blockchain_get(conn:str, policy_type:str='*', where:list=[], bring:str=None, separator:str=None, auth:tuple=None, timeout:int=30)->list: 
+import get_cmd
+
+support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
+
+sys.path.insert(0, support_dir) 
+import errors 
+
+def blockchain_get(conn:rest.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list: 
     """
     blockchain GET command 
     :args: 
@@ -21,24 +30,20 @@ def blockchain_get(conn:str, policy_type:str='*', where:list=[], bring:str=None,
         cmd += " where" 
         for value in where:
            cmd += " " + value
-    if bring != None: 
-        cmd += " bring %s" % bring 
-    if separator != None: 
-        cmd += " separator=%s" % separator
+           if value != where[-1]: 
+               cmd += " and"
 
     blockchain = []
-    r, error = rest.get(conn=conn, command=cmd, auth=auth, timeout=timeout)
-    if r != False and r.status_code == 200: 
+    r, error = conn.get(command=cmd)
+    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
         try: 
-            blockchain = r.json()['Blockchain data'].split(separator)
-        except: 
-            try: 
-                blockchain = ast.literal_eval(r.text)
-            except: 
-                blockchain = r.text
+            blockchain = r.json()
+        except:
+            blockchain = r.text
+            
     return blockchain 
 
-def check_table(conn:str, db_name:str, table_name:str, auth:tuple=None, timeout:int=30)->bool: 
+def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bool: 
     """
     Check if table exists blockchain 
     :args: 
@@ -54,18 +59,19 @@ def check_table(conn:str, db_name:str, table_name:str, auth:tuple=None, timeout:
     status = False 
     cmd = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
     
-    r, e = rest.get(conn=conn, command=cmd, auth=auth, timeout=timeout) 
-    try: 
-        if r.json()['local'] == 'true':
-            status = True 
-    except: 
-        if 'true' in r.text: 
-            status = True
+    r, e = rest.get(command=cmd, query=False) 
+    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+        try: 
+            if r.json()['local'] == 'true':
+                status = True 
+        except: 
+            if 'true' in r.text: 
+                status = True
 
     return status 
 
 
-def pull_json(conn:str, master_node:str='local', auth:tuple=None, timeout:int=30)->bool: 
+def pull_json(conn:rest.AnyLogConnect, master_node:str='local', exception:bool=False)->bool: 
     """
     pull json from blockchain
     :args: 
@@ -78,17 +84,76 @@ def pull_json(conn:str, master_node:str='local', auth:tuple=None, timeout:int=30
         status:bool
     """
     status = True
-    status = True
     cmd = "blockchain pull to json !blockchain_file"
-    if master_node != 'local': 
-        cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
 
-    if rest.post(conn=conn, command=cmd, auth=auth, timeout=timeout) == True: 
-        if master_node != 'local': 
-            cmd = 'run client (%s) file get !!blockchain_file !blockchain_file'
-            status = rest.post(conn=conn, command=cmd, auth=auth, timeout=timeout) 
+    r, error = conn.post(command=cmd)
+    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+        if master_node != 'local':
+            cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
+            r, error = conn.post(conn=conn, command=cmd)
+            status = errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception)
     else: 
         status = False 
 
     return status 
 
+
+def post_policy(conn:rest.AnyLogConnect, policy:dict, master_node:str, exception:bool=False)->bool: 
+    """
+    POST policy to blockchain
+    :args: 
+        conn:rest.AnyLogConnect - Connection to AnyLog
+        policy:dict - policy to POST 
+        master_node:str - IP & Port of master node 
+        exception:bool - whether or not to print error to screen
+    :params: 
+        status:bool 
+        raw_data:str - raw data 
+    :return: 
+        status
+    """
+    if isinstance(policy, dict): # convert policy to str if dict
+        policy = json.dumps(policy) 
+    raw_data="<policy=%s>" % policy 
+
+    r, error = conn.post_policy(policy=raw_data, master_node=master_node)
+    status = errors.post_error(conn=conn.conn, command='post policy: %s' % raw_data, r=r, error=error, exception=exception)
+    return status 
+
+def blockchain_sync(conn:rest.AnyLogConnect, source:str, time:str, connection:str=None, exception:bool=False)->bool: 
+    """
+    Set Blockchain sync 
+    :args: 
+        conn:rest.AnyLogConnect - connection to AnyLog
+        source:str - source to sync from 
+            --> master 
+            --> dbms 
+        time:str - how often data is synced
+        connection:str - for master source, the corresponding IP:PORT 
+        exception:bool - whether to print error to screen
+    :params: 
+        status:bool 
+        cmd:str - command to execute
+    :return: 
+        status
+    """
+    status = True
+    if source not in ['master', 'dbms']: 
+        if exception == True: 
+            print('Invalid source: %s. Options: master, dbms' % source)
+        status = False 
+    if source == 'master' and connection == None: 
+        if exception == True: 
+            print('When source is set to master, connection must be set')
+        status = False 
+
+    if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Blockchain Sync')[-1].split('\r')[0] and status == True: 
+        cmd = 'run blockchain sync where source=%s and time=%s and dest=file' % (source, time) 
+        if source == 'master': 
+            cmd += " connection=%s" % connection
+
+        r, error = conn.post(command=cmd)
+        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
+            status = False
+
+    return status 

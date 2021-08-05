@@ -6,25 +6,25 @@ def declare_node(config:dict)->dict:
         config:dict - config info
     :params: 
         node:dict - dict object for generic node
-     :return: 
+    :return: 
          node 
-     """
-     if 'node_type' not in config: 
-         return {} 
+    """
+    if 'node_type' not in config: 
+        return {} 
 
-     node = {config['node_type']: 
-         'ip':        config['external_ip'],
-         'local_ip':  config['ip'],
-         'port':      int(config['anylog_server_port']),
-         'rest_port': int(config['anylog_rest_port']), 
-     }
-     if 'node_name' in config: 
+    node = {config['node_type']: {
+        'ip':        config['external_ip'],
+        'local_ip':  config['ip'],
+        'port':      int(config['anylog_server_port']),
+        'rest_port': int(config['anylog_rest_port']), 
+    }}
+    if 'node_name' in config: 
         node[config['node_type']]['name'] = config['node_name']
-     elif 'node_type' in config: 
+    elif 'node_type' in config: 
         node[config['node_type']]['name'] = config['node_type'] 
-     if 'hostname' in  config: 
+    if 'hostname' in  config: 
          node[config['node_type']]['hostname'] = config['hostname']
-     if 'location' in config: 
+    if 'location' in config: 
          node[config['node_type']]['loc'] = config['location'] 
 
     return node 
