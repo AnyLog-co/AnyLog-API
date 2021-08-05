@@ -22,6 +22,11 @@ def deployment():
     Based on configuration file, deploy a specific node
     :requirement: 
         an empty node for each node being deployed 
+    :process: 
+        1. Create connection to AnyLog
+        2. Check REST connection works
+        3. Set config - 4 part process  
+        4. Based on node_type (from config) deploy a node via REST   
     :positional arguments:
         rest_conn             REST connection information
         config_file           AnyLog INI config file
@@ -32,6 +37,8 @@ def deployment():
         -e, --exception     EXCEPTION   print exception errors (default: False)
     :params: 
        anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
+       config_file:str - full path from args.config_file
+       config:dict - config data (from file + hostname + AnyLog) 
     """
     config = {} 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -71,7 +78,21 @@ def deployment():
 
     if post_config(conn=anylog_conn, config=config, exception=args.exception) == False: 
         print('Failed to POST config into AnyLog Node on %s' % args.rest_conn)
-    
+    print(config)  
+    if 'node_type' in config: 
+        if config['node_type'] == 'master': 
+            pass 
+        elif config['node_type'] == 'query': 
+            pass 
+        elif config['node_typ'] == 'publisher':
+            pass 
+        elif config['node_type'] == 'operator': 
+            pass 
+        else: 
+            print('Unsupported node type: %s' % config['node_type'])
+    else: 
+        print('Missing node_type in config')
+
 
 if __name__ == '__main__': 
     deployment() 

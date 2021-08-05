@@ -1,7 +1,16 @@
+import os 
+import sys 
+
 import rest 
 import blockchain_cmd 
 
-def connect_dbms(conn:str, config:dict, db_name:str, auth:tuple=None, timeout:int=30)->bool: 
+support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
+sys.path.insert(0, support_dir) 
+
+import error
+
+
+def connect_dbms(conn:rest.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
     """
     Execute connection to database
     :args: 
@@ -21,10 +30,16 @@ def connect_dbms(conn:str, config:dict, db_name:str, auth:tuple=None, timeout:in
         config['db_type'] = 'anylog@127.0.0.1:anylog' 
     if 'db_port' not in config: 
         config['db_port'] = 5432
-
-    cmd = "connect dbms %s %s %s %" % (config['db_type'],  config['db_user'], config['db_port'], db_name)
+    if db_name == None and 'default_dbms' in config: 
+        db_name = config['default_dbms']
+    else: 
+        if execption == True: 
+            print('Missing database name') 
+        status = False
     
-    status = rest.post(conn=conn, command=cmd, auth=auth, timeout=timeout) 
+    if status != False: 
+        cmd = "connect dbms %s %s %s %" % (config['db_type'],  config['db_user'], config['db_port'], db_name)
+        r, error = conn.post(command=cmd)
 
     return status 
 

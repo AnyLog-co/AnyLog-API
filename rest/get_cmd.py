@@ -1,29 +1,14 @@
+import os 
+import sys 
+
 import rest 
 
-def __get_error(conn:str, r, error, exception:bool=True)->bool: 
-    """
-    Print error if case
-    :args: 
-        conn:str - REST connection info 
-        r, error - results from GET request
-        exection:bool - whether to screen print exception or not
-    :params: 
-        status:bool 
-    :return:
-        status 
-    """
-    status = False
-    if r == False and isinstance(error, str): 
-        if exception == True: 
-            print('Failed to excute GET on %s (Error: %s)' % (conn, error)) 
-        status = True
-    elif r == False and isinstance(error, int):
-        if exception == True: 
-            print('Failed to execute GET on %s due to network error %s' % (conn, error))
-        status = True
+support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
+sys.path.insert(0, support_dir) 
 
-    return status 
- 
+import error
+
+
 def get_help(conn:rest.AnyLogConnect, command:str=None): 
     """
     Execute 'help' against AnyLog. If command is set get help regarding command
@@ -39,7 +24,7 @@ def get_help(conn:rest.AnyLogConnect, command:str=None):
         help_stmt += " " + command
 
     r, error = conn.get(command=help_stmt)
-    if __get_error(conn.conn, r, error, exception=True) == False: 
+    if error.get_error(conn.conn, r, error, exception=True) == False: 
         try: 
             print(r.text)
         except Exception as e: 
@@ -59,7 +44,7 @@ def get_status(conn:rest.AnyLogConnect, exception:bool=False)->bool:
     status = True
     r, error = conn.get(command='get status', query=False)
     
-    if __get_error(conn.conn, r, error, exception) == False: 
+    if error.get_error(conn.conn, r, error, exception) == False: 
        if 'running' not in r.text or 'not' in r.text: 
            status = False
     else: 
@@ -81,7 +66,7 @@ def get_dictionary(conn:rest.AnyLogConnect, exception:bool=False)->dict:
     
     r, error = conn.get(command='get dictionary', query=False)
 
-    if __get_error(conn.conn, r, error, exception=True) == False: 
+    if error.get_error(conn.conn, r, error, exception=True) == False: 
         try: 
             data = r.text 
         except Exception as e: 
@@ -105,7 +90,7 @@ def get_hostname(conn:rest.AnyLogConnect, exception:bool=False)->str:
     """
     hostname = None 
     r, error = conn.get(command='get hostname', query=False)
-    if __get_error(conn.conn, r, error, exception=True) == False: 
+    if error.get_error(conn.conn, r, error, exception=True) == False: 
         try: 
             hostname = r.text
         except Exception as e: 
