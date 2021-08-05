@@ -2,20 +2,15 @@ import argparse
 import os 
 import sys 
 
-config_dir = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/config'))
 rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
 
-sys.path.insert(0, config_dir)
 sys.path.insert(0, rest_dir) 
-sys.path.insert(0, support_dir) 
-
 import get_cmd
+import rest 
 
-from import_config import import_config
-from post_config   import post_config 
-from read_config   import read_config
-from rest          import AnyLogConnect
+sys.path.insert(0, support_dir) 
+import config
  
 def deployment(): 
     """
@@ -38,9 +33,8 @@ def deployment():
     :params: 
        anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
        config_file:str - full path from args.config_file
-       config:dict - config data (from file + hostname + AnyLog) 
+       config_data:dict - config data (from file + hostname + AnyLog) 
     """
-    config = {} 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('rest_conn',         type=str,   default='127.0.0.1:2049', help='REST connection information') 
     parser.add_argument('config_file',       type=str,   default=None,             help='AnyLog INI config file')
@@ -51,7 +45,7 @@ def deployment():
     
     
     # Connect to AnyLog REST 
-    anylog_conn = AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
+    anylog_conn = rest.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # Validate REST node is accessible 
     if get_cmd.get_status(conn=anylog_conn, exception=args.exception) == False: 
@@ -65,28 +59,29 @@ def deployment():
     # --> POST full config to AnyLog 
     config_file = os.path.expandvars(os.path.expanduser(args.config_file))
     if os.path.isfile(config_file): 
-        config = read_config(config_file) 
+        config_data = config.read_config(config_file) 
     if not os.path.isfile(config_file) or config == {}: 
         print('Failed to extract config from %s' % config_file) 
         exit(1) 
-    
+
     hostname = get_cmd.get_hostname(conn=anylog_conn, exception=args.exception) 
     if hostname != None: 
-        config['hostname'] = hostname
+        config_data['hostname'] = hostname
 
-    config.update(import_config(conn=anylog_conn, exception=args.exception))
+    config_data.update(config.import_config(conn=anylog_conn, exception=args.exception))
 
-    if post_config(conn=anylog_conn, config=config, exception=args.exception) == False: 
-        print('Failed to POST config into AnyLog Node on %s' % args.rest_conn)
-    print(config)  
-    if 'node_type' in config: 
-        if config['node_type'] == 'master': 
+    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False: 
+        print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
+
+    print(config_data) 
+    if 'node_type' in config_data: 
+        if config_data['node_type'] == 'master': 
             pass 
-        elif config['node_type'] == 'query': 
+        elif config_data['node_type'] == 'query': 
             pass 
-        elif config['node_typ'] == 'publisher':
+        elif config_data['node_typ'] == 'publisher':
             pass 
-        elif config['node_type'] == 'operator': 
+        elif config_data['node_type'] == 'operator': 
             pass 
         else: 
             print('Unsupported node type: %s' % config['node_type'])

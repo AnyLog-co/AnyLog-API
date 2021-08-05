@@ -7,6 +7,7 @@ rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest'))
 sys.path.insert(0, rest_dir) 
 
 import get_cmd
+import post_cmd
 import rest 
 
 
@@ -60,7 +61,7 @@ def post_config(conn:rest.AnyLogConnect, config:dict, exception:bool=False)->boo
     """
     statuses = [] 
     for key in config: 
-        status = post_value(conn=conn, key=key, value=config[key], exception=exception)
+        status = post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception)
         if status == False and exception == True: 
             print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
         statuses.append(status)

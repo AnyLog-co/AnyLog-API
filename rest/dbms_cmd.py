@@ -9,7 +9,18 @@ sys.path.insert(0, support_dir)
 
 import error
 
-
+def get_dbms(conn:rest.AnyLogConnect, exception:bool=False)->str: 
+    """"
+    Get list of connected databases 
+    :args: 
+        conn:rest.AnyLogConnect - REST AnyLog Connection
+        exception:bool - whether or not to print exception
+    :params: 
+        cmd:str - command to execute 
+    :return:
+    """
+    cmd = "get databases" 
+        
 def connect_dbms(conn:rest.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
     """
     Execute connection to database

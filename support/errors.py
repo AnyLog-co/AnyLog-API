@@ -25,7 +25,7 @@ def get_error(conn:str, command:str, r, error, exception:bool=True)->bool:
 
     return status 
  
-def post_error(conn:str, command:str, r, error, exceptio:bool=True)->bool: 
+def post_error(conn:str, command:str, r, error, exception:bool=True)->bool: 
     """
     Print error for POST command 
     :args: 
