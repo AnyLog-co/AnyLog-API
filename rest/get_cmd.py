@@ -23,7 +23,7 @@ def get_help(conn:rest.AnyLogConnect, command:str=None):
         help_stmt += " " + command
 
     r, error = conn.get(command=help_stmt)
-    if error.get_error(conn.conn, r, error, exception=True) == False: 
+    if error.get_error(conn.conn, command=cmd, r, error, exception=True) == False: 
         try: 
             print(r.text)
         except Exception as e: 
@@ -43,7 +43,7 @@ def get_status(conn:rest.AnyLogConnect, exception:bool=False)->bool:
     status = True
     r, error = conn.get(command='get status', query=False)
     
-    if error.get_error(conn.conn, r, error, exception) == False: 
+    if error.get_error(conn.conn, command=cmd, r, error, exception) == False: 
        if 'running' not in r.text or 'not' in r.text: 
            status = False
     else: 
@@ -65,7 +65,7 @@ def get_dictionary(conn:rest.AnyLogConnect, exception:bool=False)->dict:
     
     r, error = conn.get(command='get dictionary', query=False)
 
-    if error.get_error(conn.conn, r, error, exception=True) == False: 
+    if error.get_error(conn.conn, command=cmd, r, error, exception=True) == False: 
         try: 
             data = r.text 
         except Exception as e: 
@@ -89,7 +89,7 @@ def get_hostname(conn:rest.AnyLogConnect, exception:bool=False)->str:
     """
     hostname = None 
     r, error = conn.get(command='get hostname', query=False)
-    if error.get_error(conn.conn, r, error, exception=True) == False: 
+    if error.get_error(conn.conn, command=cmd, r, error, exception=True) == False: 
         try: 
             hostname = r.text
         except Exception as e: 
