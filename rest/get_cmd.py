@@ -18,7 +18,6 @@ def get_help(conn:rest.AnyLogConnect, command:str=None):
     :note: 
         function prints results rather than return it
     """
-    status = True
     help_stmt = 'help'     
     if command != None: 
         help_stmt += " " + command
