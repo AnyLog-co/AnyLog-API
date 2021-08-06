@@ -11,11 +11,11 @@ import get_cmd
 import post_cmd
 import rest 
 
-def query_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def publisher_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
-    Deploy a query node instance via REST 
+    Deploy a query or publisher node instance via REST 
     :definition: 
-        Nodes dedicated to query and BI activity
+        Nodes that simply generate data and send them to operator nodes
     :args:
        anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
        config:dict - config data (from file + hostname + AnyLog) 
@@ -34,7 +34,7 @@ def query_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, excepti
     if dbms_list == 'No DBMS connections found': 
         new_system = True
     if new_system == True or 'system_query' not in dbms_list: 
-        status = dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception) 
+        status = dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception) 
         if status == False: 
             print('Failed to start system_query database') 
 
@@ -61,3 +61,6 @@ def query_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, excepti
     # Post scheduler 1 
     if not post_cmd.post_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1') 
+
+
+
