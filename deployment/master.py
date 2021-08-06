@@ -18,6 +18,7 @@ def master_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, except
         A "notary" system between other nodes in the network via either a public or private blockchain
     :args:
        anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
+       location:bool -whetther or not to have location in policy
        config:dict - config data (from file + hostname + AnyLog) 
        exception:bool - whether or not to print exception to screen 
     :params: 
@@ -52,7 +53,7 @@ def master_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, except
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='master', where=['ip=%s' % config['external_ip']], exception=exception) 
         if blockchain == {} or blockchain == []: 
             if 'master_node' in config: 
-                new_policy = declare_node.declare_node(config=config) 
+                new_policy = declare_node.declare_node(config=config, location=location) 
                 status = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
             else: 
                 print('Unable to declare policy, missing master_node in config')

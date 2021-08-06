@@ -85,7 +85,7 @@ def deployment():
         if config_data['node_type'] == 'master': 
             status = master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
         elif config_data['node_type'] == 'query': 
-            status = query.query_init(conn=anylog_conn, config=config_data, exception=args.exception) 
+            status = query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
         elif config_data['node_typ'] == 'publisher':
             pass 
         elif config_data['node_type'] == 'operator': 

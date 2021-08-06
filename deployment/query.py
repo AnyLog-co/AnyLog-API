@@ -11,7 +11,7 @@ import get_cmd
 import post_cmd
 import rest 
 
-def query_init(conn:rest.AnyLogConnect, config:dict, exception:bool=False): 
+def query_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
     Deploy a query node instance via REST 
     :definition: 
@@ -19,6 +19,7 @@ def query_init(conn:rest.AnyLogConnect, config:dict, exception:bool=False):
     :args:
        anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
        config:dict - config data (from file + hostname + AnyLog) 
+       location:bool -whetther or not to have location in policy
        exception:bool - whether or not to print exception to screen 
     :params: 
         status:bool 
@@ -42,7 +43,7 @@ def query_init(conn:rest.AnyLogConnect, config:dict, exception:bool=False):
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='query', where=['ip=%s' % config['external_ip']], exception=exception) 
         if blockchain == {} or blockchain == []: 
             if 'master_node' in config: 
-                new_policy = declare_node.declare_node(config=config) 
+                new_policy = declare_node.declare_node(config=config, location=location) 
                 status = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
             else: 
                 print('Unable to declare policy, missing master_node in config')

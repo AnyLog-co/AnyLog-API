@@ -1,9 +1,17 @@
-def declare_node(config:dict)->dict: 
+import os 
+import sys 
+
+support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
+
+sys.path.insert(0, support_dir) 
+import get_location
+ 
+def declare_node(config:dict, location:bool=True)->dict: 
     """
     Declare generic node based on config
     :args: 
-        conn:str - REST connection information
         config:dict - config info
+        location:bool - whether or to add location to policy if not in config
     :params: 
         node:dict - dict object for generic node
     :return: 
@@ -26,6 +34,8 @@ def declare_node(config:dict)->dict:
          node[config['node_type']]['hostname'] = config['hostname']
     if 'location' in config: 
          node[config['node_type']]['loc'] = config['location'] 
+    elif location == True: 
+        node[config['node_type']]['loc'] = get_location.get_location() 
 
     return node 
 
