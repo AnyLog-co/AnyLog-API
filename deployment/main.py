@@ -3,6 +3,7 @@ import os
 import sys 
 
 import master 
+import publisher
 import query
 
 rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
@@ -86,8 +87,8 @@ def deployment():
             status = master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
         elif config_data['node_type'] == 'query': 
             status = query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
-        elif config_data['node_typ'] == 'publisher':
-            pass 
+        elif config_data['node_type'] == 'publisher':
+            status = publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
         elif config_data['node_type'] == 'operator': 
             pass 
         else: 
