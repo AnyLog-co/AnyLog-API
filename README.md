@@ -50,7 +50,7 @@ python3 $HOME/AnyLog-API/deployment/main.py ${IP}:${PORT} ${CONFIG_FILE}
 
 6. Stop docker 
 ```
-for cmd in stop rm ; do docker ${cmd} ${NODE-NAME} ; done
+for cmd in stop rm ; do docker ${cmd} ${NODE_NAME} ; done
 ```
 
  
