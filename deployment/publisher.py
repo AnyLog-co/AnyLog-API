@@ -63,4 +63,10 @@ def publisher_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exc
         print('Failed to start scheduler 1') 
 
 
+    # Start publisher 
+    status = post_cmd.post_publisher(conn=conn, master_node=config['master_node'], dbms_name='file_name[0]', table_name='file_name[1]', compress_json=True, move_json=True, exception=exception) 
+    if status == True and post_cmd.set_immidiate_threshold(conn=conn, exception=exception) == False: 
+        print('Failed to set buffering to immidiate')
+    elif status == False: 
+        print('Failed to start publisher process') 
 
