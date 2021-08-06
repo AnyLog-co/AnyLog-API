@@ -51,6 +51,54 @@ def get_status(conn:rest.AnyLogConnect, exception:bool=False)->bool:
 
     return status
 
+def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->dict: 
+    """
+    Get AnyLog error log 
+    :args: 
+        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        exception:bool - whether to print errors to screen 
+    :params: 
+        event_log:str - content in event log
+    :return: 
+        data
+    """
+    
+    r, error = conn.get(command='get event log', query=False)
+
+    if errors.get_error(conn.conn, command='get event log', r=r, error=error, exception=exception) == False: 
+        try: 
+            event_log = r.text 
+        except Exception as e: 
+            if exception == True: 
+                print('Failed to get event log from: %s (Error: %s)' % (conn, e))
+            event_log = None 
+
+    return event_log
+
+def get_error_log(conn:rest.AnyLogConnect, exception:bool=False)->dict: 
+    """
+    Get AnyLog error log 
+    :args: 
+        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        exception:bool - whether to print errors to screen 
+    :params: 
+        error_log:str - content in error log 
+    :return: 
+        data
+    """
+    
+    r, error = conn.get(command='get dictionary', query=False)
+
+    if errors.get_error(conn.conn, command='get dictionary', r=r, error=error, exception=exception) == False: 
+        try: 
+            error_log = r.text 
+        except Exception as e: 
+            if exception == True: 
+                print('Failed to get dictionary from: %s (Error: %s)' % (conn, e))
+            error_log = None 
+
+    return error_log
+
 def get_dictionary(conn:rest.AnyLogConnect, exception:bool=False)->dict: 
     """
     Extract raw dictionary from AnyLog
