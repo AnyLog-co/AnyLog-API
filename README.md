@@ -17,7 +17,7 @@ $HOME/AnyLog-API
 * By adding **predevelop** before OS version (ex: `predevelop-debian`) you'd run the latest beta version 
  
 ## Steps 
-0. [Contact us](mailto:info@anylog.co?subject="Docker Password Request") for a docker password
+0. [Contact us](info@anylog.co) for a docker password
 
 1. Git clone https://github/AnyLog-co/AnyLog-API
 
