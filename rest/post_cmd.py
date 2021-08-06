@@ -201,9 +201,11 @@ def run_mqtt(conn:rest.AnyLogConnct, config:dict, exception:bool=False)->bool:
         if frmt = 0: 
             cmd += ')' 
 
-    r, error = conn.post(command=cmd)
-    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
-        status = False 
+    # Execute MQTT request 
+    if status == True: 
+        r, error = conn.post(command=cmd)
+        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
+            status = False 
 
     return status 
 

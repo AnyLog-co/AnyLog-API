@@ -51,7 +51,7 @@ def get_status(conn:rest.AnyLogConnect, exception:bool=False)->bool:
 
     return status
 
-def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->dict: 
+def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->str
     """
     Get AnyLog error log 
     :args: 
@@ -60,7 +60,7 @@ def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->dict:
     :params: 
         event_log:str - content in event log
     :return: 
-        data
+        event_log
     """
     
     r, error = conn.get(command='get event log', query=False)
@@ -75,7 +75,7 @@ def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->dict:
 
     return event_log
 
-def get_error_log(conn:rest.AnyLogConnect, exception:bool=False)->dict: 
+def get_error_log(conn:rest.AnyLogConnect, exception:bool=False)->str: 
     """
     Get AnyLog error log 
     :args: 
@@ -84,17 +84,17 @@ def get_error_log(conn:rest.AnyLogConnect, exception:bool=False)->dict:
     :params: 
         error_log:str - content in error log 
     :return: 
-        data
+        error_log
     """
     
-    r, error = conn.get(command='get dictionary', query=False)
+    r, error = conn.get(command='get error log', query=False)
 
-    if errors.get_error(conn.conn, command='get dictionary', r=r, error=error, exception=exception) == False: 
+    if errors.get_error(conn.conn, command='get error log', r=r, error=error, exception=exception) == False: 
         try: 
             error_log = r.text 
         except Exception as e: 
             if exception == True: 
-                print('Failed to get dictionary from: %s (Error: %s)' % (conn, e))
+                print('Failed to get error log from: %s (Error: %s)' % (conn, e))
             error_log = None 
 
     return error_log
@@ -191,5 +191,33 @@ def get_scheduler(conn:rest.AnyLogConnect, scheduler_name:str=None, exception:bo
             if exception == True: 
                 print('Failed to get information from scheduler from %s (Error: %s)' % (conn.conn, e))
     return output 
+
+def get_mqtt_client(conn:rest.AnyLogConnect, client_id:int=None, exception:bool=False)->str: 
+    """
+    Get AnyLog MQTT client 
+    :args: 
+        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        client_id:int - Specific client ID
+        exception:bool - whether to print errors to screen 
+    :params: 
+        cmd:str - Command to execute 
+        mqtt_client:str - content in mqtt client
+    :return: 
+        mqtt client
+    """
+    cmd = 'run mqtt client'
+    if client_id != None: 
+       cmd += ' %s' % client_id
+
+    r, error = conn.get(command=cmd, query=False)
+    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+        try: 
+            mqtt_client = r.text 
+        except Exception as e: 
+            if exception == True: 
+                print('Failed to get information regarding MQTT client from: %s (Error: %s)' % (conn, e))
+            error_log = None 
+
+    return mqtt_client
 
 
