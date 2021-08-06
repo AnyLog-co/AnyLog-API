@@ -53,4 +53,8 @@ python3 $HOME/AnyLog-API/deployment/main.py ${IP}:${PORT} ${CONFIG_FILE}
 for cmd in stop rm ; do docker ${cmd} ${NODE_NAME} ; done
 ```
 
- 
+## Issue
+
+1. [Questionnaire](config/questionnaire.sh) may have some bugs in it 
+2. Could add more variables to [config](config/config.ini) files  
+3. For [MQTT](rest/post_cmd.py#L192), `value` column should be configurable
