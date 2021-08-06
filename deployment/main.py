@@ -2,6 +2,7 @@ import argparse
 import os 
 import sys 
 
+import docker_calls
 import master 
 import publisher
 import query
@@ -82,6 +83,8 @@ def deployment():
     if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False: 
         print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
+    print(config_data) 
+    exit(1) 
     if 'node_type' in config_data: 
         if config_data['node_type'] == 'master': 
             status = master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 

@@ -1,5 +1,45 @@
 import os 
 
+def __docker_login(passwd:str, exception:bool=False)->bool: 
+    """
+    Login to docker 
+    :args: 
+        passwd:str - docker login password
+        exception:bool - whether or not to print exception
+    :params: 
+        status:bool
+    :return: 
+        status
+    """
+    status = True
+    try: 
+        os.system('docker login -u oshadmon -p %s' % passwd)
+    except Exception as e: 
+        if exception == True: 
+            print('Failed to login to docker (Error: %s)' % e)
+        status = False
+    return status 
+
+def __docker_logout(exception:bool=False)->bool: 
+    """
+    Logout of docker
+    :args: 
+        exception:bool - whether or not to print exception
+    :status: 
+        status:bool
+    :return: 
+        status
+    """
+    status = True
+    try: 
+        os.system('docker logout')
+    except Exception as e: 
+        if exception == True: 
+            print('Failed to logout of docker (Error: %s)' % e)
+        status = False
+    return status
+
+        
 def postgres(conn:str, exception:bool=False)->bool: 
     """
     Deploy Postgres instance
@@ -51,11 +91,12 @@ def grafana(exception:bool=False)->bool:
 
     return status 
 
-def anylog(config:dict, exception:bool=False)->bool: 
+def anylog(config:dict, passwd:str, exception:bool=False)->bool: 
     """
     Deploy AnyLog instance 
     :args: 
         config:str - AnyLog configuration
+        passwd:str - docker password
         exception:bool - whether or not to print exception
     :params: 
         status:bool
@@ -82,12 +123,14 @@ def anylog(config:dict, exception:bool=False)->bool:
     if 'anylog_broker_port' in config: 
         cmd = cmd.replace('ANYLOG_REST_PORT=%s' % rest_port, 'ANYLOG_REST_PORT=%s -e ANYLOG_BROKER_PORT=%s' % (rest_port, config['anylog_broker_port'])) 
 
-    try: 
-        os.system(cmd)
-    except Exception as e: 
-        if exception == True: 
-            print('Failed to deploy Grafana instance (Error: %s)' % e)
-        status = False
+    if __docker_login(passwd=passwd, exception=exception) == True:
+        try: 
+            os.system(cmd)
+        except Exception as e: 
+            if exception == True: 
+                print('Failed to deploy Grafana instance (Error: %s)' % e)
+            status = False
+        status = __docker_logout(exception=exception)
 
     return status 
 

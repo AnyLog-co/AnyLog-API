@@ -110,7 +110,7 @@ def set_immidiate_threshold(conn:rest.AnyLogConnect, exception:bool=False)->bool
     return status 
 
 
-def run_mqtt(conn:rest.AnyLogConnct, config:dict, exception:bool=False)->bool: 
+def run_mqtt(conn:rest.AnyLogConnect, config:dict, exception:bool=False)->bool: 
     """
     Connect to MQTT
     :args: 
@@ -136,13 +136,13 @@ def run_mqtt(conn:rest.AnyLogConnct, config:dict, exception:bool=False)->bool:
     mqtt_user = None
     mqtt_psswd = None 
     if 'mqtt_conn_info' in config: # format user@broker:password
-        broker = config['mqtt_conn_info'].split('@')[-1].split(':') 
+        broker = config['mqtt_conn_info'].split('@')[-1].split(':')[0] 
         if '@' in config['mqtt_conn_info']:
             mqtt_user = config['mqtt_conn_info'].split('@')[0] 
-        if ':' config['mqtt_conn_info']: 
-            mqttt_passwd = config['mqtt_conn_info'].split(':')[-1]
+        if ':' in config['mqtt_conn_info']: 
+            mqtt_passwd = config['mqtt_conn_info'].split(':')[-1]
         cmd += ' broker=%s' % broker 
-    elif 'local_broker' in config and bool(str(config['local_broker']).capitalize()) == True
+    elif 'local_broker' in config and bool(str(config['local_broker']).capitalize()) == True:
         broker = 'rest'
         cmd += ' broker=%s' % broker 
     else:
@@ -154,7 +154,7 @@ def run_mqtt(conn:rest.AnyLogConnct, config:dict, exception:bool=False)->bool:
     elif status == True:  
         # run mqtt client where broker=!mqtt_broker and port=!mqtt_broker_port and user=!mqtt_user and password=!mqtt_password
         if 'mqtt_broker_port' in config: 
-            cmd += ' and port=%s' config['mqtt_broker_port']
+            cmd += ' and port=%s' % config['mqtt_broker_port']
         if mqtt_user != None: 
             cmd += ' and user=%s' % mqtt_user 
         elif mqtt_psswd != None: 
@@ -180,32 +180,17 @@ def run_mqtt(conn:rest.AnyLogConnct, config:dict, exception:bool=False)->bool:
         else: 
             cmd += ' and topic=%s' % topic
             frmt = 1 
-        # extract columns  
-        if 'mqtt_column_timestamp' in config: 
-            if frmt == 0: 
-                cmd += ' and column.timestamp.timestamp=%s' % config['mqtt_column_timestamp']
-            else: 
-                cmd = cmd.replace('topic=%s' % topic, 'topic=(name=%s and column.timestamp.timestamp=%s' % (topic, config['mqtt_column_timestamp']))
-                frmt = 0 
-        if 'mqtt_column_value' in config: 
-            value_type = 'str'
-            if 'mqtt_column_value_type' in config and config['mqtt_column_value_type'] in ['int', 'timestamp', 'bool', 'str']: 
-                value_type = config['mqtt_column_value_type']
-            if frmt == 0: 
-                cmd += ' and column.value.%s=%s' % (value_type, config['mqtt_column_value'])
-            else: 
-                cmd = cmd.replace('topic=%s' % topic, 'topic=(name=%s and column.value.%s=%s' % (topic, value_type, config['mqtt_column_value']))
-                frmt = 0 
 
         # User can add code here to have more columns from MQTT 
-        if frmt = 0: 
+        if frmt == 0: 
             cmd += ')' 
 
+    print(cmd) 
     # Execute MQTT request 
-    if status == True: 
-        r, error = conn.post(command=cmd)
-        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
-            status = False 
+#    if status == True: 
+#        r, error = conn.post(command=cmd)
+#        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
+#            status = False 
 
     return status 
 

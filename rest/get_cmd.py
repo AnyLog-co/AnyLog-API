@@ -51,7 +51,7 @@ def get_status(conn:rest.AnyLogConnect, exception:bool=False)->bool:
 
     return status
 
-def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->str
+def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->str:
     """
     Get AnyLog error log 
     :args: 
