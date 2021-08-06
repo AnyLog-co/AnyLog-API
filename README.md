@@ -17,10 +17,15 @@ $HOME/AnyLog-API
 * By adding **predevelop** before OS version (ex: `predevelop-debian`) you'd run the latest beta version 
  
 ## Steps 
-    0. Contact us for a docker password [info@anylog.co](mailto:info@anylog.co)
-    1. Git clone https://github/AnyLog-co/AnyLog-API
-    2. Prepare INI [config files](config/) 
-    3. Start AnyLog for REST Interface  
+0. Contact us for a docker password [info@anylog.co](mailto:info@anylog.co)
+
+1. Git clone https://github/AnyLog-co/AnyLog-API
+
+2. Prepare INI [config files](config/) 
+
+3. Update [deployment](deployment/) scripts for your system 
+
+4. Start AnyLog for REST Interface - we suggest to run interacive within screen
 ```
 export NODE_NAME=new-node
 export SERVER_PORT=2048
@@ -37,7 +42,8 @@ docker run --network host --name ${NODE_NAME} \
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \ 
     -it oshadmon/anylog:osdev
 ```
-    4. Use REST to configure an AnyLog instance
+
+5. Use REST to configure an AnyLog instance
 ```
 python3 $HOME/AnyLog-API/deployment/main.py ${IP}:${PORT} ${CONFIG_FILE} 
 ```
