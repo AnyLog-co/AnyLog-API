@@ -47,4 +47,10 @@ docker run --network host --name ${NODE_NAME} \
 ```
 python3 $HOME/AnyLog-API/deployment/main.py ${IP}:${PORT} ${CONFIG_FILE} 
 ```
+
+6. Stop docker 
+```
+for cmd in stop rm ; do docker ${cmd} ${NODE-NAME} ; done
+```
+
  
