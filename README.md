@@ -21,7 +21,7 @@ $HOME/AnyLog-API
 
 1. Git clone https://github/AnyLog-co/AnyLog-API
 
-2. Prepare INI [config files](config/) 
+2. Prepare INI [config files](config/) - can use [questionnaire](config/questionnaire.sh)
 
 3. Update [deployment](deployment/) scripts for your system 
 
