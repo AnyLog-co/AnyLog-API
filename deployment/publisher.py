@@ -70,3 +70,9 @@ def publisher_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exc
     elif status == False: 
         print('Failed to start publisher process') 
 
+    if config['enable_mqtt'] == 'true': 
+        status = post_cmd.run_mqtt(conn=conn, config=config, exception=exception)
+        print(status) 
+
+
+
