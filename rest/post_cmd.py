@@ -129,8 +129,6 @@ def run_mqtt(conn:rest.AnyLogConnct, config:dict, exception:bool=False)->bool:
         dbms:str - database to store data in
         table:str - table to store data in 
     """
-    # and topic=(name=foglamp  and dbms=foglamp and table=weather and column.timestamp.timestamp="bring [timestamp]" and column.city.str = "bring [readings][city]" and column.wind_speed.float="bring [readings][wind_speed]" and column.temperature.float="bring [readings][temperature]" and column.humidity.int="bring [readings][humidity]")
-
     status = True
     cmd = 'run mqtt client where' 
 
@@ -190,5 +188,23 @@ def run_mqtt(conn:rest.AnyLogConnct, config:dict, exception:bool=False)->bool:
                 cmd = cmd.replace('topic=%s' % topic, 'topic=(name=%s and column.timestamp.timestamp=%s' % (topic, config['mqtt_column_timestamp']))
                 frmt = 0 
         if 'mqtt_column_value' in config: 
-            if frmt == 0 and 'mqtt_column_value_type' in config: 
-                cmd += ' and column.value
+            value_type = 'str'
+            if 'mqtt_column_value_type' in config and config['mqtt_column_value_type'] in ['int', 'timestamp', 'bool', 'str']: 
+                value_type = config['mqtt_column_value_type']
+            if frmt == 0: 
+                cmd += ' and column.value.%s=%s' % (value_type, config['mqtt_column_value'])
+            else: 
+                cmd = cmd.replace('topic=%s' % topic, 'topic=(name=%s and column.value.%s=%s' % (topic, value_type, config['mqtt_column_value']))
+                frmt = 0 
+
+        # User can add code here to have more columns from MQTT 
+        if frmt = 0: 
+            cmd += ')' 
+
+    r, error = conn.post(command=cmd)
+    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
+        status = False 
+
+    return status 
+
+
