@@ -53,7 +53,7 @@ def post_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
 
     return status 
 
-def post_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str, table_name:str, compress_json:bool=True, move_json:bool=True, exception:bool=False)->bool: 
+def run_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str, table_name:str, compress_json:bool=True, move_json:bool=True, exception:bool=False)->bool:
     """
     Start publisher process
     :args: 
@@ -130,68 +130,54 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
         table:str - table to store data in 
     """
     status = True
-    cmd = 'run mqtt client where' 
-
-    broker = None
-    mqtt_user = None
-    mqtt_psswd = None 
-    if 'mqtt_conn_info' in config: # format user@broker:password
-        broker = config['mqtt_conn_info'].split('@')[-1].split(':')[0] 
-        if '@' in config['mqtt_conn_info']:
-            mqtt_user = config['mqtt_conn_info'].split('@')[0] 
-        if ':' in config['mqtt_conn_info']: 
-            mqtt_passwd = config['mqtt_conn_info'].split(':')[-1]
-        cmd += ' broker=%s' % broker 
-    elif 'local_broker' in config and bool(str(config['local_broker']).capitalize()) == True:
+    # MQTT access params
+    if 'mqtt_conn_info' not in config:
+        if exception is True:
+            print('MQTT connection info required')
+    elif 'mqtt_conn_info' == 'rest':
         broker = 'rest'
-        cmd += ' broker=%s' % broker 
-    else:
-        status = False 
+        cmd = 'run mqtt client where broker=rest'
+    else: # user@broker:passwd
+        cmd = 'run mqtt client where broker=%s' % config['mqtt_conn_info'].split('@')[-1].split(':')[0]
+        if '@' in config['mqtt_conn_info']:
+            cmd += ' and user=%s' % config['mqtt_conn_info'].split('@')[0]
+        if ':' in config['mqtt_conn_info']:
+            cmd += ' and password=%s' % config['mqtt_conn_info'].split(':')[-1]
 
-    if broker == 'rest':
-        #run mqtt client where broker=rest and user-agent=python 
-        cmd += ' and user-agent=python' 
-    elif status == True:  
-        # run mqtt client where broker=!mqtt_broker and port=!mqtt_broker_port and user=!mqtt_user and password=!mqtt_password
-        if 'mqtt_broker_port' in config: 
-            cmd += ' and port=%s' % config['mqtt_broker_port']
-        if mqtt_user != None: 
-            cmd += ' and user=%s' % mqtt_user 
-        elif mqtt_psswd != None: 
-            cmd += ' and password=%s' % mqtt_psswd
+    if 'mqtt_port' in config:
+        cmd += ' and port=%s' % config['mqtt_port']
 
-    if 'mqtt_log' in config and status == True: 
+    if 'mqtt_log' in config:
         cmd += ' and log=%s' % config['mqtt_log']
+    else:
+        cmd += ' and log=false'
 
-    # topic
-    if status == True: 
-        frmt = 0 
-        topic = '#'
-        dbms = None 
-        table = None 
-        if 'mqtt_topic_name' in config: 
-            topic = config['mqtt_topic_name']
-        if 'mqtt_topic_dbms' in config: 
-            dbms = config['mqtt_topic_dbms']
-        if 'mqtt_topic_table' in config: 
-            table = config['mqtt_topic_table']
-        if dbms != None and table != None: 
-            cmd += ' and topic=(name=%s and dbms=%s and table=%s' % (topic, dbms, table) 
-        else: 
-            cmd += ' and topic=%s' % topic
-            frmt = 1 
+    # topic params
+    if 'mqtt_topic_name' not in config:
+        config['mqtt_topic_name'] = '#'
+    for param in ['mqtt_topic_dbms', 'mqtt_topic_table', 'mqtt_column_timestamp', 'mqtt_column_value_type', 'mqtt_column_value']:
+        if param not in config:
+            status = False
+        elif param == 'mqtt_column_value_type' and config['mqtt_column_value_type'] not in ['str', 'int', 'float', 'bool']:
+            config['mqtt_column_value_type'] = 'str'
 
-        # User can add code here to have more columns from MQTT 
-        if frmt == 0: 
-            cmd += ')' 
+    if status is False:
+        cmd += ' and topic=%s' % config['mqtt_topic_name']
+    else:
+        execute_cmd = cmd + ' and topic=(name=%s and dbms=%s and table=%s and column.timestamp.timestamp=%s and column.value=(type=%s and value=%s))'
+        execute_cmd = execute_cmd % (config['mqtt_topic_name'], config['mqtt_topic_dbms'], config['mqtt_topic_table'],
+                     config['mqtt_column_timestamp'], config['mqtt_column_value_type'], config['mqtt_column_value'])
 
-    print(cmd) 
-    # Execute MQTT request 
-#    if status == True: 
-#        r, error = conn.post(command=cmd)
-#        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
-#            status = False 
-
-    return status 
-
-
+    r, error = conn.post(command=execute_cmd)
+    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True:
+        status = False
+    """
+    # Bug with function
+    if config['enable_other_mqtt'] == 'true' and status is not False and config['mqtt_topic_name'] != '#':
+        execute_cmd = cmd + ' and topic="#"'
+        r, error = conn.post(command=execute_cmd)
+        if errors.post_error(conn=conn.execute_cmd, command=cmd, r=r, error=error, exception=exception) == True:
+            status = False
+    """
+    
+    return status
