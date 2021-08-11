@@ -2,7 +2,7 @@ import os
 import sys 
 
 import get_cmd 
-import rest 
+import anylog_api
 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
 sys.path.insert(0, support_dir) 
@@ -10,11 +10,11 @@ sys.path.insert(0, support_dir)
 import errors
 
 
-def post_value(conn:rest.AnyLogConnect, key:str, value:str, exception:bool=False)->bool: 
+def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool=False)->bool: 
     """
     POST value to dictionary
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
         key:str - dictionary key
         value:str - value for corresponding key
         exception:bool - whether or not to print error to screen 
@@ -33,11 +33,11 @@ def post_value(conn:rest.AnyLogConnect, key:str, value:str, exception:bool=False
 
     return status 
  
-def post_scheduler1(conn:rest.AnyLogConnect, exception:bool=False)->bool: 
+def post_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
     """
     POST scheduler 1 to AnyLog 
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
         exception:bool - whether or not to print error to screen 
     :params: 
         status:bool 
@@ -53,11 +53,11 @@ def post_scheduler1(conn:rest.AnyLogConnect, exception:bool=False)->bool:
 
     return status 
 
-def post_publisher(conn:rest.AnyLogConnect, master_node:str, dbms_name:str, table_name:str, compress_json:bool=True, move_json:bool=True, exception:bool=False)->bool: 
+def post_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str, table_name:str, compress_json:bool=True, move_json:bool=True, exception:bool=False)->bool: 
     """
     Start publisher process
     :args: 
-        conn:rest.AnyLogConnect connection to AnyLog
+        conn:anylog_api.AnyLogConnect connection to AnyLog
         master_node:str - Master node 
         dbms_name:str - database name 
         table_name:str - table name
@@ -88,11 +88,11 @@ def post_publisher(conn:rest.AnyLogConnect, master_node:str, dbms_name:str, tabl
 
     return status 
 
-def set_immidiate_threshold(conn:rest.AnyLogConnect, exception:bool=False)->bool: 
+def set_immidiate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
     """
     Set threshold tto immidiate
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
         exception:bool - whether or not to print error to screen 
     :params: 
         status:bool 
@@ -110,11 +110,11 @@ def set_immidiate_threshold(conn:rest.AnyLogConnect, exception:bool=False)->bool
     return status 
 
 
-def run_mqtt(conn:rest.AnyLogConnect, config:dict, exception:bool=False)->bool: 
+def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool: 
     """
     Connect to MQTT
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
         config:dict - AnyLog configuration
         exception:bool - whether or not to print error to screen 
     :params: 

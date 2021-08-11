@@ -1,8 +1,8 @@
 import json 
 import os 
-import rest 
 import sys 
 
+import anylog_api
 import get_cmd
 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
@@ -10,7 +10,7 @@ support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support'
 sys.path.insert(0, support_dir) 
 import errors 
 
-def blockchain_get(conn:rest.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list: 
+def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list: 
     """
     blockchain GET command 
     :args: 
@@ -71,7 +71,7 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
     return status 
 
 
-def pull_json(conn:rest.AnyLogConnect, master_node:str='local', exception:bool=False)->bool: 
+def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:bool=False)->bool: 
     """
     pull json from blockchain
     :args: 
@@ -102,11 +102,11 @@ def pull_json(conn:rest.AnyLogConnect, master_node:str='local', exception:bool=F
     return status 
 
 
-def post_policy(conn:rest.AnyLogConnect, policy:dict, master_node:str, exception:bool=False)->bool: 
+def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exception:bool=False)->bool: 
     """
     POST policy to blockchain
     :args: 
-        conn:rest.AnyLogConnect - Connection to AnyLog
+        conn:anylog_api.AnyLogConnect - Connection to AnyLog
         policy:dict - policy to POST 
         master_node:str - IP & Port of master node 
         exception:bool - whether or not to print error to screen
@@ -124,11 +124,11 @@ def post_policy(conn:rest.AnyLogConnect, policy:dict, master_node:str, exception
     status = errors.post_error(conn=conn.conn, command='post policy: %s' % raw_data, r=r, error=error, exception=exception)
     return status 
 
-def blockchain_sync(conn:rest.AnyLogConnect, source:str, time:str, connection:str=None, exception:bool=False)->bool: 
+def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connection:str=None, exception:bool=False)->bool: 
     """
     Set Blockchain sync 
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
         source:str - source to sync from 
             --> master 
             --> dbms 

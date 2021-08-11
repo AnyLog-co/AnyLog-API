@@ -9,15 +9,15 @@ import blockchain_cmd
 import dbms_cmd
 import get_cmd 
 import post_cmd
-import rest 
+import anylog_api
 
-def publisher_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
     Deploy a query or publisher node instance via REST 
     :definition: 
         Nodes that simply generate data and send them to operator nodes
     :args:
-       anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
+       anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
        config:dict - config data (from file + hostname + AnyLog) 
        location:bool -whetther or not to have location in policy
        exception:bool - whether or not to print exception to screen 

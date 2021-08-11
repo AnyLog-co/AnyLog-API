@@ -1,18 +1,18 @@
 import os 
 import sys 
 
-import rest 
+import anylog_api
 import blockchain_cmd 
 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
 sys.path.insert(0, support_dir) 
 import errors
 
-def get_dbms(conn:rest.AnyLogConnect, exception:bool=False)->str: 
+def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """"
     Get list of connected databases 
     :args: 
-        conn:rest.AnyLogConnect - REST AnyLog Connection
+        conn:anylog_api.AnyLogConnect - REST AnyLog Connection
         exception:bool - whether or not to print exception
     :params: 
         cmd:str - command to execute 
@@ -30,7 +30,7 @@ def get_dbms(conn:rest.AnyLogConnect, exception:bool=False)->str:
                 print('Failed to extract data from GET (Error: %s)' % e)
     return output
 
-def connect_dbms(conn:rest.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
+def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
     """
     Execute connection to database
     :args: 
@@ -67,7 +67,7 @@ def connect_dbms(conn:rest.AnyLogConnect, config:dict, db_name:str=None, excepti
 
     return status 
 
-def check_table(conn:rest.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool: 
+def check_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool: 
     """
     Check if table exists locally 
     :args: 
@@ -93,7 +93,7 @@ def check_table(conn:rest.AnyLogConnect, db_name:str, table_name:str, exception:
                 status = True
     return status 
 
-def create_table(conn:rest.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool: 
+def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool: 
     """
     Create table based on db & table names
     :args: 

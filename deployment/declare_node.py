@@ -1,11 +1,28 @@
-import os 
-import sys 
+import requests
 
-support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
+def __get_location()->str:
+    """
+    Get location using https://ipinfo.io/json
+    :param:
+        location:str - location information from request (default: 0.0, 0.0)
+    :return:
+        location
+    """
+    location = "0.0, 0.0"
+    try:
+        r = requests.get("https://ipinfo.io/json")
+    except Exception as e:
+        pass
+    else:
+        if r.status_code == 200:
+            try:
+                location = r.json()['loc']
+            except Exception as e:
+                pass
+    return location
 
-sys.path.insert(0, support_dir) 
-import get_location
- 
+
+
 def declare_node(config:dict, location:bool=True)->dict: 
     """
     Declare generic node based on config
@@ -35,7 +52,7 @@ def declare_node(config:dict, location:bool=True)->dict:
     if 'location' in config: 
          node[config['node_type']]['loc'] = config['location'] 
     elif location == True: 
-        node[config['node_type']]['loc'] = get_location.get_location() 
+        node[config['node_type']]['loc'] = __get_location()
 
     return node 
 

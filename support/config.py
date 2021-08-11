@@ -7,7 +7,7 @@ sys.path.insert(0, rest_dir)
 
 import get_cmd
 import post_cmd
-import rest 
+import anylog_api
 
 
 def read_config(config_file:str)->dict: 
@@ -43,11 +43,11 @@ def read_config(config_file:str)->dict:
 
    
 
-def post_config(conn:rest.AnyLogConnect, config:dict, exception:bool=False)->bool: 
+def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool: 
     """
     POST config to AnyLog
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
         config:dict - configuration to POST 
         exception:bool - whether or not to print error to screen 
     :param: 
@@ -68,11 +68,11 @@ def post_config(conn:rest.AnyLogConnect, config:dict, exception:bool=False)->boo
 
     return status 
  
-def import_config(conn:rest.AnyLogConnect, exception:bool=False)->dict: 
+def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
     """
     Extract parameters from AnyLog dictionary into dictionary  
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
     :param: 
         data:dict - formatted results from dictionary
