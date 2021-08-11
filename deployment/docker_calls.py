@@ -1,4 +1,11 @@
-import os 
+"""
+1. The following is not currently used, but may be added in the futrue
+2. Should change to docker via Python
+    - PyPi - https://pypi.org/project/docker/
+    - GitHub: https://github.com/docker/docker-py
+"""
+
+import os
 
 def __docker_login(passwd:str, exception:bool=False)->bool: 
     """

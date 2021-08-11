@@ -2,18 +2,16 @@ import argparse
 import os 
 import sys 
 
-import docker_calls
 import master 
 import publisher
 import query
 
 rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
-support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
-
 sys.path.insert(0, rest_dir) 
 import get_cmd
-import rest 
+import anylog_api
 
+support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
 sys.path.insert(0, support_dir) 
 import config
  
@@ -37,7 +35,7 @@ def deployment():
         -l, --location      LOCATION    If set to True & location not in config, add lat/long coordinates for new policies
         -e, --exception     EXCEPTION   print exception errors (default: False)
     :params: 
-       anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
+       anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
        config_file:str - full path from args.config_file
        config_data:dict - config data (from file + hostname + AnyLog) 
     """
@@ -52,7 +50,7 @@ def deployment():
     
     
     # Connect to AnyLog REST 
-    anylog_conn = rest.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
+    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # Validate REST node is accessible 
     if get_cmd.get_status(conn=anylog_conn, exception=args.exception) == False: 
@@ -83,8 +81,6 @@ def deployment():
     if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False: 
         print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
-    print(config_data) 
-    exit(1) 
     if 'node_type' in config_data: 
         if config_data['node_type'] == 'master': 
             status = master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 

@@ -9,15 +9,15 @@ import blockchain_cmd
 import dbms_cmd
 import get_cmd 
 import post_cmd
-import rest 
+import anylog_api
 
-def query_init(conn:rest.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
     Deploy a query node instance via REST 
     :definition: 
         Nodes dedicated to query and BI activity
     :args:
-       anylog_conn:rest.AnyLogConnect - Connection to AnyLog 
+       anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
        config:dict - config data (from file + hostname + AnyLog) 
        location:bool -whetther or not to have location in policy
        exception:bool - whether or not to print exception to screen 

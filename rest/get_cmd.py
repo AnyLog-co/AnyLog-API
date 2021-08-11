@@ -1,7 +1,7 @@
 import os 
 import sys 
 
-import rest 
+import anylog_api
 
 support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
 sys.path.insert(0, support_dir) 
@@ -9,11 +9,11 @@ sys.path.insert(0, support_dir)
 import errors
 
 
-def get_help(conn:rest.AnyLogConnect, command:str=None): 
+def get_help(conn:anylog_api.AnyLogConnect, command:str=None): 
     """
     Execute 'help' against AnyLog. If command is set get help regarding command
     :args: 
-        conn:rest.AnyLogConnect - Connection to AnyLog 
+        conn:anylog_api.AnyLogConnect - Connection to AnyLog 
         command:str - command to get help on 
     :note: 
         function prints results rather than return it
@@ -29,11 +29,11 @@ def get_help(conn:rest.AnyLogConnect, command:str=None):
         except Exception as e: 
             print('Failed to extract help information (Error: %s) ' % e)
 
-def get_status(conn:rest.AnyLogConnect, exception:bool=False)->bool: 
+def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
     """
     Execute get status
     :args: 
-        conn:rest.AnyLogConnect - Connection to AnyLog 
+        conn:anylog_api.AnyLogConnect - Connection to AnyLog 
         exception:bool - whether to print execptions or not 
     :params: 
         status:bool
@@ -51,11 +51,11 @@ def get_status(conn:rest.AnyLogConnect, exception:bool=False)->bool:
 
     return status
 
-def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->str:
+def get_event_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
     Get AnyLog error log 
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
     :params: 
         event_log:str - content in event log
@@ -75,11 +75,11 @@ def get_event_log(conn:rest.AnyLogConnect, exception:bool=False)->str:
 
     return event_log
 
-def get_error_log(conn:rest.AnyLogConnect, exception:bool=False)->str: 
+def get_error_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
     Get AnyLog error log 
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
     :params: 
         error_log:str - content in error log 
@@ -99,11 +99,11 @@ def get_error_log(conn:rest.AnyLogConnect, exception:bool=False)->str:
 
     return error_log
 
-def get_dictionary(conn:rest.AnyLogConnect, exception:bool=False)->dict: 
+def get_dictionary(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
     """
     Extract raw dictionary from AnyLog
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
     :params: 
         data:str - raw dictionary data
@@ -124,11 +124,11 @@ def get_dictionary(conn:rest.AnyLogConnect, exception:bool=False)->dict:
     return data
 
 
-def get_hostname(conn:rest.AnyLogConnect, exception:bool=False)->str: 
+def get_hostname(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
     Extract hostname
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
     :params: 
         hostname:str - hostname
@@ -146,11 +146,11 @@ def get_hostname(conn:rest.AnyLogConnect, exception:bool=False)->str:
 
     return hostname
 
-def get_processes(conn:rest.AnyLogConnect, exception:bool=False)->str: 
+def get_processes(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
     Get running processes 
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
     :params: 
         output:str - raw content from query 
@@ -167,11 +167,11 @@ def get_processes(conn:rest.AnyLogConnect, exception:bool=False)->str:
                 print('Failed to get list of processes from %s (Error: %s)' % (conn.conn, e))
     return output 
 
-def get_scheduler(conn:rest.AnyLogConnect, scheduler_name:str=None, exception:bool=False)->str: 
+def get_scheduler(conn:anylog_api.AnyLogConnect, scheduler_name:str=None, exception:bool=False)->str: 
     """
     Get scheduler 
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog REST
+        conn:anylog_api.AnyLogConnect - connection to AnyLog REST
         scheduler_name:str - name or ID of scheduled process 
         exception:bool - whether to print errors to screen 
     :params: 
@@ -192,11 +192,11 @@ def get_scheduler(conn:rest.AnyLogConnect, scheduler_name:str=None, exception:bo
                 print('Failed to get information from scheduler from %s (Error: %s)' % (conn.conn, e))
     return output 
 
-def get_mqtt_client(conn:rest.AnyLogConnect, client_id:int=None, exception:bool=False)->str: 
+def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception:bool=False)->str: 
     """
     Get AnyLog MQTT client 
     :args: 
-        conn:rest.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         client_id:int - Specific client ID
         exception:bool - whether to print errors to screen 
     :params: 
