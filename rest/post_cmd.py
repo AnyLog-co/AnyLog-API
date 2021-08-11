@@ -134,9 +134,8 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
     if 'mqtt_conn_info' not in config:
         if exception is True:
             print('MQTT connection info required')
-    elif 'mqtt_conn_info' == 'rest':
-        broker = 'rest'
-        cmd = 'run mqtt client where broker=rest'
+    elif config['mqtt_conn_info'] == 'rest':
+        cmd = 'run mqtt client where broker=rest and user-agent=anylog'
     else: # user@broker:passwd
         cmd = 'run mqtt client where broker=%s' % config['mqtt_conn_info'].split('@')[-1].split(':')[0]
         if '@' in config['mqtt_conn_info']:
