@@ -1,9 +1,9 @@
-
 import __init__
 import declare_node
 import rest.anylog_api as anylog_api
 import rest.blockchain_cmd as blockchain_cmd
 import rest.dbms_cmd as dbms_cmd
+import rest.post_cmd
 import rest.post_cmd as post_cmd
 import rest.anylog_api as post_cmd
 
@@ -60,11 +60,10 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
                     print('Failed to declare policy')
 
     # blockchain sync 
-    status = blockchain_cmd.blockchain_sync(conn=conn, source='dbms', time='1 minute', connection=None, exception=exception)
-    if status == False: 
+    if not blockchain_cmd.blockchain_sync(conn=conn, source='dbms', time='1 minute', connection=None, exception=exception):
         print('Failed to set blockchain sync process') 
 
-    # Post scheduler 1 
-    if not post_cmd.post_scheduler1(conn=conn, exception=exception):
-        print('Failed to start scheduler 1') 
+    # Post scheduler 1
+    if not rest.post_cmd.start_scheduler1(conn=conn, exception=exception):
+        print('Failed to start scheduler 1')
 

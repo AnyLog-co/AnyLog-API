@@ -1,3 +1,4 @@
+import rest.post_cmd
 from __init__ import *
 import declare_node
 import rest.anylog_api as anylog_api
@@ -50,7 +51,7 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
                     print('Failed to declare policy')
 
     if config['enable_mqtt'] == 'true':
-        if not post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
+        if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
 
     # blockchain sync 
@@ -59,12 +60,12 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
         print('Failed to set blockchain sync process')
 
     # Post scheduler 1
-    if not post_cmd.post_scheduler1(conn=conn, exception=exception):
+    if not rest.post_cmd.start_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1')
 
     # Start publisher
-    status = post_cmd.run_publisher(conn=conn, master_node=config['master_node'], dbms_name='file_name[0]', table_name='file_name[1]', compress_json=True, move_json=True, exception=exception)
-    if status is True and post_cmd.set_immidiate_threshold(conn=conn, exception=exception) == False:
+    status = rest.post_cmd.run_publisher(conn=conn, master_node=config['master_node'], dbms_name='file_name[0]', table_name='file_name[1]', compress_json=True, move_json=True, exception=exception)
+    if status is True and rest.post_cmd.set_immidiate_threshold(conn=conn, exception=exception) == False:
         print('Failed to set buffering to immidiate')
     elif status is False:
         print('Failed to start publisher process') 

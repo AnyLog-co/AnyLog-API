@@ -26,7 +26,7 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
 
     return status 
  
-def post_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
+def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     """
     POST scheduler 1 to AnyLog 
     :args: 

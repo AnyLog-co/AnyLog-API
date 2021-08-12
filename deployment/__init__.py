@@ -3,9 +3,6 @@ import sys
 
 import declare_node
 import declare_cluster
-import master
-import publisher
-import query
 
 slash_char = '/'
 if sys.platform.startswith('win'):

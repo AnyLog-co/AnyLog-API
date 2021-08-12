@@ -1,3 +1,4 @@
+import rest.post_cmd
 from __init__ import *
 import declare_node
 import rest.anylog_api as anylog_api
@@ -54,5 +55,5 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
         print('Failed to set blockchain sync process') 
 
     # Post scheduler 1 
-    if not post_cmd.post_scheduler1(conn=conn, exception=exception):
+    if not rest.post_cmd.start_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1') 
