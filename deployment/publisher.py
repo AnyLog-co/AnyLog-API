@@ -50,7 +50,7 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
                 if len(blockchain) == 0: 
                     print('Failed to declare policy')
 
-    if config['enable_mqtt'] == 'true':
+    if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
 

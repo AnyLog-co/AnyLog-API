@@ -56,7 +56,7 @@ def declare_node(config:dict, location:bool=True)->dict:
 
     return node 
 
-def  declare_operator(node:dict, config:dict, cluster_id:str=None)->dict: 
+def  declare_operator(node:dict, config:dict, cluster_id:str=None)->dict:
     """
     Given a generic node, enhance it with oprator config
     :args: 
@@ -68,7 +68,7 @@ def  declare_operator(node:dict, config:dict, cluster_id:str=None)->dict:
     """
     if 'member_id' in config: 
         node[config['node_type']]['member_id'] = config['member_id']
-    if cluster_id != None: 
+    if cluster_id != None:
         node[config['node_type']]['cluster_id'] = cluster_id
     else: 
         if 'default_dbms' in config: 
