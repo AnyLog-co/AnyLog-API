@@ -1,15 +1,11 @@
-import os 
-import sys 
-
-import declare_node 
-
-rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
-sys.path.insert(0, rest_dir) 
-import blockchain_cmd 
-import dbms_cmd
-import get_cmd 
-import post_cmd
-import anylog_api
+import rest.post_cmd
+from __init__ import *
+import declare_node
+import rest.anylog_api as anylog_api
+import rest.blockchain_cmd as blockchain_cmd
+import rest.dbms_cmd as dbms_cmd
+import rest.post_cmd as post_cmd
+import rest.anylog_api as post_cmd
 
 def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
@@ -59,5 +55,5 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
         print('Failed to set blockchain sync process') 
 
     # Post scheduler 1 
-    if not post_cmd.post_scheduler1(conn=conn, exception=exception):
+    if not rest.post_cmd.start_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1') 

@@ -23,7 +23,7 @@ def declare_cluster(config:dict)->dict:
             else: 
                 for table in tables: 
                     tables_list.append({config['default_dbms']: table})
-            if tables_list != [] 
+            if tables_list != []:
                 cluster['cluster']['table'] = tables_list
         elif 'table' not in config or tables_list == []: 
             cluster['cluster']['dbms'] = config['default_dbms']

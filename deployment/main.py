@@ -1,21 +1,15 @@
 import argparse
-import os 
-import sys 
 
-import master 
+import master
 import publisher
 import query
 
-rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
-sys.path.insert(0, rest_dir) 
-import get_cmd
-import anylog_api
+from __init__ import *
+import rest.anylog_api as anylog_api
+import rest.get_cmd as get_cmd
+import support.config as config
 
-support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
-sys.path.insert(0, support_dir) 
-import config
- 
-def deployment(): 
+def deployment():
     """
     Based on configuration file, deploy a specific node
     :requirement: 

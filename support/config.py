@@ -1,14 +1,9 @@
 import configparser
-import os
-import sys 
 
-rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
-sys.path.insert(0, rest_dir) 
-
-import get_cmd
-import post_cmd
-import anylog_api
-
+from __init__ import *
+import rest.get_cmd as get_cmd
+import rest.post_cmd as post_cmd
+import rest.anylog_api as anylog_api
 
 def read_config(config_file:str)->dict: 
     """

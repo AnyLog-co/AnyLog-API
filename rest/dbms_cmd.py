@@ -1,12 +1,8 @@
-import os 
-import sys 
+import __init__
+import rest.anylog_api as anylog_api
+import rest.blockchain_cmd as blockchain_cmd
 
-import anylog_api
-import blockchain_cmd 
-
-support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
-sys.path.insert(0, support_dir) 
-import errors
+import support.errors as errors
 
 def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """"
