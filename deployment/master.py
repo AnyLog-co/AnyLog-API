@@ -1,15 +1,11 @@
-import os 
-import sys 
 
-import declare_node 
-
-rest_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/rest')) 
-sys.path.insert(0, rest_dir) 
-import blockchain_cmd 
-import dbms_cmd
-import get_cmd 
-import post_cmd
-import anylog_api
+import __init__
+import declare_node
+import rest.anylog_api as anylog_api
+import rest.blockchain_cmd as blockchain_cmd
+import rest.dbms_cmd as dbms_cmd
+import rest.post_cmd as post_cmd
+import rest.anylog_api as post_cmd
 
 def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """

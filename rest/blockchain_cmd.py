@@ -1,16 +1,10 @@
-import json 
-import os 
-import sys 
+import __init__
+import rest.anylog_api as anylog_api
+import rest.get_cmd as get_cmd
 
-import anylog_api
-import get_cmd
+import support.errors as errors
 
-support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
-
-sys.path.insert(0, support_dir) 
-import errors 
-
-def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list: 
+def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list:
     """
     blockchain GET command 
     :args: 
@@ -59,7 +53,7 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
     status = False 
     cmd = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
     
-    r, e = rest.get(command=cmd, query=False) 
+    r, e = anylog_api.get(command=cmd, query=False)
     if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
         try: 
             if r.json()['local'] == 'true':

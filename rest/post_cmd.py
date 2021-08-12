@@ -1,14 +1,7 @@
-import os
-import sys 
-
-import get_cmd 
-import anylog_api
-
-support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
-sys.path.insert(0, support_dir) 
-
-import errors
-
+import __init__
+import rest.anylog_api as anylog_api
+import rest.get_cmd as get_cmd
+import support.errors as errors
 
 def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool=False)->bool: 
     """

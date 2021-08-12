@@ -1,13 +1,7 @@
-import os 
-import sys 
+import __init__
+import rest.anylog_api as anylog_api
 
-import anylog_api
-
-support_dir   = os.path.expandvars(os.path.expanduser('$HOME/AnyLog-API/support')) 
-sys.path.insert(0, support_dir) 
-
-import errors
-
+import support.errors as errors
 
 def get_help(conn:anylog_api.AnyLogConnect, command:str=None): 
     """
