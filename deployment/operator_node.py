@@ -1,5 +1,4 @@
 import __init__
-import declare_node
 import rest.anylog_api as anylog_api
 import rest.blockchain_cmd as blockchain_cmd
 import rest.dbms_cmd as dbms_cmd
@@ -50,12 +49,14 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
 
+    if not dbms_cmd.declare_db_partitions(conn=conn, db_name=config['default_dbms'], table_name='*', ts_column='timestamp', value=1, interval='day', exception=False):
+        print('Failed to set partitions to %s.%s' % (config['default_dbms'], '*'))
+
     if not rest.post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True, update_tsd_info=True, archive=True, distributor=True, exception=exception):
-        print('Failded to start operator')
+        print('Failed to start operator')
 
     # blockchain sync
-    status = blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception)
-    if status == False:
+    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception):
         print('Failed to set blockchain sync process')
 
     # Post scheduler 1

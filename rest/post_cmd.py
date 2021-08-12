@@ -112,7 +112,7 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
 
 def set_immidiate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
     """
-    Set threshold tto immidiate
+    Set threshold to immidiate
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         exception:bool - whether or not to print error to screen 

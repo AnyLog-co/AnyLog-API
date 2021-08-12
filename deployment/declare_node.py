@@ -47,11 +47,11 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['name'] = config['node_name']
     elif 'node_type' in config: 
         node[config['node_type']]['name'] = config['node_type'] 
-    if 'hostname' in  config: 
+    if 'hostname' in config:
          node[config['node_type']]['hostname'] = config['hostname']
     if 'location' in config: 
          node[config['node_type']]['loc'] = config['location'] 
-    elif location == True: 
+    elif location is True:
         node[config['node_type']]['loc'] = __get_location()
 
     return node 
@@ -68,7 +68,7 @@ def  declare_operator(node:dict, config:dict, cluster_id:str=None)->dict:
     """
     if 'member_id' in config: 
         node[config['node_type']]['member_id'] = config['member_id']
-    if cluster_id != None:
+    if cluster_id is not None:
         node[config['node_type']]['cluster_id'] = cluster_id
     else: 
         if 'default_dbms' in config: 
