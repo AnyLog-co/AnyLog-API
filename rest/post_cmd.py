@@ -108,6 +108,11 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
         if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True:
             status = False
 
+        for cmd in ['run streamer', 'run data distributor', 'run data consumer where start_date=-30d']:
+            r, error = conn.post(command=cmd)
+            if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True:
+                status = False
+
     return status
 
 def set_immidiate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 

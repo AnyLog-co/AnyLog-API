@@ -77,43 +77,6 @@ class AnyLogConnect:
 
         return r, error
 
-    def put_data_file(self, dbms:str, table:str, file_name:str)->(str,bool):
-        """
-        Send data in file to AnyLog via PUT
-        :sample-data:
-            {'column1': 'column value', 'column2': 'column value', 'column3': 'column value'...}
-        :args:
-            dbms:str - database name
-            table:str - table name
-            file_name:str - file name with path
-        """
-        headers = {
-            'type': 'json',
-            'dbms': dbms,
-            'table': table,
-            'mode': 'file',
-            'Content-Type': 'text/plain'
-        }
-        full_path = os.path.expandvars(os.path.expanduser(file_name))
-        if os.path.isfile(full_path):
-            try:
-                with open(full_path, 'r') as f:
-                    try:
-                        data = str(f.read())
-                    except Exception as e:
-                        error = str(e)
-                        r = False
-                    if r is not False:
-                        try:
-                            r = requests.put('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout, data=data)
-                        except Exception as e:
-                            error = str(e)
-                            r = False
-                        else:
-                            if int(r.status_code) != 200:
-                                error = int(r.status_code)
-                                r = False
-        return r, error
 
     def post(self, command:str)->(bool, str):
         """
