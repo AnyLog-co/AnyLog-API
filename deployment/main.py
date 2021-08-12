@@ -1,10 +1,12 @@
 import argparse
+import os
 
-import master
-import publisher
-import query
+import __init__
 
-from __init__ import *
+import deployment.master as master
+import deployment.publisher as publisher
+import deployment.query as query
+
 import rest.anylog_api as anylog_api
 import rest.get_cmd as get_cmd
 import support.config as config
@@ -47,7 +49,7 @@ def deployment():
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # Validate REST node is accessible 
-    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) == False: 
+    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) == False:
         print('Failed to get status from %s, cannot continue' % args.rest_conn)
         exit(1) 
 
