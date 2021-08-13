@@ -168,7 +168,7 @@ class AnyLogConnect:
             error = str(e)
             r = False
         else:
-            if r.status_code != 200:
+            if int(r.status_code) != 200:
                 error = int(r.status_code)
                 r = False
 

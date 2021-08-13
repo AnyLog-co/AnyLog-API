@@ -1,0 +1,12 @@
+<operator = {
+    "operator": {
+        "ip": "24.23.250.144",
+        "local_ip": "10.0.0.26",
+        "port": 2148,
+        "rest_port": 2149,
+        "name": "anylog-test-operator",
+        "hostname": "anylog-vm",
+        "loc": "37.5072,-122.2605",
+        "cluster_id": "8bfc9f5633ac044950ef5019068ffaeb"
+    }
+}>

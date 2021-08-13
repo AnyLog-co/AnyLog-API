@@ -1,4 +1,6 @@
 import __init__
+import declare_cluster
+import declare_node
 import rest.anylog_api as anylog_api
 import rest.blockchain_cmd as blockchain_cmd
 import rest.dbms_cmd as dbms_cmd
@@ -44,6 +46,27 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         if new_system == True or config['default_dbms'] not in dbms_list:
             if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception):
                 print('Failed to start %s database' % config['default_dbms'])
+
+    # declare cluster
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
+        if 'enable_cluster' in config and config['enable_cluster'] == 'true':
+            if 'cluster_name' in config:
+                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']], exception=exception)
+                if len(blockchain) == 0: # if not found, declare cluster
+                    new_cluster = declare_cluster.declare_cluster(config=config)
+                    blockchain_cmd.post_policy(conn=conn, policy=new_cluster, master_node=config['master_node'], exception=exception)
+
+    # declare operator
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
+        if 'enable_cluster' in config and config['enable_cluster'] == 'true':
+            if 'cluster_name' in config:
+                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']], exception=exception)
+                for cluster in blockchain:
+                    if 'parent' not in cluster['cluster']:
+        new_node = declare_node.declare_node(config=config, location=True)
+                        config['cluster_id'] = cluster['cluster']['id']
+        new_node = declare_node.declare_operator(node=new_node, config=config)
+        blockchain_cmd.post_policy(conn=conn, policy=new_node, master_node=config['master_node'], exception=exception)
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
