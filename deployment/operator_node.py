@@ -63,10 +63,10 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                 blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']], exception=exception)
                 for cluster in blockchain:
                     if 'parent' not in cluster['cluster']:
-        new_node = declare_node.declare_node(config=config, location=True)
                         config['cluster_id'] = cluster['cluster']['id']
+        new_node = declare_node.declare_node(config=config, location=True)
         new_node = declare_node.declare_operator(node=new_node, config=config)
-        blockchain_cmd.post_policy(conn=conn, policy=new_node, master_node=config['master_node'], exception=exception)
+        blockchain_cmd.post_    policy(conn=conn, policy=new_node, master_node=config['master_node'], exception=exception)
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):

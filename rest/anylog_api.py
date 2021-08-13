@@ -143,6 +143,8 @@ class AnyLogConnect:
     def post_policy(self, policy:str, master_node:str)->(bool, str):
         """
         POST to blockchain
+        :link:
+            https://github.com/AnyLog-co/documentation/blob/master/using%20rest.md#the-message-body-setups
         :args:
             policy:str - policy to POST to blockchain
             master_node:str - master node to post to
@@ -156,7 +158,7 @@ class AnyLogConnect:
         """
         error = None
         headers = {
-            "command": "blockchain push !policy",
+            "command": "run client (%s) blockchain push !policy" % master_node,
             "destination": master_node,
             "Content-Type": "text/plain",
             "User-Agent": "AnyLog/1.23"
