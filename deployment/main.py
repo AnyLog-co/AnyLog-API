@@ -1,10 +1,12 @@
+import os
 import argparse
 
 import master
+import operator_node
 import publisher
 import query
 
-from __init__ import *
+import __init__
 import rest.anylog_api as anylog_api
 import rest.get_cmd as get_cmd
 import support.config as config
@@ -64,7 +66,7 @@ def deployment():
         exit(1) 
 
     hostname = get_cmd.get_hostname(conn=anylog_conn, exception=args.exception) 
-    if hostname != None: 
+    if hostname is not None:
         config_data['hostname'] = hostname
     
     import_config = config.import_config(conn=anylog_conn, exception=args.exception)
@@ -72,23 +74,20 @@ def deployment():
         if key not in config_data: 
             config_data[key] = import_config[key] 
 
-    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False: 
+    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False:
         print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
     if 'node_type' in config_data: 
         if config_data['node_type'] == 'master': 
-            status = master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
+            master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         elif config_data['node_type'] == 'query': 
-            status = query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
+            query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         elif config_data['node_type'] == 'publisher':
-            status = publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
+            publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         elif config_data['node_type'] == 'operator': 
-            pass 
+            operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         else: 
             print('Unsupported node type: %s' % config['node_type'])
-    else: 
-        print('Missing node_type in config')
-
 
 if __name__ == '__main__': 
     deployment() 

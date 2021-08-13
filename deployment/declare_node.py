@@ -47,16 +47,16 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['name'] = config['node_name']
     elif 'node_type' in config: 
         node[config['node_type']]['name'] = config['node_type'] 
-    if 'hostname' in  config: 
+    if 'hostname' in config:
          node[config['node_type']]['hostname'] = config['hostname']
     if 'location' in config: 
          node[config['node_type']]['loc'] = config['location'] 
-    elif location == True: 
+    elif location is True:
         node[config['node_type']]['loc'] = __get_location()
 
     return node 
 
-def  declare_operator(node:dict, config:dict, cluster_id:str=None)->dict: 
+def  declare_operator(node:dict, config:dict)->dict:
     """
     Given a generic node, enhance it with oprator config
     :args: 
@@ -66,10 +66,10 @@ def  declare_operator(node:dict, config:dict, cluster_id:str=None)->dict:
     :return: 
         node
     """
-    if 'member_id' in config: 
+    if 'member_id' in config:
         node[config['node_type']]['member_id'] = config['member_id']
-    if cluster_id != None: 
-        node[config['node_type']]['cluster_id'] = cluster_id
+    if 'cluster_id' in config:
+        node[config['node_type']]['cluster_id'] = config['cluster_id']
     else: 
         if 'default_dbms' in config: 
             node[config['node_type']]['default_dbms'] = config['default_dbms']
