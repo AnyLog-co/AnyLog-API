@@ -112,7 +112,6 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     """
     if isinstance(policy, dict): # convert policy to str if dict
         policy = json.dumps(policy)
-    print(policy, type(policy))
     raw_data="<policy=%s>" % policy 
 
     r, error = conn.post_policy(policy=raw_data, master_node=master_node)

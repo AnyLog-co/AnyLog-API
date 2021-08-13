@@ -22,8 +22,8 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         blockchain:dict - conetent from blockchain
         new_policy:dict - decleration of policy
     """
-    status = True
-
+    declare_node.declare_operator(conn=conn, config=config, exception=exception)
+    exit(1)
     # Create system_query & blockchain
     new_system = False
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
@@ -35,7 +35,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
 
     if new_system == True or 'almgm' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='almgm', exception=exception):
-            print('Failed to start system_query database')
+            print('Failed to start almgm database')
 
     # create tsd_info for almgm
     if not dbms_cmd.check_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
@@ -46,27 +46,6 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         if new_system == True or config['default_dbms'] not in dbms_list:
             if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception):
                 print('Failed to start %s database' % config['default_dbms'])
-
-    # declare cluster
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-        if 'enable_cluster' in config and config['enable_cluster'] == 'true':
-            if 'cluster_name' in config:
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']], exception=exception)
-                if len(blockchain) == 0: # if not found, declare cluster
-                    new_cluster = declare_cluster.declare_cluster(config=config)
-                    blockchain_cmd.post_policy(conn=conn, policy=new_cluster, master_node=config['master_node'], exception=exception)
-
-    # declare operator
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-        if 'enable_cluster' in config and config['enable_cluster'] == 'true':
-            if 'cluster_name' in config:
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']], exception=exception)
-                for cluster in blockchain:
-                    if 'parent' not in cluster['cluster']:
-                        config['cluster_id'] = cluster['cluster']['id']
-        new_node = declare_node.declare_node(config=config, location=True)
-        new_node = declare_node.declare_operator(node=new_node, config=config)
-        blockchain_cmd.post_    policy(conn=conn, policy=new_node, master_node=config['master_node'], exception=exception)
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):

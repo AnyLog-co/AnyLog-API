@@ -41,7 +41,10 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
 
     # Pull blockchain & declare node if not exists 
     if blockchain_cmd.pull_json(conn=conn, master_node='local', exception=exception):
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='master', where=['ip=%s' % config['external_ip']], exception=exception)
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                   where=['ip=%s' % config['external_ip'],
+                                                          'port=%s' % config['anylog_tcp_port']],
+                                                   exception=exception)
         if blockchain == {} or blockchain == []:
             if 'master_node' in config: 
                 new_policy = declare_node.declare_node(config=config, location=location) 
@@ -50,7 +53,10 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
                 print('Unable to declare policy, missing master_node in config')
 
             if post_policy is True and blockchain_cmd.pull_json(conn=conn, master_node='local', exception=exception):
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='master', where=['ip=%s' % config['external_ip']], exception=exception) 
+                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                           where=['ip=%s' % config['external_ip'],
+                                                                  'port=%s' % config['anylog_tcp_port']],
+                                                           exception=exception)
                 if len(blockchain) == 0: 
                     print('Failed to declare policy')
 

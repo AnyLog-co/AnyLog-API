@@ -1,5 +1,9 @@
 import requests
 
+import __init__
+import rest.anylog_api as anylog_api
+import rest.blockchain_cmd as blockchain_cmd
+
 def __get_location()->str:
     """
     Get location using https://ipinfo.io/json
@@ -56,7 +60,7 @@ def declare_node(config:dict, location:bool=True)->dict:
 
     return node 
 
-def  declare_operator(node:dict, config:dict)->dict:
+def  declare_operator(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool:
     """
     Given a generic node, enhance it with oprator config
     :args: 
@@ -66,14 +70,12 @@ def  declare_operator(node:dict, config:dict)->dict:
     :return: 
         node
     """
-    if 'member_id' in config:
-        node[config['node_type']]['member_id'] = config['member_id']
-    if 'cluster_id' in config:
-        node[config['node_type']]['cluster_id'] = config['cluster_id']
-    else: 
-        if 'default_dbms' in config: 
-            node[config['node_type']]['default_dbms'] = config['default_dbms']
-        if 'table' in config: 
-            node[config['node_type']]['table'] = config['table'] 
-
-    return node
+    create_operator = True
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='operator', where=['name=%s' % config['cluster_name']])
+    """
+    if 'enable_cluster' in config and config['enable_cluster'] == 'true':
+        if 'cluster_name' in config and
+            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']])
+            print(blockchain)
+    """

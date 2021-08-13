@@ -158,7 +158,7 @@ class AnyLogConnect:
         """
         error = None
         headers = {
-            "command": "run client (%s) blockchain push !policy" % master_node,
+            "command": "blockchain push !policy",
             "destination": master_node,
             "Content-Type": "text/plain",
             "User-Agent": "AnyLog/1.23"
