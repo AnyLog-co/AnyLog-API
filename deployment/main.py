@@ -2,7 +2,6 @@ import os
 import argparse
 
 import master
-import operator_node
 import publisher
 import query
 

@@ -21,8 +21,6 @@ def __get_location()->str:
                 pass
     return location
 
-
-
 def declare_node(config:dict, location:bool=True)->dict: 
     """
     Declare generic node based on config
@@ -55,25 +53,3 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['loc'] = __get_location()
 
     return node 
-
-def  declare_operator(node:dict, config:dict)->dict:
-    """
-    Given a generic node, enhance it with oprator config
-    :args: 
-        node:dict - generic node to enhance
-        config:dict - config info
-        cluster_id:str - clustter ID if valid
-    :return: 
-        node
-    """
-    if 'member_id' in config:
-        node[config['node_type']]['member_id'] = config['member_id']
-    if 'cluster_id' in config:
-        node[config['node_type']]['cluster_id'] = config['cluster_id']
-    else: 
-        if 'default_dbms' in config: 
-            node[config['node_type']]['default_dbms'] = config['default_dbms']
-        if 'table' in config: 
-            node[config['node_type']]['table'] = config['table'] 
-
-    return node
