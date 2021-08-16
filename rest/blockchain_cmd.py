@@ -65,7 +65,6 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
 
     return status 
 
-
 def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:bool=False)->bool: 
     """
     pull json from blockchain
@@ -82,7 +81,6 @@ def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:
     cmd = "blockchain pull to json !blockchain_file"
     if master_node != 'local': 
         cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
-
     r, error = conn.post(command=cmd)
     if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
         if master_node != 'local':

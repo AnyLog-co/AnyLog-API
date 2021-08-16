@@ -38,7 +38,7 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
                                                    where=['ip=%s' % config['external_ip'],
                                                           'port=%s' % config['anylog_tcp_port']],
                                                    exception=exception)
-        if blockchain == {} or blockchain == []: 
+        if len(blockchain) == 0:
             if 'master_node' in config: 
                 new_policy = declare_node.declare_node(config=config, location=location) 
                 post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)

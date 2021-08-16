@@ -6,6 +6,77 @@ import rest.blockchain_cmd as blockchain_cmd
 import rest.dbms_cmd as dbms_cmd
 import rest.post_cmd
 
+def __get_cluster(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->list:
+    """
+    blockchain get cluuster
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        config:dict - configuration
+        exception:bool - whether to print execption
+    :param:
+        cluster:list - cluster from blockchain
+    :return:
+        cluster
+    """
+    cluster = {}
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
+        if 'cluster_name' in config and 'company_name' in config:
+            clusters = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                 where=['name=%s' % config['cluster_name'],
+                                                        'company=%s' % config['company_name']],
+                                                 exception=exception)
+        elif 'cluster_id' in config:
+            clusters = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                 where=['id=%s' % config['cluster_id']],
+                                                 exception=exception)
+        elif 'cluster_name' in config and 'company_name' in config:
+            clusters = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                 where=['name=%s' % config['cluster_name']], exception=exception)
+    return clusters
+
+def __declare_operator(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool:
+    """
+    Declare Operator (and cluster) node process
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        config:dict - configuration
+        exception:bool - whether to print execption
+    :steps:
+        if operator exists DNE
+            1. check if cluster exists
+            2. if not create cluster
+            3. extract cluster ID
+            4. create operator
+    """
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
+        data = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                             where=['ip=%s' % config['external_ip'],
+                                                    'port=%s' % config['anylog_tcp_port']], exception=exception)
+        if len(data) == 0:
+            if 'master_node' in config and 'enable_cluster' in config and str(config['enable_cluster']).lower() == 'true':
+                """
+                check cluster 
+                    if not create cluster
+                extract cluster ID
+                """
+                clusters = __get_cluster(conn=conn, config=config, exception=exception)
+                if len(clusters) == 0:
+                    cluster = declare_cluster.declare_cluster(config=config)
+                    if not blockchain_cmd.post_policy(conn=conn, policy=cluster, master_node=config['master_node'], exception=exception):
+                        clusters = __get_cluster(conn=conn, config=config, exception=exception)
+                for cluster in clusters:
+                    print(cluster)
+            # declare operator
+
+
+
+
+
+
+
+
+
+
 def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False):
     """
     Deploy a query or publisher node instance via REST
@@ -47,27 +118,8 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
             if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception):
                 print('Failed to start %s database' % config['default_dbms'])
 
-    # declare cluster
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-        if 'enable_cluster' in config and config['enable_cluster'] == 'true':
-            if 'cluster_name' in config:
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']], exception=exception)
-                if len(blockchain) == 0: # if not found, declare cluster
-                    new_cluster = declare_cluster.declare_cluster(config=config)
-                    blockchain_cmd.post_policy(conn=conn, policy=new_cluster, master_node=config['master_node'], exception=exception)
-
-    # declare operator
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-        if 'enable_cluster' in config and config['enable_cluster'] == 'true':
-            if 'cluster_name' in config:
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster', where=['name=%s' % config['cluster_name']], exception=exception)
-                for cluster in blockchain:
-                    if 'parent' not in cluster['cluster']:
-                        config['cluster_id'] = cluster['cluster']['id']
-        new_node = declare_node.declare_node(config=config, location=True)
-        new_node = declare_node.declare_operator(node=new_node, config=config)
-        blockchain_cmd.post_    policy(conn=conn, policy=new_node, master_node=config['master_node'], exception=exception)
-
+    __declare_operator(conn=conn, config=config, exception=exception)
+    exit(1)
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
