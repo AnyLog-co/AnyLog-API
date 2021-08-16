@@ -50,8 +50,8 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
                                                            where=['ip=%s' % config['external_ip'],
                                                                   'port=%s' % config['anylog_tcp_port']],
                                                            exception=exception)
-                if len(blockchain) == 0: 
-                    print('Failed to declare policy')
+            if not post_policy or len(blockchain) == 0:
+                print('Failed to declare policy')
 
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
