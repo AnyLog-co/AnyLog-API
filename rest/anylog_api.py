@@ -36,7 +36,7 @@ class AnyLogConnect:
             'command': command,
             'User-Agent': 'AnyLog/1.23'
         }
-        if query == True:
+        if query is True:
             headers['destination'] = 'network'
 
         try:
@@ -76,7 +76,6 @@ class AnyLogConnect:
                 r = False
 
         return r, error
-
 
     def post(self, command:str)->(bool, str):
         """

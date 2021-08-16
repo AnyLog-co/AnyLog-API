@@ -30,7 +30,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
 
     blockchain = []
     r, error = conn.get(command=cmd)
-    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) :
+    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
             blockchain = r.json()
         except:
@@ -54,7 +54,7 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
     status = False 
     cmd = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
     
-    r, e = anylog_api.get(command=cmd, query=False)
+    r, error = anylog_api.get(command=cmd, query=False)
     if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
             if r.json()['local'] == 'true':

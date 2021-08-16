@@ -11,14 +11,18 @@ def __get_location()->str:
     location = "0.0, 0.0"
     try:
         r = requests.get("https://ipinfo.io/json")
-    except Exception as e:
+    except:
         pass
     else:
-        if r.status_code == 200:
-            try:
-                location = r.json()['loc']
-            except Exception as e:
-                pass
+        try:
+            if int(r.status_code) == 200:
+                try:
+                    location = r.json()['loc']
+                except Exception as e:
+                    pass
+        except:
+            pass
+
     return location
 
 def declare_node(config:dict, location:bool=True)->dict: 
