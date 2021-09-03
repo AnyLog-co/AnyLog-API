@@ -43,7 +43,7 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
             else: 
                 print('Unable to declare policy, missing master_node in config')
 
-            if post_policy is True and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) == True:
+            if post_policy is False and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) == True:
                 blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
                                                            where=['ip=%s' % config['external_ip'],
                                                                   'port=%s' % config['anylog_tcp_port']],

@@ -55,5 +55,6 @@ def declare_node(config:dict, location:bool=True)->dict:
          node[config['node_type']]['loc'] = config['location'] 
     elif location is True:
         node[config['node_type']]['loc'] = __get_location()
-
+    if 'default_dbms' in config:
+        node[config['node_type']]['dbms'] = config['default_dbms']
     return node 

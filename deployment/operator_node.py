@@ -7,42 +7,42 @@ import rest.dbms_cmd as dbms_cmd
 
 
 
-def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False):
     """
-    Deploy a query or publisher node instance via REST 
-    :definition: 
+    Deploy a query or publisher node instance via REST
+    :definition:
         Nodes that simply generate data and send them to operator nodes
     :args:
-       anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
-       config:dict - config data (from file + hostname + AnyLog) 
+       anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog
+       config:dict - config data (from file + hostname + AnyLog)
        location:bool -whetther or not to have location in policy
-       exception:bool - whether or not to print exception to screen 
-    :params: 
-        status:bool 
+       exception:bool - whether or not to print exception to screen
+    :params:
+        status:bool
         new_system:bool - variable to check whether we are dealing with a new setup or not
         blockchain:dict - content from blockchain
         new_policy:dict - declaration of policy
     """
-    # Create system_query & blockchain 
+    # Create system_query & blockchain
     new_system = False
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
-    if dbms_list == 'No DBMS connections found': 
+    if dbms_list == 'No DBMS connections found':
         new_system = True
     if new_system is True or 'system_query' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
-            print('Failed to start system_query database') 
+            print('Failed to start system_query database')
 
-    # Pull blockchain & declare node if not exists 
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception =exception):
+    # Pull blockchain & declare node if not exists
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
                                                    where=['ip=%s' % config['external_ip'],
                                                           'port=%s' % config['anylog_tcp_port']],
                                                    exception=exception)
         if  len(blockchain) == 0:
-            if 'master_node' in config: 
-                new_policy = declare_node.declare_node(config=config, location=location) 
+            if 'master_node' in config:
+                new_policy = declare_node.declare_node(config=config, location=location)
                 post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
-            else: 
+            else:
                 print('Unable to declare policy, missing master_node in config')
 
             if post_policy is False and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
@@ -58,7 +58,7 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
 
-    # blockchain sync 
+    # blockchain sync
     if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception):
         print('Failed to set blockchain sync process')
 

@@ -1,7 +1,9 @@
-import os
 import argparse
+import os
+import time
 
 import master
+import operator_node
 import publisher
 import query
 
@@ -77,15 +79,15 @@ def deployment():
         print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
     if 'node_type' in config_data: 
-        if config_data['node_type'] == 'master': 
+        if config_data['node_type'] == 'master':
             master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
-        elif config_data['node_type'] == 'query': 
+        elif config_data['node_type'] == 'query':
             query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         elif config_data['node_type'] == 'publisher':
             publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
-        elif config_data['node_type'] == 'operator': 
+        elif config_data['node_type'] == 'operator':
             operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
-        else: 
+        else:
             print('Unsupported node type: %s' % config['node_type'])
 
 if __name__ == '__main__': 
