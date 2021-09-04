@@ -1,9 +1,8 @@
-import __init__
 import rest.post_cmd
-import declare_node
 import rest.anylog_api as anylog_api
 import rest.blockchain_cmd as blockchain_cmd
 import rest.dbms_cmd as dbms_cmd
+import support.create_declaration as create_declaration
 
 def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
@@ -38,7 +37,7 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
                                                    exception=exception)
         if blockchain == {} or blockchain == []: 
             if 'master_node' in config: 
-                new_policy = declare_node.declare_node(config=config, location=location) 
+                new_policy = create_declaration.declare_node(config=config, location=location)
                 post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
             else: 
                 print('Unable to declare policy, missing master_node in config')

@@ -1,8 +1,6 @@
 import os
 import sys
 
-import declare_node
-
 slash_char = '/'
 if sys.platform.startswith('win'):
     slash_char = '\\'

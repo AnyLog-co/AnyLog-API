@@ -78,7 +78,7 @@ def deployment():
     if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False:
         print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
-    if 'node_type' in config_data: 
+    if 'node_type' in config_data and config.validate_config(config) is True:
         if config_data['node_type'] == 'master':
             master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         elif config_data['node_type'] == 'query':

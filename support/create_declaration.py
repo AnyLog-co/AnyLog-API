@@ -25,6 +25,43 @@ def __get_location()->str:
 
     return location
 
+def __format_tables(dbms:str, tables:list)->list:
+    """
+    Given a list of tables and dbms format for input in blockchain
+    :args:
+        dbms:str - default dbms
+        tables:list - list of tables
+    :params:
+        tables_list:list - list of tables with their dbms [{dbms: db, table: tbl}]
+    :return:
+        tables_list
+    """
+    tables_list = []
+    for tbl in tables:
+        tables_list.append({'dbms': dbms, 'table': tbl})
+    return tables_list
+
+
+def declare_cluster(config:dict)->dict:
+    """
+    Declare cluster node based on config
+    :args:
+        config:dict - config info
+    :params:
+        cluster:dict - dict object for generic node
+    :return:
+         cluster
+    """
+    cluster = {'cluster': {
+        'company': config['company_name'],
+        'name': config['cluster_name'],
+    }}
+    if 'table' in config:
+        cluster['cluster']['table'] = __format_tables(config['default_dbms'], config['table'].split(','))
+    else:
+        cluster['cluster']['dbms'] = config['default_dbms']
+    return cluster
+
 def declare_node(config:dict, location:bool=True)->dict: 
     """
     Declare generic node based on config
@@ -57,4 +94,8 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['loc'] = __get_location()
     if 'default_dbms' in config:
         node[config['node_type']]['dbms'] = config['default_dbms']
+    if 'cluster_id' in config:
+        node[config['node_type']]['cluster'] = config['cluster_id']
+    elif 'table' in config:
+        node[config['node_type']]['table'] = config['table']
     return node 

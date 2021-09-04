@@ -36,8 +36,6 @@ def read_config(config_file:str)->dict:
 
     return data 
 
-   
-
 def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool: 
     """
     POST config to AnyLog
@@ -84,3 +82,39 @@ def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
 
     return data 
 
+def validate_config(config:dict)->bool:
+    """
+    validate configuration values
+    :args:
+        config:dict - configuration
+    :params:
+        status:bool
+        params:list - list of missing params
+    :return;
+        status
+    """
+    status = True
+    params = []
+    # Base required params
+    for key in config['node_type', 'node_name', 'company_name', 'master_node', 'anylog_tcp_port', 'anylog_rest_port',
+    'db_type', 'db_user', 'db_port']:
+        if key not in config:
+            status = False
+            params.append(key)
+
+    # Operator params
+    if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
+        if 'cluster_name' not in config:
+            status = False
+            params.append('cluster_name')
+
+    # MQTT required params
+    if 'enable_mqtt' in config and config['enable_mqtt'].lower() == 'true':
+        for key in ['mqtt_conn_info', 'mqtt_port']:
+            if key not in config:
+                status = False
+                params.append(key)
+    if len(params) > 0:
+        print('Missing the following params in config: %s' % params)
+
+    return status
