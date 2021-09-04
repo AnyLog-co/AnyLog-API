@@ -86,16 +86,24 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['name'] = config['node_name']
     elif 'node_type' in config: 
         node[config['node_type']]['name'] = config['node_type'] 
+
+    if 'member_id' in config:
+        node[config['node_type']]['member'] = config['member_id']
+
     if 'hostname' in config:
          node[config['node_type']]['hostname'] = config['hostname']
-    if 'location' in config: 
+
+    if 'location' in config:
          node[config['node_type']]['loc'] = config['location'] 
     elif location is True:
         node[config['node_type']]['loc'] = __get_location()
-    if 'default_dbms' in config:
-        node[config['node_type']]['dbms'] = config['default_dbms']
+
     if 'cluster_id' in config:
         node[config['node_type']]['cluster'] = config['cluster_id']
+
+    if 'default_dbms' in config:
+        node[config['node_type']]['dbms'] = config['default_dbms']
     elif 'table' in config:
         node[config['node_type']]['table'] = config['table']
-    return node 
+
+    return node

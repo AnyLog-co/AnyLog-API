@@ -1,3 +1,5 @@
+import time
+
 import rest.post_cmd
 import rest.anylog_api as anylog_api
 import rest.blockchain_cmd as blockchain_cmd
@@ -30,51 +32,58 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
             print('Failed to start system_query database')
 
-    # Pull blockchain & declare node if not exists
+    # Pull blockchain & declare cluster if not exists
     if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
-        status = True
-        for key in ['company_name', 'cluster_name', 'default_dbms']:
-            if key not in config:
-                status = False
-        if status is True and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
+        if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
             blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
                                                        where=['company=%s' % config['company_name'],
                                                               'name=%s' % config['cluster_name']],
                                                        exception=exception)
             if len(blockchain) == 0:
-                if 'master_node' in config:
-                    new_policy = create_declaration.declare_cluster(config=config)
-                    post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy,
-                                                             master_node=config['master_node'], exception=exception)
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
-                                                           where=['company=%s' % config['company_name'],
-                                                                  'name=%s' % config['cluster_name']],
-                                                           exception=exception)
+                new_policy = create_declaration.declare_cluster(config=config)
+                post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy,
+                                                         master_node=config['master_node'], exception=exception)
+            elif len(blockchain) > 0 and 'id' in blockchain[0]['cluster']:
+                config['cluster_id'] = blockchain[0]['cluster']['id']
+            else:
+                print('Failed to extract cluster id')
+        else:
+           print('Failed to check/create if cluster exists')
+
+    if post_policy is False and len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn,
+                                                                                  master_node=config['master_node'],
+                                                                                  exception=exception):
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
+                                                   where=['company=%s' % config['company_name'],
+                                                          'name=%s' % config['cluster_name']],
+                                                   exception=exception)
+        if len(blockchain) > 0 and 'id' in blockchain[0]['cluster']:
             config['cluster_id'] = blockchain[0]['cluster']['id']
         else:
-           print('Unable to find cluster id or declare new cluster as key values missing from config.')
-           print("Key values: 'company_name', 'cluster_name' and 'default_dbms'")
+            print('Failed to extract cluster id')
+    else:
+        print('Failed to extract cluster id')
 
+    # Pull blockchain & declare operator if not exists
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
                                                    where=['ip=%s' % config['external_ip'],
                                                           'port=%s' % config['anylog_tcp_port']],
                                                    exception=exception)
-        if  len(blockchain) == 0:
-            if 'master_node' in config:
-                new_policy = create_declaration.declare_node(config=config, location=location)
-                post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
-            else:
-                print('Unable to declare policy, missing master_node in config')
+        if len(blockchain) == 0:
+            new_policy = create_declaration.declare_node(config=config, location=location)
+            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
+                                                     exception=exception)
 
-            if post_policy is False and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                           where=['ip=%s' % config['external_ip'],
-                                                                  'port=%s' % config['anylog_tcp_port']],
-                                                           exception=exception)
-            if len(blockchain) == 0:
-                print('Failed to declare policy')
-
+    if post_policy is False and len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn,
+                                                                                  master_node=config['master_node'],
+                                                                                  exception=exception):
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                   where=['ip=%s' % config['external_ip'],
+                                                          'port=%s' % config['anylog_tcp_port']],
+                                                   exception=exception)
+        if len(blockchain) == 0:
+            print('Failed to declare policy')
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):

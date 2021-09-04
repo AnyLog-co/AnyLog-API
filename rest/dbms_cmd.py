@@ -113,14 +113,17 @@ def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exc
 
     return status 
 
-def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', ts_column:str='timestamp', value:int=1, interval:str='day', exception:bool=False):
+def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', ts_column:str='timestamp',
+                          value:int=1, interval:str='day', exception:bool=False):
     """
     Declare partitions for blockchain
     """
     status = True
     if interval not in ['hour', 'day', 'month']:
         interval = 'day'
-    cmd = "partition %s %s using %s by %s %s" % (db_name, table_name, ts_column, value, interval)
+    cmd = "partition %s using %s by %s %s" % (db_name, ts_column, value, interval)
+    if table_name != '*' and table_name is not None:
+        cmd = "partition %s %s using %s by %s %s" % (db_name, table_name, ts_column, value, interval)
 
     r, error = conn.post(command=cmd)
     if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) :

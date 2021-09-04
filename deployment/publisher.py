@@ -37,20 +37,19 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
                                                    where=['ip=%s' % config['external_ip'],
                                                           'port=%s' % config['anylog_tcp_port']],
                                                    exception=exception)
-        if  len(blockchain) == 0:
-            if 'master_node' in config: 
-                new_policy = create_declaration.declare_node(config=config, location=location)
-                post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
-            else: 
-                print('Unable to declare policy, missing master_node in config')
+        if len(blockchain) == 0:
+            new_policy = create_declaration.declare_node(config=config, location=location)
+            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
 
-            if post_policy is False and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                           where=['ip=%s' % config['external_ip'],
-                                                                  'port=%s' % config['anylog_tcp_port']],
-                                                           exception=exception)
-            if len(blockchain) == 0:
-                print('Failed to declare policy')
+    if post_policy is False and len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn,
+                                                                                  master_node=config['master_node'],
+                                                                                  exception=exception):
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                   where=['ip=%s' % config['external_ip'],
+                                                          'port=%s' % config['anylog_tcp_port']],
+                                                   exception=exception)
+        if len(blockchain) == 0:
+            print('Failed to declare policy')
 
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
