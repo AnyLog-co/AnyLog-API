@@ -33,31 +33,31 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
             print('Failed to start blockchain database') 
 
     # Create table ledger
-    if not dbms_cmd.check_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
+    if not dbms_cmd.get_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
         # Create ledger if not exists 
         if not dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
             print('Failed to create table blockchain.ledger') 
 
     # Pull blockchain & declare node if not exists 
-    if blockchain_cmd.pull_json(conn=conn, master_node='local', exception=exception):
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception =exception):
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
                                                    where=['ip=%s' % config['external_ip'],
                                                           'port=%s' % config['anylog_tcp_port']],
                                                    exception=exception)
         if len(blockchain) == 0:
             new_policy = create_declaration.declare_node(config=config, location=location)
-            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
-                                                     exception=exception)
+            blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
+                                       exception=exception)
 
-    if post_policy is False and len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn,
-                                                                                  master_node=config['master_node'],
-                                                                                  exception=exception):
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                   where=['ip=%s' % config['external_ip'],
-                                                          'port=%s' % config['anylog_tcp_port']],
-                                                         exception=exception)
-        if len(blockchain) == 0:
-            print('Failed to declare policy')
+        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
+                                                             exception=exception):
+            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                       where=['ip=%s' % config['external_ip'],
+                                                              'port=%s' % config['anylog_tcp_port']],
+                                                       exception=exception)
+            if len(blockchain) == 0:
+                print('Failed to declare policy')
+
 
     # blockchain sync 
     if not blockchain_cmd.blockchain_sync(conn=conn, source='dbms', time='1 minute', connection=None, exception=exception):

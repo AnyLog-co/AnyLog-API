@@ -62,7 +62,7 @@ def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, e
 
     return status 
 
-def check_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool: 
+def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool:
     """
     Check if table exists locally 
     :args: 
@@ -74,6 +74,8 @@ def check_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exce
     :param: 
         cmd:str - command to execute 
         status:bool
+    :return:
+        if table DNE return False
     """
     status = False 
     cmd = "get table local status where dbms = %s and name = %s" % (db_name, table_name)
@@ -114,20 +116,61 @@ def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exc
     return status 
 
 def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', ts_column:str='timestamp',
-                          value:int=1, interval:str='day', exception:bool=False):
+                          interval:str='day', exception:bool=False)->bool:
     """
-    Declare partitions for blockchain
+    Declare partitions for database
+    :sample command:
+        partition lsl_demo ping_sensor using timestamp by 2 days
+    :args:
+        conn:anylog_api.AnyLogConnect - Connections to AnyLog
+        db_name:str - database name
+        table_name:str - table name
+        ts_column:str - (timestamp) column to partition by
+        interval:str - partition interval (ex. 3 days)
+        exception:bool - whether to print errors
+    :params:
+        status:bool
+        cmd:str - command to executed
+    :return:
+        status
     """
     status = True
-    if interval not in ['hour', 'day', 'month']:
-        interval = 'day'
-    cmd = "partition %s using %s by %s %s" % (db_name, ts_column, value, interval)
-    if table_name != '*' and table_name is not None:
-        cmd = "partition %s %s using %s by %s %s" % (db_name, table_name, ts_column, value, interval)
+    cmd = "partition %s %s using %s by %s" % (db_name, table_name, ts_column, interval)
 
     r, error = conn.post(command=cmd)
     if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) :
             status = False
 
     return status
+
+def get_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', exception:bool=False)->bool:
+    """
+    Check if partitions exists
+    :sample command:
+        get partition where dbms = sample_data and table = *
+        :args:
+        conn:anylog_api.AnyLogConnect - Connections to AnyLog
+        db_name:str - database name
+        table_name:str - table name
+        ts_column:str - (timestamp) column to partition by
+        interval:str - partition interval (ex. 3 days)
+        exception:bool - whether to print errors
+    :params:
+        status:bool
+        cmd:str - command to executed
+    :return:
+        if partition not declared return False
+    """
+    status = True
+    cmd = "get partitions where dbms=%s and table=%s" % (db_name, table_name)
+
+    r, error = conn.get(command=cmd, query=False)
+    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) :
+            status = False
+    else:
+        if r.text == 'No partitions declared' or r.status_code != 200:
+            status = False
+    return status
+
+
 

@@ -25,13 +25,13 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
     # Create system_query & blockchain 
     new_system = False
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
-    if dbms_list == 'No DBMS connections found': 
+    if dbms_list == 'No DBMS connections found':
         new_system = True
     if new_system is True or 'system_query' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
-            print('Failed to start system_query database') 
+            print('Failed to start system_query database')
 
-    # Pull blockchain & declare node if not exists 
+    # Pull blockchain & declare node if not exists
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception =exception):
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
                                                    where=['ip=%s' % config['external_ip'],
@@ -39,18 +39,17 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
                                                    exception=exception)
         if len(blockchain) == 0:
             new_policy = create_declaration.declare_node(config=config, location=location)
-            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'], exception=exception)
+            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
+                                                     exception=exception)
 
-    if post_policy is False and len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn,
-                                                                                  master_node=config['master_node'],
-                                                                                  exception=exception):
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                   where=['ip=%s' % config['external_ip'],
-                                                          'port=%s' % config['anylog_tcp_port']],
-                                                   exception=exception)
-        if len(blockchain) == 0:
-            print('Failed to declare policy')
-
+        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
+                                                             exception=exception):
+            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                       where=['ip=%s' % config['external_ip'],
+                                                              'port=%s' % config['anylog_tcp_port']],
+                                                       exception=exception)
+            if len(blockchain) == 0:
+                print('Failed to declare policy')
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):

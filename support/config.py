@@ -111,6 +111,11 @@ def validate_config(config:dict)->bool:
             if 'cluster_name' not in config:
                 status = False
                 params.append('cluster_name')
+        if 'enable_parition' in config and config['enable_parition'].lower() == 'true':
+            for key in ['partition_column', 'partition_interval']:
+                if key not in config:
+                    status = False
+                    params.append(key)
 
     # MQTT required params
     if config['node_type'] == 'operator' or config['node_type'] == 'publisher':
