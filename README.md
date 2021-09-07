@@ -57,4 +57,5 @@ for cmd in stop rm ; do docker ${cmd} ${NODE_NAME} ; done
 
 1. [Questionnaire](config/questionnaire.sh) may have some bugs in it 
 2. Could add more variables to [config](config/config.ini) files  
-3. For [MQTT](rest/post_cmd.py#L192), `value` column should be configurable
+4. For [MQTT](rest/post_cmd.py#L192), `value` column should be configurable
+5. Init node (remotely) using [docker_calls.py](deployment/docker_calls.py)
