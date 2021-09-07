@@ -40,7 +40,7 @@ docker run --network host --name ${NODE_NAME} \
     -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \ 
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \ 
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \ 
-    -it oshadmon/anylog:osdev
+    -it oshadmon/anylog:predevelop
 ```
 
 5. Use REST to configure an AnyLog instance
