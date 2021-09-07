@@ -50,7 +50,7 @@ def deployment():
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # Validate REST node is accessible 
-    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) == False: 
+    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) is False: 
         print('Failed to get status from %s, cannot continue' % args.rest_conn)
         exit(1) 
 
@@ -75,7 +75,7 @@ def deployment():
         if key not in config_data: 
             config_data[key] = import_config[key] 
 
-#    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False:
+#    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) is False:
 #        print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
     if 'node_type' in config_data and config.validate_config(config=config_data) is True:

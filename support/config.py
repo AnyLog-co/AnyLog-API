@@ -53,7 +53,7 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
     statuses = [] 
     for key in config: 
         status = post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception)
-        if status == False and exception == True: 
+        if status is False and exception == True: 
             print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
         statuses.append(status)
 

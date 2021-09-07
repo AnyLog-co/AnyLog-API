@@ -94,7 +94,7 @@ def deploy_postgres(conn:str, exception:bool=False)->bool:
     try: 
         os.system(cmd % (psql_user, psql_pass)) 
     except Exception as e: 
-        if exception == True: 
+        if exception is True: 
             print('Failed to deploy Postgres instance (Error: %s)' % e)
         status = False
 
@@ -118,7 +118,7 @@ def deploy_grafana(exception:bool=False)->bool:
     try: 
         os.system(cmd)
     except Exception as e: 
-        if exception == True: 
+        if exception is True: 
             print('Failed to deploy Grafana instance (Error: %s)' % e)
         status = False
 
@@ -160,12 +160,12 @@ def deploy_anylog(config:dict, passwd:str, exception:bool=False)->bool:
     if 'anylog_broker_port' in config: 
         cmd = cmd.replace('ANYLOG_REST_PORT=%s' % rest_port, 'ANYLOG_REST_PORT=%s -e ANYLOG_BROKER_PORT=%s' % (rest_port, config['anylog_broker_port'])) 
 
-    if __docker_login(passwd=passwd, exception=exception) == True:
+    if __docker_login(passwd=passwd, exception=exception) is True:
         __pull_anyog(build=build, exception=exception)
         try: 
             os.system(cmd)
         except Exception as e: 
-            if exception == True: 
+            if exception is True: 
                 print('Failed to deploy Grafana instance (Error: %s)' % e)
             status = False
         status = __docker_logout(exception=exception)
