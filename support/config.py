@@ -5,6 +5,7 @@ import rest.get_cmd as get_cmd
 import rest.post_cmd as post_cmd
 import rest.anylog_api as anylog_api
 
+
 def read_config(config_file:str)->dict: 
     """
     Read INI configuration & store in dict 
@@ -36,7 +37,8 @@ def read_config(config_file:str)->dict:
 
     return data 
 
-def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool: 
+
+def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool:
     """
     POST config to AnyLog
     :args: 
@@ -60,7 +62,8 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
         status = False
 
     return status 
- 
+
+
 def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
     """
     Extract parameters from AnyLog dictionary into dictionary  
@@ -81,6 +84,7 @@ def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
                 data[value.split(':', )[0].rstrip().lstrip()] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
 
     return data 
+
 
 def validate_config(config:dict)->bool:
     """

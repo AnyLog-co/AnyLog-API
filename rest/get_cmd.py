@@ -3,6 +3,7 @@ import rest.anylog_api as anylog_api
 
 import support.errors as errors
 
+
 def get_help(conn:anylog_api.AnyLogConnect, command:str=None): 
     """
     Execute 'help' against AnyLog. If command is set get help regarding command
@@ -22,6 +23,7 @@ def get_help(conn:anylog_api.AnyLogConnect, command:str=None):
             print(r.text)
         except Exception as e: 
             print('Failed to extract help information (Error: %s) ' % e)
+
 
 def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
     """
@@ -45,9 +47,10 @@ def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
 
     return status
 
+
 def get_event_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
-    Get AnyLog error log 
+    Get AnyLog evet log
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
@@ -68,6 +71,7 @@ def get_event_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
             event_log = None 
 
     return event_log
+
 
 def get_error_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
@@ -92,6 +96,7 @@ def get_error_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
             error_log = None 
 
     return error_log
+
 
 def get_dictionary(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
     """
@@ -140,6 +145,7 @@ def get_hostname(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
 
     return hostname
 
+
 def get_processes(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
     Get running processes 
@@ -160,6 +166,7 @@ def get_processes(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
             if exception is True:
                 print('Failed to get list of processes from %s (Error: %s)' % (conn.conn, e))
     return output 
+
 
 def get_scheduler(conn:anylog_api.AnyLogConnect, scheduler_name:str=None, exception:bool=False)->str: 
     """
@@ -185,6 +192,7 @@ def get_scheduler(conn:anylog_api.AnyLogConnect, scheduler_name:str=None, except
             if exception is True:
                 print('Failed to get information from scheduler from %s (Error: %s)' % (conn.conn, e))
     return output 
+
 
 def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception:bool=False)->str: 
     """

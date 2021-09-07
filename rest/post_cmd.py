@@ -25,7 +25,8 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
         status = False 
 
     return status 
- 
+
+
 def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     """
     POST scheduler 1 to AnyLog 
@@ -34,7 +35,7 @@ def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
         exception:bool - whether or not to print error to screen 
     :params: 
         status:bool 
-        cmd:str: 
+        exception:bool
     """
     status = True
     cmd = "run scheduler 1" 
@@ -46,7 +47,9 @@ def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
 
     return status 
 
-def run_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str, table_name:str, compress_json:bool=True, move_json:bool=True, exception:bool=False)->bool:
+
+def run_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str, table_name:str,
+                  compress_json:bool=True, move_json:bool=True, exception:bool=False)->bool:
     """
     Start publisher process
     :args: 
@@ -81,7 +84,25 @@ def run_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str,
 
     return status 
 
-def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bool=True, update_tsd_info:bool=True, archive:bool=True, distributor:bool=True, exception:bool=False)->bool:
+
+def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bool=True, update_tsd_info:bool=True,
+                 archive:bool=True, distributor:bool=True, exception:bool=False)->bool:
+    """
+    Start Operator process
+    :args:
+        conn:anylog_api.AnyLogConnect connection to AnyLog
+        master_node:str - Master node
+        create_table:str - whether to create table
+        update_tsd_info;bool - whether to update tsd_info table
+        archive:bool - whether to archive data (True) or store in backup (False)
+        distributor:bool - distribute the data
+        exception:bool - whether or not to print error to screen
+    :params:
+        status:bool
+        cmd:str - command to execute
+    :return:
+        status
+    """
     status = True
     cmd = 'run operator where create_table=%s and update_tsd_info=%s and archive=%s and distributor=%s and master_node=%s'
 
@@ -115,7 +136,8 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
 
     return status
 
-def set_immidiate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
+
+def set_immediate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     """
     Set threshold to immidiate
     :args: 
@@ -140,6 +162,8 @@ def set_immidiate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)
 def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool: 
     """
     Connect to MQTT
+    :link:
+        https://github.com/AnyLog-co/documentation/blob/master/mqtt.md
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         config:dict - AnyLog configuration
@@ -154,7 +178,9 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
         mqtt_psswd:str - MQTT password 
         topic:str - MQTT topiic
         dbms:str - database to store data in
-        table:str - table to store data in 
+        table:str - table to store data in
+    :return:
+        bool
     """
     status = True
     # MQTT access params

@@ -5,6 +5,7 @@ import rest.get_cmd as get_cmd
 
 import support.errors as errors
 
+
 def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list:
     """
     blockchain GET command 
@@ -18,7 +19,9 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
         timeout:int - REST timeout
     :param: 
         cmd:str - command to execute 
-        blockchain:list - data extracted  
+        blockchain:list - data extracted
+    :return:
+        blockchains
     """
     cmd = "blockchain get %s" % policy_type
     if where is not []:
@@ -38,6 +41,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
             
     return blockchain 
 
+
 def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bool: 
     """
     Check if table exists blockchain 
@@ -50,6 +54,8 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
     :param: 
         cmd:str - command to execute 
         status:bool
+    :return:
+        status
     """
     status = False 
     cmd = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
@@ -65,6 +71,7 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
 
     return status 
 
+
 def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:bool=False)->bool: 
     """
     pull json from blockchain
@@ -76,6 +83,8 @@ def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:
     :param: 
         cmd:str - command to execute 
         status:bool
+    :return:
+        status
     """
     status = True
     cmd = "blockchain pull to json !blockchain_file"
@@ -115,6 +124,7 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     r, error = conn.post_policy(policy=raw_data, master_node=master_node)
     status = errors.post_error(conn=conn.conn, command='post policy: %s' % raw_data, r=r, error=error, exception=exception)
     return status 
+
 
 def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connection:str=None, exception:bool=False)->bool: 
     """

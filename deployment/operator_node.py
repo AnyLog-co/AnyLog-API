@@ -129,6 +129,6 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                                       update_tsd_info=True, archive=True, distributor=True, exception=False):
         print('Failed to set buffering to start publisher')
 
-    if not rest.post_cmd.set_immidiate_threshold(conn=conn, exception=exception):
+    if not rest.post_cmd.set_immediate_threshold(conn=conn, exception=exception):
         print('Failed to set data streaming to immediate')
 

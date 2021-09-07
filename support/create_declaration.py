@@ -1,5 +1,6 @@
 import requests
 
+
 def __get_location()->str:
     """
     Get location using https://ipinfo.io/json
@@ -24,6 +25,7 @@ def __get_location()->str:
             pass
 
     return location
+
 
 def __format_tables(dbms:str, tables:list)->list:
     """
@@ -61,6 +63,7 @@ def declare_cluster(config:dict)->dict:
     else:
         cluster['cluster']['dbms'] = config['default_dbms']
     return cluster
+
 
 def declare_node(config:dict, location:bool=True)->dict: 
     """

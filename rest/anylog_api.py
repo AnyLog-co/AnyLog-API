@@ -2,10 +2,11 @@ import os
 import requests
 import __init__
 
+
 class AnyLogConnect:
     def __init__(self, conn:str, auth:tuple=None, timeout:int=30):
         """
-        The folloowing are the base support for AnyLog via REST
+        The following are the base support for AnyLog via REST
             - GET: extract information from AnyLog (information + queries)
             - POST: Execute or POST command against AnyLog
             - POST_POLICY: POST information to blockchain
@@ -25,11 +26,11 @@ class AnyLogConnect:
             command:str - Command to execute
             query:bool - whether to query locally or against network
         :param:
+            r:requests.response - response from requests
             error:str - If exception during error
             headers:dict - REST header
         :return:
-            result from REST request
-            if fails - False, error
+            r, error
         """
         error = None
         headers = {
@@ -47,15 +48,21 @@ class AnyLogConnect:
 
         return r, error
 
-    def put_data(self, dbms:str, table:str, payloads:str)->(str, bool):
+    def put_data(self, dbms:str, table:str, payloads:str)->(str, str):
         """
         Send data to AnyLog via PUT
-        :sample-data:
+        :sample payload:
             {'column1': 'column value', 'column2': 'column value', 'column3': 'column value'...}
         :args:
             dbms:str - database name
             table:str - table name
             payloads:str - payloads to send data to AnyLog
+        :params:
+            r:requests.response - response from requests
+            error:str - error meessage
+            headers:dict - REST headers
+        :return:
+            r, error
         """
         headers = {
             'type': 'json',
@@ -77,17 +84,17 @@ class AnyLogConnect:
 
         return r, error
 
-    def post(self, command:str)->(bool, str):
+    def post(self, command:str)->(str, str):
         """
         Generic POST command
         :args:
             command:str - command to execute
         :param:
-            status:bool
+            r:requests.response - response from requests
             error:str - If exception during error
             headers:dict - REST header info
         :return:
-            status, error
+            r, error
         """
         error = None
         headers = {
@@ -106,20 +113,20 @@ class AnyLogConnect:
 
         return r, error
 
-    def post_data (self, data:dict)->(bool, str):
+    def post_data (self, data:dict)->(str, str):
         """
-        Send data to AnyLog via POST (requires MQTT on publisher node)
-        :sample-data:
+        Send data to AnyLog via POST (requires MQTT on node receiving the data)
+        :sample payload:
             {'dbms': 'db_name', 'table': 'table_name', 'column1': 'column value', 'column2': 'column value'...}
         :args:
             data:dict - data to send to Operator
         :params:
-            status:bool
+            r:requests.response - response from requests
             error:str - if exection during error
             headers:dict - headers for REST
             jdata:str - JSON conversion of data
         :return:
-            status, error
+            r, error
         """
         error = None
         headers = {
@@ -139,7 +146,7 @@ class AnyLogConnect:
 
         return r, error
 
-    def post_policy(self, policy:str, master_node:str)->(bool, str):
+    def post_policy(self, policy:str, master_node:str)->(str, str):
         """
         POST to blockchain
         :link:
@@ -148,12 +155,12 @@ class AnyLogConnect:
             policy:str - policy to POST to blockchain
             master_node:str - master node to post to
         :params:
-            status:bool
+            r:requests.response - response from requests
             error:str - If exception during error
             headers:dict - REST header info
             raw_data:str - data to POST
         :return:
-            status, error
+            r, error
         """
         error = None
         headers = {

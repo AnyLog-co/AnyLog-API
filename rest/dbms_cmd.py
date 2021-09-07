@@ -4,6 +4,7 @@ import rest.blockchain_cmd as blockchain_cmd
 
 import support.errors as errors
 
+
 def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """"
     Get list of connected databases 
@@ -11,8 +12,10 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
         conn:anylog_api.AnyLogConnect - REST AnyLog Connection
         exception:bool - whether or not to print exception
     :params: 
-        cmd:str - command to execute 
+        output:str - list of databases
+        cmd:str - command to execute
     :return:
+        output
     """
     output = None
     cmd = "get databases" 
@@ -26,6 +29,7 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
                 print('Failed to extract data from GET (Error: %s)' % e)
     return output
 
+
 def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
     """
     Execute connection to database
@@ -38,6 +42,8 @@ def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, e
     :param: 
         cmd:str - command to execute 
         status:bool
+    :return:
+        status
     """
     status = True
     if db_name is None and 'default_dbms' in config:
@@ -61,6 +67,7 @@ def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, e
             status = True
 
     return status 
+
 
 def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool:
     """
@@ -90,6 +97,7 @@ def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, except
                 status = True
     return status 
 
+
 def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool: 
     """
     Create table based on db & table names
@@ -102,6 +110,8 @@ def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exc
     :param: 
         cmd:str - command to execute 
         status:bool
+    :return:
+        status
     """
     status = True
     # Check if table can be executed either hardcode or blockchain 
