@@ -1,25 +1,31 @@
 # Deployment 
 
 The following is intended as a tool to easily deploy AnyLog via REST rather. 
-We suggest to review to manipulate the python files as they fit for you. 
+We suggest to review & manipulate the python files as they fit for you. 
 
+```
+$HOME/AnyLog-API 
+├── config     <-- sample config files 
+├── deployment <-- main code for deploying AnyLog via REST   
+├── rest       <-- methods for REST requests 
+└── support    <-- support metthods 
+```
 
 ## Builds
 * **Debian** runs _Ubuntu:18.04_ and is roughly 287.25MB 
 * **Alpine** runs _Alpine:3.7_ and is roughly 56.11MB
 * By adding **predevelop** before OS version (ex: `predevelop-debian`) you'd run the latest beta version 
  
-## Issues: 
-* Code validates the request went through smoothly, it doesn't check whether the process was actually successful
-
 ## Steps 
-0. Contact us for a docker password [info@anylog.co](mailto:info@anylog.co)
-1. Git clone https://github/AnyLog-co/anylog-deployment
-2. Prepare INI config files 
-3. Start AnyLog 
-4. Use REST to configure a type of node 
+0. [Contact us](mailto:info@anylog.co) for a docker password
 
-## Sample Docker Call 
+1. Git clone https://github/AnyLog-co/AnyLog-API
+
+2. Prepare INI [config files](config/) - can use [questionnaire](config/questionnaire.sh)
+
+3. Update [deployment](deployment/) scripts for your system 
+
+4. Start AnyLog for REST Interface - we suggest to run interacive within screen
 ```
 export NODE_NAME=new-node
 export SERVER_PORT=2048
@@ -34,12 +40,21 @@ docker run --network host --name ${NODE_NAME} \
     -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \ 
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \ 
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \ 
-    -d oshadmon/anylog:osdev
+    -it oshadmon/anylog:predevelop
 ```
-**Note**: When using interactive mode (`-it`) user should add `--detach-keys="ctrl-d"` 
 
+5. Use REST to configure an AnyLog instance
+```
+python3 $HOME/AnyLog-API/deployment/main.py ${IP}:${PORT} ${CONFIG_FILE} 
+```
 
+6. Stop docker 
+```
+for cmd in stop rm ; do docker ${cmd} ${NODE_NAME} ; done
+```
 
-**Attach to Docker**: `docker attach --detach-keys="ctrl-d"  ${CONTAINER_ID}` 
+## Issue
 
-**Detach from Docker**: `CTRL+d`  
+1. [Questionnaire](config/questionnaire.sh) may have some bugs in it 
+2. Could add more variables to [config](config/config.ini) files  
+3. For [MQTT](rest/post_cmd.py#L192), `value` column should be configurable
