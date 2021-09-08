@@ -9,7 +9,11 @@ BUILD=predevelop
 NODE_NAME=new-node
 ANYLOG_SERVER_PORT=2048
 ANYLOG_REST_PORT=2049
-ANYLOG_BROKER_PORT=2050 # Optitonal - used in 2nd example
+ANYLOG_BROKER_PORT=2050 # Optional - used in 2nd example
+
+docker login -u oshadmon -p ${DOCKER_PASSWD}
+docker pull oshadmon/anylog:${BUILD}
+docker logout
 
 # The following is an example of a connection using interactive mode. In such a case we suggest running AnyLog within a screeen
 docker run --network host --name ${NODE_NAME} --rm \
