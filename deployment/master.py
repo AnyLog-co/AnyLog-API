@@ -56,6 +56,6 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
         print('Failed to set blockchain sync process') 
 
     # Post scheduler 1
-    if not rest.post_cmd.start_scheduler1(conn=conn, exception=exception):
+    if not post_cmd.start_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1')
 
