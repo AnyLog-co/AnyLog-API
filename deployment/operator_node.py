@@ -1,10 +1,9 @@
-import time
-
-import rest.post_cmd
-import rest.anylog_api as anylog_api
-import rest.blockchain_cmd as blockchain_cmd
-import rest.dbms_cmd as dbms_cmd
-import support.create_declaration as create_declaration
+import __init__
+import post_cmd
+import anylog_api
+import blockchain_cmd
+import dbms_cmd
+import create_declaration
 
 
 def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False):
@@ -113,7 +112,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
 
     # MQTT
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
-        if not rest.post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
+        if not post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
 
     # blockchain sync
@@ -121,14 +120,14 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         print('Failed to set blockchain sync process')
 
     # Post scheduler 1
-    if not rest.post_cmd.start_scheduler1(conn=conn, exception=exception):
+    if not post_cmd.start_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1')
 
     # Start operator
-    if not rest.post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,
+    if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,
                                       update_tsd_info=True, archive=True, distributor=True, exception=False):
         print('Failed to set buffering to start publisher')
 
-    if not rest.post_cmd.set_immediate_threshold(conn=conn, exception=exception):
+    if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
         print('Failed to set data streaming to immediate')
 

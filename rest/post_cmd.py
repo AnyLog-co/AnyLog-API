@@ -1,7 +1,7 @@
 import __init__
-import rest.anylog_api as anylog_api
-import rest.get_cmd as get_cmd
-import support.errors as errors
+import anylog_api
+import get_cmd
+import errors
 
 def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool=False)->bool: 
     """

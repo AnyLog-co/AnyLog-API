@@ -1,8 +1,9 @@
-import rest.post_cmd
-import rest.anylog_api as anylog_api
-import rest.blockchain_cmd as blockchain_cmd
-import rest.dbms_cmd as dbms_cmd
-import support.create_declaration as create_declaration
+import __init__
+import post_cmd
+import anylog_api
+import blockchain_cmd
+import dbms_cmd
+import create_declaration
 
 def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """

@@ -1,8 +1,7 @@
 import __init__
-import rest.anylog_api as anylog_api
-import rest.blockchain_cmd as blockchain_cmd
-
-import support.errors as errors
+import anylog_api
+import blockchain_cmd
+import errors
 
 
 def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 

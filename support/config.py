@@ -1,9 +1,10 @@
 import configparser
 
-from __init__ import *
-import rest.get_cmd as get_cmd
-import rest.post_cmd as post_cmd
-import rest.anylog_api as anylog_api
+import __init__
+import anylog_api
+import get_cmd
+import post_cmd
+
 
 
 def read_config(config_file:str)->dict: 

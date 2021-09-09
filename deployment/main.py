@@ -1,16 +1,16 @@
 import argparse
 import os
-import time
+
+import __init__
+import anylog_api
+import get_cmd
+import config
 
 import master
 import operator_node
 import publisher
 import query
 
-import __init__
-import rest.anylog_api as anylog_api
-import rest.get_cmd as get_cmd
-import support.config as config
 
 def deployment():
     """
@@ -96,5 +96,5 @@ def deployment():
             print(get_cmd.get_processes(conn=anylog_conn, exception=args.exception))
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     deployment() 
