@@ -15,7 +15,7 @@ docker login -u oshadmon -p ${DOCKER_PASSWD}
 docker pull oshadmon/anylog:${BUILD}
 docker logout
 
-# The following is an example of a connection using interactive mode. In such a case we suggest running AnyLog within a screeen
+# The following is an example of a connection using interactive mode. In such a case we suggest running AnyLog within a screen
 docker run --network host --name ${NODE_NAME} --rm \
   -e NODE_TYPE=rest \
   -e ANYLOG_SERVER_PORT=${ANYLOG_SERVER_PORT} -e ANYLOG_REST_PORT=${ANYLOG_REST_PORT} \
