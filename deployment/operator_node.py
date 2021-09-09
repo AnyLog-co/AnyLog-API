@@ -87,14 +87,14 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
             post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
                                                      exception=exception)
 
-    if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
-                                                         exception=exception):
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                   where=['ip=%s' % config['external_ip'],
-                                                          'port=%s' % config['anylog_tcp_port']],
-                                                   exception=exception)
-        if len(blockchain) == 0:
-            print('Failed to declare policy')
+        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
+                                                             exception=exception):
+            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                       where=['ip=%s' % config['external_ip'],
+                                                              'port=%s' % config['anylog_tcp_port']],
+                                                       exception=exception)
+            if len(blockchain) == 0:
+                print('Failed to declare policy')
 
     # Partition
     if 'enable_partition' in config and config['enable_partition'].lower() == 'true':
@@ -108,8 +108,8 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                                            exception=False):
                 print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
             # validate partition exists
-            #if not dbms_cmd.get_partitions(conn=conn, db_name=config['default_dbms'], table_name='*'):
-            #    print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
+            if not dbms_cmd.get_partitions(conn=conn, db_name=config['default_dbms'], table_name='*'):
+                print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
 
     # MQTT
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
