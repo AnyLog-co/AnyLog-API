@@ -79,6 +79,7 @@ def deployment():
 #        print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
     if 'node_type' in config_data and config.validate_config(config=config_data) is True:
+        status = True
         if config_data['node_type'] == 'master':
             master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         elif config_data['node_type'] == 'query':
@@ -89,6 +90,11 @@ def deployment():
             operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         else:
             print('Unsupported node type: %s' % config['node_type'])
+            status = False
+        if status is True:
+            print('Lis of running processes for node type: %s' % config_data['node_type'])
+            print(get_cmd.get_processes(conn=anylog_conn, exception=args.exception))
+
 
 if __name__ == '__main__': 
     deployment() 
