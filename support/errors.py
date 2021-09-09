@@ -12,14 +12,14 @@ def get_error(conn:str, command:str, r, error, exception:bool=True)->bool:
         status 
     """
     status = False
-    if r == False: 
-        if exception == True:
+    if r is False: 
+        if exception is True:
             print('Failed to execute command: %s' % command)
         if isinstance(error, str): 
-            if exception == True: 
+            if exception is True: 
                 print('Failed to excute GET on %s (Error: %s)' % (conn, error)) 
         elif isinstance(error, int):
-            if exception == True: 
+            if exception is True: 
                 print('Failed to execute GET on %s due to network error %s' % (conn, error))
         status = True
 
@@ -39,14 +39,14 @@ def post_error(conn:str, command:str, r, error, exception:bool=True)->bool:
         status 
     """ 
     status = False
-    if r == False: 
-        if exception == True:
+    if r is False: 
+        if exception is True:
             print('Failed to execute command: %s' % command)
         if isinstance(error, str): 
-            if exception == True: 
+            if exception is True: 
                 print('Failed to excute POST on %s (Error: %s)' % (conn, error)) 
         elif isinstance(error, int):
-            if exception == True: 
+            if exception is True: 
                 print('Failed to execute POST on %s due to network error %s' % (conn, error))
         status = True
 

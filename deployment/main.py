@@ -1,12 +1,13 @@
 import argparse
 import os
+import time
+
+import master
+import operator_node
+import publisher
+import query
 
 import __init__
-
-import deployment.master as master
-import deployment.publisher as publisher
-import deployment.query as query
-
 import rest.anylog_api as anylog_api
 import rest.get_cmd as get_cmd
 import support.config as config
@@ -49,7 +50,7 @@ def deployment():
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # Validate REST node is accessible 
-    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) == False:
+    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) is False: 
         print('Failed to get status from %s, cannot continue' % args.rest_conn)
         exit(1) 
 
@@ -66,7 +67,7 @@ def deployment():
         exit(1) 
 
     hostname = get_cmd.get_hostname(conn=anylog_conn, exception=args.exception) 
-    if hostname != None: 
+    if hostname is not None:
         config_data['hostname'] = hostname
     
     import_config = config.import_config(conn=anylog_conn, exception=args.exception)
@@ -74,23 +75,20 @@ def deployment():
         if key not in config_data: 
             config_data[key] = import_config[key] 
 
-    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) == False: 
-        print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
+#    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) is False:
+#        print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
 
-    if 'node_type' in config_data: 
-        if config_data['node_type'] == 'master': 
-            status = master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
-        elif config_data['node_type'] == 'query': 
-            status = query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
+    if 'node_type' in config_data and config.validate_config(config=config_data) is True:
+        if config_data['node_type'] == 'master':
+            master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+        elif config_data['node_type'] == 'query':
+            query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         elif config_data['node_type'] == 'publisher':
-            status = publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception) 
-        elif config_data['node_type'] == 'operator': 
-            pass 
-        else: 
+            publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+        elif config_data['node_type'] == 'operator':
+            operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+        else:
             print('Unsupported node type: %s' % config['node_type'])
-    else: 
-        print('Missing node_type in config')
-
 
 if __name__ == '__main__': 
     deployment() 

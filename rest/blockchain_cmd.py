@@ -5,6 +5,7 @@ import rest.get_cmd as get_cmd
 
 import support.errors as errors
 
+
 def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list:
     """
     blockchain GET command 
@@ -18,10 +19,12 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
         timeout:int - REST timeout
     :param: 
         cmd:str - command to execute 
-        blockchain:list - data extracted  
+        blockchain:list - data extracted
+    :return:
+        blockchains
     """
     cmd = "blockchain get %s" % policy_type
-    if where != []: 
+    if where is not []:
         cmd += " where" 
         for value in where:
            cmd += " " + value
@@ -30,13 +33,14 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
 
     blockchain = []
     r, error = conn.get(command=cmd)
-    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
             blockchain = r.json()
         except:
             blockchain = r.text
             
     return blockchain 
+
 
 def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bool: 
     """
@@ -50,16 +54,18 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
     :param: 
         cmd:str - command to execute 
         status:bool
+    :return:
+        status
     """
     status = False 
     cmd = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
     
-    r, e = anylog_api.get(command=cmd, query=False)
-    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+    r, error = anylog_api.get(command=cmd, query=False)
+    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
             if r.json()['local'] == 'true':
                 status = True 
-        except: 
+        except Exception:
             if 'true' in r.text: 
                 status = True
 
@@ -77,19 +83,19 @@ def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:
     :param: 
         cmd:str - command to execute 
         status:bool
+    :return:
+        status
     """
     status = True
     cmd = "blockchain pull to json !blockchain_file"
     if master_node != 'local': 
         cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
-
     r, error = conn.post(command=cmd)
-    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+    if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
         if master_node != 'local':
             cmd = 'run client (%s) file get !!blockchain_file !blockchain_file' % master_node
             r, error = conn.post(command=cmd)
-            status = errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception)
-            if status == False: 
+            if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
                 status = True
     else: 
         status = False 
@@ -112,12 +118,13 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
         status
     """
     if isinstance(policy, dict): # convert policy to str if dict
-        policy = json.dumps(policy) 
+        policy = json.dumps(policy)
     raw_data="<policy=%s>" % policy 
 
     r, error = conn.post_policy(policy=raw_data, master_node=master_node)
     status = errors.post_error(conn=conn.conn, command='post policy: %s' % raw_data, r=r, error=error, exception=exception)
     return status 
+
 
 def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connection:str=None, exception:bool=False)->bool: 
     """
@@ -138,21 +145,21 @@ def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connect
     """
     status = True
     if source not in ['master', 'dbms']: 
-        if exception == True: 
+        if exception is True:
             print('Invalid source: %s. Options: master, dbms' % source)
         status = False 
-    if source == 'master' and connection == None: 
-        if exception == True: 
+    if source == 'master' and connection is None:
+        if exception is True:
             print('When source is set to master, connection must be set')
         status = False 
 
-    if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Blockchain Sync')[-1].split('\r')[0] and status == True: 
+    if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Blockchain Sync')[-1].split('\r')[0] and status is True:
         cmd = 'run blockchain sync where source=%s and time=%s and dest=file' % (source, time) 
         if source == 'master': 
             cmd += " and connection=%s" % connection
 
         r, error = conn.post(command=cmd)
-        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) == True: 
+        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
             status = False
 
     return status 

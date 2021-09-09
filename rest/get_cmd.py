@@ -3,6 +3,7 @@ import rest.anylog_api as anylog_api
 
 import support.errors as errors
 
+
 def get_help(conn:anylog_api.AnyLogConnect, command:str=None): 
     """
     Execute 'help' against AnyLog. If command is set get help regarding command
@@ -13,15 +14,16 @@ def get_help(conn:anylog_api.AnyLogConnect, command:str=None):
         function prints results rather than return it
     """
     help_stmt = 'help'     
-    if command != None: 
+    if command is not None:
         help_stmt += " " + command
 
     r, error = conn.get(command=help_stmt)
-    if errors.get_error(conn=conn.conn, command=help_stmt, r=r, error=error, exception=True) == False: 
+    if not errors.get_error(conn=conn.conn, command=help_stmt, r=r, error=error, exception=True):
         try: 
             print(r.text)
         except Exception as e: 
             print('Failed to extract help information (Error: %s) ' % e)
+
 
 def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool: 
     """
@@ -32,22 +34,23 @@ def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     :params: 
         status:bool
     :return: 
-        stattus
+        status
     """
     status = True
     r, error = conn.get(command='get status', query=False)
     
-    if errors.get_error(conn.conn, command='get status', r=r, error=error, exception=exception) == False: 
-       if 'running' not in r.text or 'not' in r.text: 
-           status = False
+    if not errors.get_error(conn.conn, command='get status', r=r, error=error, exception=exception):
+        if 'running' not in r.text or 'not' in r.text:
+            status = False
     else: 
         status = False 
 
     return status
 
+
 def get_event_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
-    Get AnyLog error log 
+    Get AnyLog evet log
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
         exception:bool - whether to print errors to screen 
@@ -59,15 +62,16 @@ def get_event_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     
     r, error = conn.get(command='get event log', query=False)
 
-    if errors.get_error(conn.conn, command='get event log', r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command='get event log', r=r, error=error, exception=exception):
         try: 
             event_log = r.text 
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to get event log from: %s (Error: %s)' % (conn, e))
             event_log = None 
 
     return event_log
+
 
 def get_error_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
@@ -83,15 +87,16 @@ def get_error_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     
     r, error = conn.get(command='get error log', query=False)
 
-    if errors.get_error(conn.conn, command='get error log', r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command='get error log', r=r, error=error, exception=exception):
         try: 
             error_log = r.text 
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to get error log from: %s (Error: %s)' % (conn, e))
             error_log = None 
 
     return error_log
+
 
 def get_dictionary(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
     """
@@ -107,11 +112,11 @@ def get_dictionary(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
     
     r, error = conn.get(command='get dictionary', query=False)
 
-    if errors.get_error(conn.conn, command='get dictionary', r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command='get dictionary', r=r, error=error, exception=exception):
         try: 
             data = r.text 
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to get dictionary from: %s (Error: %s)' % (conn, e))
             data = None 
 
@@ -131,14 +136,15 @@ def get_hostname(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
     hostname = None 
     r, error = conn.get(command='get hostname', query=False)
-    if errors.get_error(conn.conn, command='get hostname', r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command='get hostname', r=r, error=error, exception=exception):
         try: 
             hostname = r.text
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to extract hostname from %s (Error: %s)' % (conn.conn, e))
 
     return hostname
+
 
 def get_processes(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
@@ -153,13 +159,14 @@ def get_processes(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
     output = None 
     r, error = conn.get(command='get processes', query=False)
-    if errors.get_error(conn.conn, command='get processes', r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command='get processes', r=r, error=error, exception=exception):
         try: 
             output = r.text
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to get list of processes from %s (Error: %s)' % (conn.conn, e))
     return output 
+
 
 def get_scheduler(conn:anylog_api.AnyLogConnect, scheduler_name:str=None, exception:bool=False)->str: 
     """
@@ -175,16 +182,17 @@ def get_scheduler(conn:anylog_api.AnyLogConnect, scheduler_name:str=None, except
         output
     """
     cmd='get scheduler' 
-    if scheduler_name != None: 
+    if scheduler_name is not None:
         cmd += ' %s' % scheduler_name
     r, error = conn.get(command=cmd, query=False)
-    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
             output = r.text
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to get information from scheduler from %s (Error: %s)' % (conn.conn, e))
     return output 
+
 
 def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception:bool=False)->str: 
     """
@@ -200,15 +208,15 @@ def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception
         mqtt client
     """
     cmd = 'run mqtt client'
-    if client_id != None: 
+    if client_id is not None:
        cmd += ' %s' % client_id
 
     r, error = conn.get(command=cmd, query=False)
-    if errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception) == False: 
+    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
             mqtt_client = r.text 
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to get information regarding MQTT client from: %s (Error: %s)' % (conn, e))
             error_log = None 
 

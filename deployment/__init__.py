@@ -1,9 +1,6 @@
 import os
 import sys
 
-import declare_node
-import declare_cluster
-
 slash_char = '/'
 if sys.platform.startswith('win'):
     slash_char = '\\'

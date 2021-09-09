@@ -7,6 +7,7 @@
 
 import os
 
+
 def __docker_login(passwd:str, exception:bool=False)->bool: 
     """
     Login to docker 
@@ -22,10 +23,34 @@ def __docker_login(passwd:str, exception:bool=False)->bool:
     try: 
         os.system('docker login -u oshadmon -p %s' % passwd)
     except Exception as e: 
-        if exception == True: 
+        if exception is True:
             print('Failed to login to docker (Error: %s)' % e)
         status = False
     return status 
+
+
+def __pull_anyog(build:str, exception:bool)->bool:
+    """
+    Pull latest docker image
+    :todo:
+        validate if build:str exits
+    :args:
+        build:str - build to pull
+        exception:bool - whether or not to print exception
+    :params:
+        status:bool
+    :return:
+        status
+    """
+    status = True
+    try:
+        os.system('docker pull oshadmon/anylog:%s' % build)
+    except Exception as e:
+        if exception is True:
+            print('Failed to pull oshadmon/anylog:%s (Error: %s)' % (build, e))
+        status = False
+    return status
+
 
 def __docker_logout(exception:bool=False)->bool: 
     """
@@ -41,13 +66,13 @@ def __docker_logout(exception:bool=False)->bool:
     try: 
         os.system('docker logout')
     except Exception as e: 
-        if exception == True: 
+        if exception is True:
             print('Failed to logout of docker (Error: %s)' % e)
         status = False
     return status
 
         
-def postgres(conn:str, exception:bool=False)->bool: 
+def deploy_postgres(conn:str, exception:bool=False)->bool:
     """
     Deploy Postgres instance
     :args: 
@@ -69,13 +94,14 @@ def postgres(conn:str, exception:bool=False)->bool:
     try: 
         os.system(cmd % (psql_user, psql_pass)) 
     except Exception as e: 
-        if exception == True: 
+        if exception is True: 
             print('Failed to deploy Postgres instance (Error: %s)' % e)
         status = False
 
     return status
 
-def grafana(exception:bool=False)->bool: 
+
+def deploy_grafana(exception:bool=False)->bool:
     """
     Deploy Grafana instance
     :args: 
@@ -92,13 +118,14 @@ def grafana(exception:bool=False)->bool:
     try: 
         os.system(cmd)
     except Exception as e: 
-        if exception == True: 
+        if exception is True: 
             print('Failed to deploy Grafana instance (Error: %s)' % e)
         status = False
 
     return status 
 
-def anylog(config:dict, passwd:str, exception:bool=False)->bool: 
+
+def deploy_anylog(config:dict, passwd:str, exception:bool=False)->bool:
     """
     Deploy AnyLog instance 
     :args: 
@@ -117,7 +144,10 @@ def anylog(config:dict, passwd:str, exception:bool=False)->bool:
     node_name   = 'new-node' 
     server_port = 2048 
     rest_port   = 2049 
-    
+
+    build = 'predevelop'
+    if 'build' in config:
+        build = config['build']
     if 'node_name' in config:
         node_name = config['node_name']
     if 'anylog_server_port' in config: 
@@ -130,11 +160,12 @@ def anylog(config:dict, passwd:str, exception:bool=False)->bool:
     if 'anylog_broker_port' in config: 
         cmd = cmd.replace('ANYLOG_REST_PORT=%s' % rest_port, 'ANYLOG_REST_PORT=%s -e ANYLOG_BROKER_PORT=%s' % (rest_port, config['anylog_broker_port'])) 
 
-    if __docker_login(passwd=passwd, exception=exception) == True:
+    if __docker_login(passwd=passwd, exception=exception) is True:
+        __pull_anyog(build=build, exception=exception)
         try: 
             os.system(cmd)
         except Exception as e: 
-            if exception == True: 
+            if exception is True: 
                 print('Failed to deploy Grafana instance (Error: %s)' % e)
             status = False
         status = __docker_logout(exception=exception)

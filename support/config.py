@@ -5,6 +5,7 @@ import rest.get_cmd as get_cmd
 import rest.post_cmd as post_cmd
 import rest.anylog_api as anylog_api
 
+
 def read_config(config_file:str)->dict: 
     """
     Read INI configuration & store in dict 
@@ -36,9 +37,8 @@ def read_config(config_file:str)->dict:
 
     return data 
 
-   
 
-def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool: 
+def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool:
     """
     POST config to AnyLog
     :args: 
@@ -53,7 +53,7 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
     statuses = [] 
     for key in config: 
         status = post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception)
-        if status == False and exception == True: 
+        if status is False and exception == True: 
             print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
         statuses.append(status)
 
@@ -62,7 +62,8 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
         status = False
 
     return status 
- 
+
+
 def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
     """
     Extract parameters from AnyLog dictionary into dictionary  
@@ -84,3 +85,50 @@ def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
 
     return data 
 
+
+def validate_config(config:dict)->bool:
+    """
+    validate configuration values
+    :args:
+        config:dict - configuration
+    :params:
+        status:bool
+        params:list - list of missing params
+    :return;
+        status
+    """
+    status = True
+    params = []
+    # Base required params
+    for key in ['node_type', 'node_name', 'company_name', 'master_node', 'anylog_tcp_port', 'anylog_rest_port',
+    'db_type', 'db_user', 'db_port']:
+        if key not in config:
+            status = False
+            params.append(key)
+
+    # Operator params
+    if config['node_type'] == 'operator':
+        if 'default_dbms' not in config:
+            status = False
+            params.append('default_dbms')
+        if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
+            if 'cluster_name' not in config:
+                status = False
+                params.append('cluster_name')
+        if 'enable_parition' in config and config['enable_parition'].lower() == 'true':
+            for key in ['partition_column', 'partition_interval']:
+                if key not in config:
+                    status = False
+                    params.append(key)
+
+    # MQTT required params
+    if config['node_type'] == 'operator' or config['node_type'] == 'publisher':
+        if 'enable_mqtt' in config and config['enable_mqtt'].lower() == 'true':
+            for key in ['mqtt_conn_info', 'mqtt_port']:
+                if key not in config:
+                    status = False
+                    params.append(key)
+        if len(params) > 0:
+            print('Missing the following params in config: %s' % params)
+
+    return status

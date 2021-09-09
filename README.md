@@ -40,8 +40,11 @@ docker run --network host --name ${NODE_NAME} \
     -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \ 
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \ 
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \ 
-    -it oshadmon/anylog:osdev
+    -it --detach-keys="ctrl-d" oshadmon/anylog:predevelop
 ```
+**Attach to Docker**: `docker attach --detach-keys="ctrl-d"  ${CONTAINER_ID}`
+
+**Detach from Docker**: `CTRL+d`
 
 5. Use REST to configure an AnyLog instance
 ```
@@ -57,4 +60,5 @@ for cmd in stop rm ; do docker ${cmd} ${NODE_NAME} ; done
 
 1. [Questionnaire](config/questionnaire.sh) may have some bugs in it 
 2. Could add more variables to [config](config/config.ini) files  
-3. For [MQTT](rest/post_cmd.py#L192), `value` column should be configurable
+4. For [MQTT](rest/post_cmd.py#L192), `value` column should be configurable
+5. Init node (remotely) using [docker_calls.py](deployment/docker_calls.py)
