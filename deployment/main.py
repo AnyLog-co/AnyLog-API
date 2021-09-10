@@ -75,7 +75,7 @@ def deployment():
         if key not in config_data: 
             config_data[key] = import_config[key] 
 
-    config.post_config(conn=anylog_conn, config=config_data)
+    config.post_config(conn=anylog_conn, config=config_data, exception=args.exception)
 
     if 'node_type' in config_data and config.validate_config(config=config_data) is True:
         status = True

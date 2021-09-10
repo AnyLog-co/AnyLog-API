@@ -40,7 +40,7 @@ def read_config(config_file:str)->dict:
     return data 
 
 
-def post_config(conn:anylog_api.AnyLogConnect, config:dict)->bool:
+def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool:
     """
     POST config to AnyLog
     :args: 
@@ -50,7 +50,7 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict)->bool:
     """
     for key in config: 
         status = post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception)
-        if status is False and exception == True: 
+        if status is False:
             print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
 
 
