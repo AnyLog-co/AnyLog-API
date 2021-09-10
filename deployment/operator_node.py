@@ -53,18 +53,17 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                                                        exception=exception)
             if len(blockchain) == 0:
                 new_policy = create_declaration.declare_cluster(config=config)
-                post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy,
-                                                         master_node=config['master_node'], exception=exception)
+                blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
+                                           exception=exception)
             elif len(blockchain) > 0 and 'id' in blockchain[0]['cluster']:
                 config['cluster_id'] = blockchain[0]['cluster']['id']
             else:
                 print('Failed to extract cluster id')
         else:
-           print('Failed to check/create if cluster exists')
-
-        if post_policy is False and len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn,
-                                                                                      master_node=config['master_node'],
-                                                                                      exception=exception):
+            print('Failed to check/create if cluster exists')
+            
+        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
+                                                             exception=exception):
             blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
                                                        where=['company=%s' % config['company_name'],
                                                               'name=%s' % config['cluster_name']],
@@ -73,8 +72,6 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                 config['cluster_id'] = blockchain[0]['cluster']['id']
             else:
                 print('Failed to extract cluster id')
-        else:
-            print('Failed to extract cluster id')
 
     # Pull blockchain & declare operator if not exists
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
