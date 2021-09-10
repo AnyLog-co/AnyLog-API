@@ -40,30 +40,18 @@ def read_config(config_file:str)->dict:
     return data 
 
 
-def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->bool:
+def post_config(conn:anylog_api.AnyLogConnect, config:dict)->bool:
     """
     POST config to AnyLog
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         config:dict - configuration to POST 
-        exception:bool - whether or not to print error to screen 
-    :param: 
-       status:bool 
-    :return: 
-        status
+        exception:bool - whether or not to print error to screen
     """
-    statuses = [] 
     for key in config: 
         status = post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception)
         if status is False and exception == True: 
             print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
-        statuses.append(status)
-
-    status = True
-    if False in statuses: 
-        status = False
-
-    return status 
 
 
 def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
