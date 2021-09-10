@@ -101,6 +101,9 @@ def declare_node(config:dict, location:bool=True)->dict:
     elif location is True:
         node[config['node_type']]['loc'] = __get_location()
 
+    if 'member_id' in config:
+        node[config['node_type']]['member'] = config['member_id']
+        
     if 'cluster_id' in config:
         node[config['node_type']]['cluster'] = config['cluster_id']
 
