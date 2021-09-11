@@ -25,7 +25,7 @@ def read_config(config_file:str)->dict:
         try:
             config.read(config_file)
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to read config file: %s (Error: %s)' % (config_file, e))
     else:
         print('File %s not found' % config_file) 
@@ -33,7 +33,7 @@ def read_config(config_file:str)->dict:
     try: 
         for section in config.sections():
             for key in config[section]:
-                data[key] = config[section][key] 
+                data[key] = config[section][key].replace('"', '')
     except Exception as e:
         print('Failed to extract variables from config file (Error: %s)' % e)
 

@@ -19,9 +19,9 @@ docker logout
 docker run --network host --name ${NODE_NAME} --rm \
   -e NODE_TYPE=rest \
   -e ANYLOG_SERVER_PORT=${ANYLOG_SERVER_PORT} -e ANYLOG_REST_PORT=${ANYLOG_REST_PORT} \
-  -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw  \
-  -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
-  -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
+  -v al-${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw  \
+  -v al-${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
+  -v al-${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
   -it  --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
 
 <<COMMENT

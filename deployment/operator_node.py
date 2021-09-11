@@ -1,3 +1,5 @@
+import time
+
 import __init__
 import post_cmd
 import anylog_api
@@ -44,34 +46,35 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name=config['default_dbms'], exception=exception):
             print('Failed to start %s database' % config['default_dbms'])
 
+    # blockchain sync
+    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'],
+                                          exception=exception):
+        print('Failed to set blockchain sync process')
+
     # Pull blockchain & declare cluster if not exists
     if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
         if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
             blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
-                                                       where=['company=%s' % config['company_name'],
+                                                       where=['company="%s"' % config['company_name'],
                                                               'name=%s' % config['cluster_name']],
                                                        exception=exception)
             if len(blockchain) == 0:
                 new_policy = create_declaration.declare_cluster(config=config)
                 blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
                                            exception=exception)
+                time.sleep(60)
+                blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
+                                                           where=['company="%s"' % config['company_name'],
+                                                                  'name=%s' % config['cluster_name']],
+                                                           exception=exception)
+                if 'id' in blockchain[0]['cluster']:
+                    config['cluster_id'] = blockchain[0]['cluster']['id']
             elif len(blockchain) > 0 and 'id' in blockchain[0]['cluster']:
                 config['cluster_id'] = blockchain[0]['cluster']['id']
             else:
                 print('Failed to extract cluster id')
         else:
             print('Failed to check/create if cluster exists')
-            
-        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
-                                                             exception=exception):
-            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
-                                                       where=['company=%s' % config['company_name'],
-                                                              'name=%s' % config['cluster_name']],
-                                                       exception=exception)
-            if len(blockchain) > 0 and 'id' in blockchain[0]['cluster']:
-                config['cluster_id'] = blockchain[0]['cluster']['id']
-            else:
-                print('Failed to extract cluster id')
 
     # Pull blockchain & declare operator if not exists
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
@@ -118,10 +121,6 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         if 'anylog_file' in config:
             if not execute_anylog_file.execute_file(conn=conn, anylog_file=config['anylog_file'], exception=exception):
                 print('Failed to execute AnyLog file: %s' % config['anylog_file'])
-
-    # blockchain sync
-    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception):
-        print('Failed to set blockchain sync process')
 
     # Post scheduler 1
     if not post_cmd.start_scheduler1(conn=conn, exception=exception):

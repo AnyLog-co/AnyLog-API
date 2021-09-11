@@ -40,7 +40,7 @@ def __format_tables(dbms:str, tables:list)->list:
     """
     tables_list = []
     for tbl in tables:
-        tables_list.append({'dbms': dbms, 'table': tbl})
+        tables_list.append({'dbms': dbms, 'name': tbl})
     return tables_list
 
 
