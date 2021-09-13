@@ -104,7 +104,7 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
         status
     """
     status = True
-        cmd = 'run operator where create_table=%s and update_tsd_info=%s and archive=%s and distributor=%s and master_node=%s'
+    cmd = 'run operator where create_table=%s and update_tsd_info=%s and archive=%s and distributor=%s and master_node=%s'
 
     if isinstance(create_table, bool):
         create_table = str(create_table).lower()
