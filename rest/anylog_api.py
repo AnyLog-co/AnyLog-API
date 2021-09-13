@@ -163,12 +163,12 @@ class AnyLogConnect:
             r, error
         """
         error = None
-            headers = {
-                "command": "blockchain push !policy",
-                "destination": master_node,
-                "Content-Type": "text/plain",
-                "User-Agent": "AnyLog/1.23"
-            }
+        headers = {
+            "command": "blockchain push !policy",
+            "destination": master_node,
+            "Content-Type": "text/plain",
+            "User-Agent": "AnyLog/1.23"
+        }
 
         try:
             r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout, data=policy)
