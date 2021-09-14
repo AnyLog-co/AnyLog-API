@@ -22,6 +22,7 @@ docker run --network host --name ${NODE_NAME} --rm \
   -v al-${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw  \
   -v al-${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v al-${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
+  -v al-${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
   -it  --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
 
 <<COMMENT
@@ -32,5 +33,6 @@ docker run --network host --name ${NODE_NAME} --rm \
   -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw  \
   -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
+  -v al-${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
   -d --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
 COMMENT
