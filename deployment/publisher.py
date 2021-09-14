@@ -32,6 +32,14 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
     if new_system is True or 'system_query' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
             print('Failed to start system_query database')
+    # almgm & tsd_info
+    if new_system is True or 'almgm' not in dbms_list:
+        if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='almgm', exception=exception):
+            print('Failed to start almgm database')
+    if new_system is True or dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info',
+                                                      exception=exception) is False:
+        if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=False):
+            print('Failed to create table almgm.tsd_info')
 
     # Pull blockchain & declare node if not exists
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception =exception):
