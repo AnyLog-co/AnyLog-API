@@ -1,7 +1,6 @@
 import __init__
-import rest.anylog_api as anylog_api
-
-import support.errors as errors
+import anylog_api
+import errors
 
 
 def get_help(conn:anylog_api.AnyLogConnect, command:str=None): 

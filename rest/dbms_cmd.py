@@ -1,8 +1,7 @@
 import __init__
-import rest.anylog_api as anylog_api
-import rest.blockchain_cmd as blockchain_cmd
-
-import support.errors as errors
+import anylog_api
+import blockchain_cmd
+import errors
 
 
 def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
@@ -125,6 +124,7 @@ def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exc
 
     return status 
 
+
 def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', ts_column:str='timestamp',
                           interval:str='day', exception:bool=False)->bool:
     """
@@ -152,6 +152,7 @@ def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name
             status = False
 
     return status
+
 
 def get_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', exception:bool=False)->bool:
     """

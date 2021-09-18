@@ -1,8 +1,10 @@
-import rest.post_cmd
-import rest.anylog_api as anylog_api
-import rest.blockchain_cmd as blockchain_cmd
-import rest.dbms_cmd as dbms_cmd
-import support.create_declaration as create_declaration
+import __init__
+import post_cmd
+import anylog_api
+import blockchain_cmd
+import dbms_cmd
+import create_declaration
+import execute_anylog_file
 
 def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
@@ -51,8 +53,15 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
 
     # blockchain sync 
     if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception):
-        print('Failed to set blockchain sync process') 
+        print('Failed to set blockchain sync process')
+
+    # execute AnyLog file
+    if 'execute_file' in config and config['execute_file'] == 'true':
+        if 'anylog_file' in config:
+            if not execute_anylog_file.execute_file(conn=conn, anylog_file=config['anylog_file'],
+                                                    exception=exception):
+                print('Failed to execute AnyLog file: %s' % config['anylog_file'])
 
     # Post scheduler 1 
-    if not rest.post_cmd.start_scheduler1(conn=conn, exception=exception):
+    if not post_cmd.start_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1') 

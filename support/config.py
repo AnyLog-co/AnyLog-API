@@ -1,9 +1,11 @@
 import configparser
+import os 
 
-from __init__ import *
-import rest.get_cmd as get_cmd
-import rest.post_cmd as post_cmd
-import rest.anylog_api as anylog_api
+import __init__
+import anylog_api
+import get_cmd
+import post_cmd
+
 
 
 def read_config(config_file:str)->dict: 
@@ -23,7 +25,7 @@ def read_config(config_file:str)->dict:
         try:
             config.read(config_file)
         except Exception as e: 
-            if exception == True: 
+            if exception is True:
                 print('Failed to read config file: %s (Error: %s)' % (config_file, e))
     else:
         print('File %s not found' % config_file) 
@@ -31,7 +33,7 @@ def read_config(config_file:str)->dict:
     try: 
         for section in config.sections():
             for key in config[section]:
-                data[key] = config[section][key] 
+                data[key] = config[section][key].replace('"', '')
     except Exception as e:
         print('Failed to extract variables from config file (Error: %s)' % e)
 
@@ -44,24 +46,12 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         config:dict - configuration to POST 
-        exception:bool - whether or not to print error to screen 
-    :param: 
-       status:bool 
-    :return: 
-        status
+        exception:bool - whether or not to print error to screen
     """
-    statuses = [] 
     for key in config: 
         status = post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception)
-        if status is False and exception == True: 
+        if status is False:
             print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
-        statuses.append(status)
-
-    status = True
-    if False in statuses: 
-        status = False
-
-    return status 
 
 
 def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 

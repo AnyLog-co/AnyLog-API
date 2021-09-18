@@ -1,9 +1,9 @@
 import json
-import __init__
-import rest.anylog_api as anylog_api
-import rest.get_cmd as get_cmd
 
-import support.errors as errors
+import __init__
+import anylog_api
+import get_cmd
+import errors
 
 
 def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list:

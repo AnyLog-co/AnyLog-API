@@ -1,16 +1,16 @@
 import argparse
 import os
-import time
+
+import __init__
+import anylog_api
+import get_cmd
+import config
 
 import master
 import operator_node
 import publisher
 import query
 
-import __init__
-import rest.anylog_api as anylog_api
-import rest.get_cmd as get_cmd
-import support.config as config
 
 def deployment():
     """
@@ -75,8 +75,7 @@ def deployment():
         if key not in config_data: 
             config_data[key] = import_config[key] 
 
-#    if config.post_config(conn=anylog_conn, config=config_data, exception=args.exception) is False:
-#        print('Failed to POST config into AnyLog Network on %s' % args.rest_conn)
+    config.post_config(conn=anylog_conn, config=config_data, exception=args.exception)
 
     if 'node_type' in config_data and config.validate_config(config=config_data) is True:
         status = True
@@ -96,5 +95,5 @@ def deployment():
             print(get_cmd.get_processes(conn=anylog_conn, exception=args.exception))
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     deployment() 

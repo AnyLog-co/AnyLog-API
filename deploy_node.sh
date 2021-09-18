@@ -22,7 +22,8 @@ docker run --network host --name ${NODE_NAME} --rm \
   -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw  \
   -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
-  -it  --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
+  -v ${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
+  -d oshadmon/anylog:${BUILD}
 
 <<COMMENT
 # The following is an example of a connection using detached mode and with an MQTT broker.
@@ -32,5 +33,6 @@ docker run --network host --name ${NODE_NAME} --rm \
   -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw  \
   -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
+  -v ${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
   -d --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
 COMMENT

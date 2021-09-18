@@ -40,7 +40,7 @@ def __format_tables(dbms:str, tables:list)->list:
     """
     tables_list = []
     for tbl in tables:
-        tables_list.append({'dbms': dbms, 'table': tbl})
+        tables_list.append({'dbms': dbms, 'name': tbl})
     return tables_list
 
 
@@ -54,10 +54,15 @@ def declare_cluster(config:dict)->dict:
     :return:
          cluster
     """
-    cluster = {'cluster': {
-        'company': config['company_name'],
-        'name': config['cluster_name'],
-    }}
+    cluster = {'cluster': {}}
+    if 'company_name' in config:
+        cluster['cluster']['company'] = config['company_name']
+    if 'cluster_name' in config:
+        cluster['cluster']['name'] = config['cluster_name']
+    elif 'company_name' in config:
+        cluster['cluster']['name'] = '%s-cluster' % config['company_name'].lower().replace(' ', '-')
+    else:
+        cluster['cluster']['name'] = 'new-cluster'
     if 'table' in config:
         cluster['cluster']['table'] = __format_tables(config['default_dbms'], config['table'].split(','))
     else:
@@ -85,13 +90,22 @@ def declare_node(config:dict, location:bool=True)->dict:
         'port':      int(config['anylog_server_port']),
         'rest_port': int(config['anylog_rest_port']), 
     }}
-    if 'node_name' in config: 
+    if 'company_name' in config:
+        node[config['node_type']]['company'] = config['company_name']
+
+    if 'node_name' in config:
         node[config['node_type']]['name'] = config['node_name']
-    elif 'node_type' in config: 
-        node[config['node_type']]['name'] = config['node_type'] 
+    elif 'company_name' in config:
+        node[config['node_type']]['name'] = '%s-operator' % config['company_name'].lower().replace(' ', '-')
+    elif 'node_type' in config:
+        node[config['node_type']]['name'] = config['node_type']
 
     if 'member_id' in config:
-        node[config['node_type']]['member'] = config['member_id']
+        # If member ID fails - skips adding member ID
+        try: 
+            node[config['node_type']]['member'] = int(config['member_id'])
+        except: 
+            pass 
 
     if 'hostname' in config:
          node[config['node_type']]['hostname'] = config['hostname']
@@ -100,6 +114,9 @@ def declare_node(config:dict, location:bool=True)->dict:
          node[config['node_type']]['loc'] = config['location'] 
     elif location is True:
         node[config['node_type']]['loc'] = __get_location()
+
+    if 'member_id' in config:
+        node[config['node_type']]['member'] = config['member_id']
 
     if 'cluster_id' in config:
         node[config['node_type']]['cluster'] = config['cluster_id']

@@ -40,7 +40,8 @@ docker run --network host --name ${NODE_NAME} \
     -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \ 
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \ 
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \ 
-    -it --detach-keys="ctrl-d" oshadmon/anylog:predevelop
+    -v ${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
+    -d oshadmon/anylog:predevelop
 ```
 **Attach to Docker**: `docker attach --detach-keys="ctrl-d"  ${CONTAINER_ID}`
 
