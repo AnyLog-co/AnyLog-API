@@ -32,7 +32,7 @@ export SERVER_PORT=2048
 export REST_PORT=2049 
 export BROKER_PORT=2050 # optional
 
-docker run --network host --name ${NODE_NAME} \
+docker run --network host --name ${NODE_NAME} --rm \
     -e NODE_TYPE=rest \
     -e ANYLOG_SERVER_PORT=${SERVER_PORT} \
     -e ANYLOG_REST_PORT=${REST_PORT} \
