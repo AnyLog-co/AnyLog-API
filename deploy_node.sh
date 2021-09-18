@@ -34,5 +34,5 @@ docker run --network host --name ${NODE_NAME} --rm \
   -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
   -v ${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
-  -d --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
+  -d oshadmon/anylog:${BUILD}
 COMMENT
