@@ -101,7 +101,11 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['name'] = config['node_type']
 
     if 'member_id' in config:
-        node[config['node_type']]['member'] = config['member_id']
+        # If member ID fails - skips adding member ID
+        try: 
+            node[config['node_type']]['member'] = int(config['member_id'])
+        except: 
+            pass 
 
     if 'hostname' in config:
          node[config['node_type']]['hostname'] = config['hostname']
