@@ -5,8 +5,7 @@ import post_cmd
 import anylog_api
 import blockchain_cmd
 import dbms_cmd
-import create_declaration
-import execute_anylog_file
+import declare_policy_cmd
 
 
 def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False):
@@ -39,36 +38,26 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
             print('Failed to start almgm database')
     if new_system is True or dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info',
                                                       exception=exception) is False:
-        if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=False):
+        if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             print('Failed to create table almgm.tsd_info')
     # default dbms
     if new_system is True or config['default_dbms'] not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name=config['default_dbms'], exception=exception):
             print('Failed to start %s database' % config['default_dbms'])
 
-    # Pull blockchain & declare cluster if not exists
-    if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
-        # create cluster if DNE
-
-    # Pull blockchain & declare operator if not exists
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                   where=['ip=%s' % config['external_ip'],
-                                                          'port=%s' % config['anylog_tcp_port']],
-                                                   exception=exception)
-        if len(blockchain) == 0:
-            new_policy = create_declaration.declare_node(config=config, location=location)
-            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
-                                                     exception=exception)
-
-        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
-                                                             exception=exception):
-            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                       where=['ip=%s' % config['external_ip'],
-                                                              'port=%s' % config['anylog_tcp_port']],
-                                                       exception=exception)
-            if len(blockchain) == 0:
-                print('Failed to declare policy')
+    # Declare policies on blockchain
+    declare_operator='y'
+    if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true': # declare cluster & extract ID
+        cluster_id = declare_policy_cmd.declare_cluster(conn=conn, config=config, exception=exception)
+        if cluster_id is not None:
+            config['cluster_id'] = cluster_id
+        else:
+            declare_operator = input('Failed to get cluster ID, would you like to declare an operator without it (y/n)? ').lower()
+            while declare_operator not in ['y', 'n']:
+                declare_operator = input('Invalid option: %s. Would you like to like to declare an operator without cluster (y/n)? ').lower()
+    if declare_operator is 'y': # declare operator
+        if not declare_policy_cmd.declare_node(conn=conn, config=config, location=location, exception=exception):
+            print('Failed to declare operator node on blockchain')
 
     # Partition
     if 'enable_partition' in config and config['enable_partition'].lower() == 'true':
@@ -79,7 +68,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
             # create partition
             if not dbms_cmd.declare_db_partitions(conn=conn, db_name=config['default_dbms'], table_name=table,
                                            ts_column=config['partition_column'], interval=config['partition_interval'],
-                                           exception=False):
+                                           exception=exception):
                 print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
             # validate partition exists
             if not dbms_cmd.get_partitions(conn=conn, db_name=config['default_dbms'], table_name='*'):
@@ -90,6 +79,8 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         if not post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
 
+    if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
+        print('Failed to set data streaming to immediate')
 
     # Start operator
     if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,

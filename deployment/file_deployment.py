@@ -13,7 +13,7 @@ def deploy_file(conn:anylog_api.AnyLogConnect, deployment_file:str, exception:bo
         status:bool
         f:_io.TextIOWrapper - open deployment_file file
             line:str - line from file
-        r, error
+        r:bool, error:str - error output against AnyLog command
     """
     deployment_file = os.path.expandvars(os.path.expanduser(deployment_file))
     errors = {}

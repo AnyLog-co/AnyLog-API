@@ -35,11 +35,6 @@ def __default_components(conn:anylog_api.AnyLogConnect, node_type:str, master_no
     if not post_cmd.start_scheduler1(conn=conn, exception=exception):
         print('Failed to start scheduler 1')
 
-    # set threshold
-    if node_type in ['publisher', 'operator']:
-        if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
-            print('Failed to set data streaming to immediate')
-
     # execute deployment file
     full_path = os.path.expandvars(os.path.expanduser(args.file))
     if os.path.isfile(full_path) and deployment_file is not None:

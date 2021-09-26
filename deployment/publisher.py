@@ -38,46 +38,22 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
             print('Failed to start almgm database')
     if new_system is True or dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info',
                                                       exception=exception) is False:
-        if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=False):
+        if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             print('Failed to create table almgm.tsd_info')
 
     # Pull blockchain & declare node if not exists
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception =exception):
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                   where=['ip=%s' % config['external_ip'],
-                                                          'port=%s' % config['anylog_tcp_port']],
-                                                   exception=exception)
-        if len(blockchain) == 0:
-            new_policy = create_declaration.declare_node(config=config, location=location)
-            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
-                                                     exception=exception)
-
-        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
-                                                             exception=exception):
-            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                       where=['ip=%s' % config['external_ip'],
-                                                              'port=%s' % config['anylog_tcp_port']],
-                                                       exception=exception)
-            if len(blockchain) == 0:
-                print('Failed to declare policy')
+    if not declare_policy_cmd.declare_node(conn=conn, config=config, location=location, exception=exception):
+        print('Failed to declare publisher node on blockchain')
 
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
-            
-    # blockchain sync 
-    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception):
-        print('Failed to set blockchain sync process')
 
-    # Post scheduler 1
-    if not post_cmd.start_scheduler1(conn=conn, exception=exception):
-        print('Failed to start scheduler 1')
+    if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
+        print('Failed to set data streaming to immediate')
 
     # Start publisher
     if not post_cmd.run_publisher(conn=conn, master_node=config['master_node'], dbms_name='file_name[0]', table_name='file_name[1]', compress_json=True, move_json=True, exception=exception):
         print('Failed to set buffering to start publisher')
-
-    if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
-        print('Failed to set data streaming to immediate')
 
 
