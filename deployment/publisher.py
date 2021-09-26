@@ -64,13 +64,7 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
         if not post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
             print('Failed to start MQTT client')
-
-    # execute AnyLog file
-    if 'execute_file' in config and config['execute_file'] == 'true':
-        if 'anylog_file' in config:
-            if not execute_anylog_file.execute_file(conn=conn, anylog_file=config['anylog_file'], exception=exception):
-                print('Failed to execute AnyLog file: %s' % config['anylog_file'])
-
+            
     # blockchain sync 
     if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception):
         print('Failed to set blockchain sync process')

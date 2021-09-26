@@ -118,7 +118,11 @@ def validate_config(config:dict)->bool:
                 if key not in config:
                     status = False
                     params.append(key)
-        if len(params) > 0:
-            print('Missing the following params in config: %s' % params)
+                    
+    if config['node_type'] not in ['master', 'operator', 'publisher', 'query']:
+        print('Invalid node_type: %s' % config['node_type'])
+        status = False
+    if len(params) > 0:
+        print('Missing the following params in config: %s' % params)
 
     return status

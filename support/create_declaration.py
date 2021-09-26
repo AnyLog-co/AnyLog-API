@@ -11,7 +11,7 @@ def __get_location()->str:
     """
     location = "0.0, 0.0"
     try:
-        r = requests.get("https://ipinfo.io/json")
+        r = requests.get("c")
     except:
         pass
     else:
@@ -127,3 +127,27 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['table'] = config['table']
 
     return node
+
+
+def declare_generic_policy(policy_type:str, policy_values:dict, location:bool)->dict: 
+    """
+    Declare location
+    :args: 
+        policy_type:str - the type of policy (ex. 'sensor' and 'device') 
+        policy_values:dict - key-value pairs correlated to device (ex. name, comapny, IP)
+        location:bool - for devices and senors -- add a location (lat and long) of the new policy.
+                        If set to (True), the location will be the same as that of the node from which the policy 
+                        was declared.     
+    :params:
+        new_policy:dict - policy to declare 
+    :return: 
+        new_policy
+    """
+    new_policy = {policy_type: policy_values}
+    if isinstance(location, bool) and location is True:
+        new_policy[policy_type]['loc'] = __get_location()
+    elif isinstanc(location, str):
+        new_policy[policy_type]['loc'] = location
+    
+    return new_policy
+        
