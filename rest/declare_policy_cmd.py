@@ -107,7 +107,7 @@ def declare_node(conn:anylog_api.AnyLogConnect, config:dict, location:bool, exce
 
 
 def declare_generic_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
-                           policy_values:str, location:bool=False, exception:bool=False)->bool:
+                           policy_values:str, location:bool=False, extract_id:bool=True, exception:bool=False)->str:
     """
     Declare a personalized policy such as 'sensor' and 'device'
     :args:
@@ -118,13 +118,48 @@ def declare_generic_policy(conn:anylog_api.AnyLogConnect, master_node:str, polic
         location:bool - for devices and senors -- add a location (lat and long) of the new policy.
                         If set to (True), the location will be the same as that of the node from which the policy 
                         was declared. [(]Sample hard-coded location:  "37.5072,-122.2605"]
+        extract_id:bool - Extract policy ID
         exception:bool - whether to print exception
     :params:
-        new_policy:dict - formatteed new poicy
+        node_id:str - ID of node
+        new_policy:dict - formatted new policy
     :return:
-        status of posting new_policy
+        node_id
+            - If extract_id is True and able to extract ID then return ID
+            - If able to add policy but no need for ID, return None
+            - If fails returns False
     """
+    node_id = None
     new_policy = create_declaration.declare_generic_policy(policy_type=policy_type, policy_values=policy_values,
                                                            location=location)
 
-    return blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node, exception=exception)
+    where_conditions = []
+    for param in new_policy[policy_type]:
+        if isinstance(new_policy[policy_type][param], str):
+            where_conditions.append('%s="%s"' % (param, new_policy[policy_type][param]))
+        else:
+            where_conditions.append('%s=%s' % (param, new_policy[policy_type][param]))
+
+    # Post ppolicy
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=where_conditions,
+                                                   exception=exception)
+        if len(blockchain) == 0:
+            status = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node,
+                                       exception=exception)
+            if status is False:
+                node_id = False
+            time.sleep(60)
+
+    # Extract ID
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) and extract_id is True and node_id is None:
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=where_conditions,
+                                                   exception=exception)
+
+        if len(blockchain) >= 1:
+            node_id = __extract_node_id(node_type=policy_type, blockchain=blockchain)
+        else:
+            node_id = False
+
+    return node_id
+

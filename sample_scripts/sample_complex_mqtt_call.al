@@ -1,0 +1,2 @@
+# The followiwng are some complex MQTT calls for using REST
+run mqtt client where broker=rest and user-agent=python and topic=(name=afg  and dbms="bring [dbms]" and table="bring [table]" and column.timestamp.timestamp="bring [timestamp]" and column.city.str = "bring [readings][city]" and column.wind_speed.float="bring [readings][wind_speed]" and column.temperature.float="bring [readings][temperature]" and column.humidity.int="bring [readings][humidity]")

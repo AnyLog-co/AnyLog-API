@@ -2,23 +2,6 @@ import __init__
 import anylog_api
 import blockchain_cmd
 
-def declare_generic_policy(conn:anylog_api.AnyLogConnect, policy_type:str, policy_values:dict, master_node:str,
-                           exception:bool=True):
-    """
-    Declare a generic policy (ie not AnyLog node
-    :args:
-        conn:anylog_api.AnyLogConnect - connection to AnyLog
-        policy_type:str - type of policy
-        policy_valus:dict - values in policy
-        master_node:str - master node IP+Port
-        exception:bool - whether to print exception
-    :params:
-        new_policy:dict - policy_type + policy_values
-    """
-    new_policy = {policy_type: policy_values}
-    blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node, exception=exception)
-
-
 def main():
     """
     The following is an example of adding an hierarchy of personalized policise to the AnyLog blockchain.
