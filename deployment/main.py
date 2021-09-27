@@ -15,7 +15,7 @@ import publisher
 import query
 
 
-def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, excpetion:bool=False)->dict:
+def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->dict:
     """
     Set configuration object containing data from both file & pre-set within AnyLog
     :args:
@@ -43,23 +43,23 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
 
     # Update config object with pre-set commands
     if config_data != {}:
-        hostname = get_cmd.get_hostname(conn=conn, exception=args.exception)
+        hostname = get_cmd.get_hostname(conn=conn, exception=exception)
         if hostname is not None:
             config_data['hostname'] = hostname
 
-        import_config = config.import_config(conn=conn, exception=args.exception)
+        import_config = config.import_config(conn=conn, exception=exception)
         if import_config != {}:
             config_data = {**config_data, **import_config}
 
         if post_config is True:
-            config.post_config(conn=conn, config=config_data, exception=args.exception)
+            config.post_config(conn=conn, config=config_data, exception=exception)
 
 
     return config_data
 
 
 
-def __default_end_components(conn:anylog_api.AnyLogConnect, node_type:str, master_node:str, deployment_file:str=None, exception:bool=False):
+def __default_components(conn:anylog_api.AnyLogConnect, node_type:str, master_node:str, deployment_file:str=None, exception:bool=False):
     """
     Deploy components that are required by all nodes
         - blockchain sync
@@ -135,7 +135,7 @@ def deployment():
         exit(1) 
 
     # Get config
-    config_data = __set_config(conn=anylog_conn,config_file=args.config_file, post_config=args.update_config, excpetion=args.exception)
+    config_data = __set_config(conn=anylog_conn,config_file=args.config_file, post_config=args.update_config, exception=args.exception)
     if config_data == {}:
         print("Failed to extract config from: '%s'" % args.config_file)
         exit(1)
