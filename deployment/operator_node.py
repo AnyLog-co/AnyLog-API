@@ -55,7 +55,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
             declare_operator = input('Failed to get cluster ID, would you like to declare an operator without it (y/n)? ').lower()
             while declare_operator not in ['y', 'n']:
                 declare_operator = input('Invalid option: %s. Would you like to like to declare an operator without cluster (y/n)? ').lower()
-    if declare_operator is 'y': # declare operator
+    if declare_operator == 'y': # declare operator
         if not declare_policy_cmd.declare_node(conn=conn, config=config, location=location, exception=exception):
             print('Failed to declare operator node on blockchain')
 
