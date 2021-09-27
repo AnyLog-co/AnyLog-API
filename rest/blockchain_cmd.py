@@ -88,13 +88,15 @@ def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:
     """
     status = True
     cmd = "blockchain pull to json !blockchain_file"
-    if master_node != 'local': 
-        cmd = 'run client (%s) %s' % (master_node, cmd.replace('!', '!!'))
-    r, error = conn.post(command=cmd)
+    if master_node == 'local':
+        r, error = conn.post(command=cmd)
+    else:
+        r, error = conn.post(command=cmd, remote_node=master_node)
+
     if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
         if master_node != 'local':
-            cmd = 'run client (%s) file get !!blockchain_file !blockchain_file' % master_node
-            r, error = conn.post(command=cmd)
+            cmd = 'file get !!blockchain_file !blockchain_file'
+            r, error = conn.post(command=cmd, remote_node=master_node)
             if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
                 status = True
     else: 
@@ -122,7 +124,30 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     raw_data="<policy=%s>" % policy 
 
     r, error = conn.post_policy(policy=raw_data, master_node=master_node)
-    status = errors.post_error(conn=conn.conn, command='post policy: %s' % raw_data, r=r, error=error, exception=exception)
+    status = errors.post_error(conn=conn.conn, command='blockchain post policy %s' % raw_data, r=r, error=error, exception=exception)
+    return status 
+
+
+def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exception:bool=False)->bool:
+    """
+    Drop policy from blockchain
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        policy:dict - policy to remove
+        master_node:str - master IP & Port
+        exception:bool
+    :params:
+        status:bool 
+        raw_data:str - raw data 
+    :return: 
+        status
+    """
+    if isinstance(policy, dict): # convert policy to str if dict
+        policy = json.dumps(policy)
+    raw_data="<policy=%s>" % policy 
+
+    r, error = conn.post_policy(policy=raw_data, master_node=master_node)
+    status = errors.post_error(conn=conn.conn, command='blockchain drop policy policy %s' % raw_data, r=r, error=error, exception=exception)
     return status 
 
 

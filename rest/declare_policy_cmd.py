@@ -16,12 +16,12 @@ def __extract_node_id(node_type:str, blockchain:dict)->str:
         node_id:str - ID of node
     """
     node_id = None
-    
     if 'id' in blockchain[0][node_type]:
-        try: 
+        try:
             node_id = blockchain[0][node_type]['id']
-        except Exception as e: 
+        except Exception as e:
             pass
+
     return node_id
 
 
@@ -41,7 +41,7 @@ def declare_cluster(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=F
         cluster_id
     """
     cluster_id = None
-    new_policy = create_declaration.declare_clustr(config=config)
+    new_policy = create_declaration.declare_cluster(config=config)
     
     # declare cluster if DNE 
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
@@ -52,18 +52,15 @@ def declare_cluster(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=F
         if len(blockchain) == 0:
             blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
                                        exception=exception)
-            time.sleep(60)
-        else: # extract cluster_id if already exists 
-            cluster_id = __extract_node_id(node_type=cluster, blockchain=blockchain)
 
     # extract cluster ID
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) and node_id is None:
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type='cluster',
                                                    where=['company="%s"' % config['company_name'],
                                                           'name=%s' % config['cluster_name']],
                                                    exception=exception)
         if len(blockchain) >= 1:
-            cluster_id = __extract_node_id(node_type=cluster, blockchain=blockchain)
+            cluster_id = __extract_node_id( node_type='cluster', blockchain=blockchain)
     
     return cluster_id
 
@@ -84,7 +81,7 @@ def declare_node(conn:anylog_api.AnyLogConnect, config:dict, location:bool, exce
     """
     status = True
     new_policy = create_declaration.declare_node(config=config, location=location)
-
+    blockchain = {}
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
         blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
                                                    where=['ip=%s' % config['external_ip'],
@@ -94,14 +91,14 @@ def declare_node(conn:anylog_api.AnyLogConnect, config:dict, location:bool, exce
             blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
                                        exception=exception)
 
-    time.sleep(60)
-    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                               where=['ip=%s' % config['external_ip'],
-                                                      'port=%s' % config['anylog_tcp_port']],
-                                               exception=exception)
+    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) and len(blockchain) == 0:
+        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
+                                                   where=['ip=%s' % config['external_ip'],
+                                                          'port=%s' % config['anylog_tcp_port']],
+                                                   exception=exception)
 
-    if len(blockchain) == 0:
-        status = False
+        if len(blockchain) == 0:
+            status = False
 
     return status
 

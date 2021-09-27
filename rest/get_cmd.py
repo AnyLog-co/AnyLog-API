@@ -47,6 +47,29 @@ def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     return status
 
 
+def get_node_id(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
+    """
+    Execute get node id
+    :args:
+        conn:anylog_api.AnyLogConnect - Connection to AnyLog
+        exception:bool - whether to print execptions or not
+    :params:
+        node_id:str - Node ID
+    :return:
+        node_id
+    """
+    node_id=None
+    r, error = conn.get(command='get status', query=False)
+
+    if not errors.get_error(conn.conn, command='get status', r=r, error=error, exception=exception):
+        try: # if returned as JSON then ID doesn't exist
+            r.json()
+        except Exception as e:
+            node_id = r.text
+
+    return node_id
+
+
 def get_event_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
     Get AnyLog evet log

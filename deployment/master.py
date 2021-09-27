@@ -5,6 +5,7 @@ import dbms_cmd
 import post_cmd
 import declare_policy_cmd
 
+
 def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
     Deploy a master node instance via REST 

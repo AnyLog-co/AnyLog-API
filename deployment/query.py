@@ -3,8 +3,8 @@ import post_cmd
 import anylog_api
 import blockchain_cmd
 import dbms_cmd
+import declare_policy_cmd
 import create_declaration
-import execute_anylog_file
 
 
 def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 

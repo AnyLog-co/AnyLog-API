@@ -22,7 +22,9 @@ def deploy_file(conn:anylog_api.AnyLogConnect, deployment_file:str, exception:bo
         with open(deployment_file, 'r') as f:
             try:
                 for line in f.readlines():
+                    print(line)
                     if not line.startswith('#') and not line.startswith('\n'):
+                        print(line)
                         r, error = conn.post(command=line.split('#')[0])
                         if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
                             status = False

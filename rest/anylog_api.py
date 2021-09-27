@@ -84,11 +84,12 @@ class AnyLogConnect:
 
         return r, error
 
-    def post(self, command:str)->(str, str):
+    def post(self, command:str, remote_node:str=None)->(str, str):
         """
         Generic POST command
         :args:
             command:str - command to execute
+            remote_node:str - IP & Port of a remote node. If set headers will include 'destination' header
         :param:
             r:requests.response - response from requests
             error:str - If exception during error
@@ -101,6 +102,9 @@ class AnyLogConnect:
             'command': command,
             'User-Agent': 'AnyLog/1.23'
         }
+        if remote_node is not None:
+            headers['destination'] = remote_node
+
         try:
             r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
         except Exception as e:
@@ -172,6 +176,40 @@ class AnyLogConnect:
 
         try:
             r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout, data=policy)
+        except Exception as e:
+            error = str(e)
+            r = False
+        else:
+            if int(r.status_code) != 200:
+                error = int(r.status_code)
+                r = False
+
+        return r, error
+
+    def drop_policy(self, policy:str, master_node:str)->bool:
+        """
+        Drop policy from blockchain
+        :args:
+            policy:str - policy to POST to blockchain
+            master_node:str - master node to post to
+        :params:
+            r:requests.response - response from requests
+            error:str - If exception during error
+            headers:dict - REST header info
+            raw_data:str - data to POST
+        :return:
+            r, error
+        """
+        error = None
+        headers = {
+            "command": "blockchain drop policy !policy",
+            "destination": master_node,
+            "Content-Type": "text/plain",
+            "User-Agent": "AnyLog/1.23"
+        }
+        try:
+            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout,
+                              data=policy)
         except Exception as e:
             error = str(e)
             r = False
