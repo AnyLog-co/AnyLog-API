@@ -49,7 +49,7 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
 
         import_config = config.import_config(conn=conn, exception=exception)
         if import_config != {}:
-            config_data = {**config_data, **import_config}
+            config_data = {**import_config, **config_data}
 
         if post_config is True:
             config.post_config(conn=conn, config=config_data, exception=exception)
