@@ -19,11 +19,12 @@ class AnyLogConnect:
         self.auth = auth
         self.timeout = timeout
 
-    def get(self, headers:dict)->(str, str):
+    def get(self, command:str, query:bool=False)->(str, str):
         """
         requests GET command
         :args:
-            headers:dict - header to execute
+            command:str - Command to execute
+            query:bool - whether to query locally or against network
         :param:
             r:requests.response - response from requests
             error:str - If exception during error
@@ -32,6 +33,13 @@ class AnyLogConnect:
             r, error
         """
         error = None
+        headers = {
+            'command': command,
+            'User-Agent': 'AnyLog/1.23'
+        }
+        if query is True:
+            headers['destination'] = 'network'
+
         try:
             r = requests.get('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
         except Exception as e:
