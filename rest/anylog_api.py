@@ -27,7 +27,6 @@ class AnyLogConnect:
         :param:
             r:requests.response - response from requests
             error:str - If exception during error
-            headers:dict - REST header
         :return:
             r, error
         """
@@ -39,6 +38,30 @@ class AnyLogConnect:
             r = False
 
         return r, error
+
+    def put(self, headers:dict, payload:str):
+        """
+        Execute a PUT command against AnyLog - mainly used for Data
+        :args:
+            headers:dict - header to execute
+        :param:
+            r:requests.response - response from requests
+            error:str - If exception during error
+        :return:
+            r, error
+        """
+        try:
+            r = requests.put('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers, data=payload)
+        except Exception as e:
+            error = str(e)
+            r = False
+        else:
+            if int(r.status_code) != 200:
+                error = int(r.status_code)
+                r = False
+
+        return r, error
+
 
     def put_data(self, dbms:str, table:str, payloads:str)->(str, str):
         """

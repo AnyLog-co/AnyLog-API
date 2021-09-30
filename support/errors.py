@@ -1,54 +1,28 @@
-def get_error(conn:str, command:str, r, error, exception:bool=True)->bool: 
+def print_error(conn:str, request_type:str, command:str, r, error, exception:bool=True)->bool:
     """
-    Print error for GET command 
-    :args: 
-        conn:str - REST connection info 
-        command:str - command executed 
+    Print exception for GET command
+    :args:
+        conn:str - REST connection info
+        request_type:str - request type (get, put, post)
+        command:str - command executed
         r, error - results from GET request
-        exection:bool - whether to screen print exception or not
-    :params: 
-        status:bool 
+        exception:bool - whether to screen print exception or not
+    :params:
+        status:bool
+        base_error:str - base error message (request type, conn, command)
     :return:
-        status 
+        if no error print False, else print True
     """
     status = False
-    if r is False: 
-        if exception is True:
-            print('Failed to execute command: %s' % command)
-        if isinstance(error, str): 
-            if exception is True: 
-                print('Failed to excute GET on %s (Error: %s)' % (conn, error)) 
-        elif isinstance(error, int):
-            if exception is True: 
-                print('Failed to execute GET on %s due to network error %s' % (conn, error))
+    base_error = 'Failed to execute %s against %s for "%s"' % (request_type.upper(), conn, command)
+    if r is False:
         status = True
+        if isinstance(error, str) and exception is True:
+            print(base_error + " (Error: %s)" % error)
+        elif isinstance(error, int) and exception is True:
+            print(base_error + " (Network Error: %s)" % error)
+        elif exception is False:
+            print(base_error)
+    return status
 
-    return status 
- 
-def post_error(conn:str, command:str, r, error, exception:bool=True)->bool: 
-    """
-    Print error for POST command 
-    :args: 
-        conn:str - REST connection info 
-        command:str - command executed 
-        r, error - results from GET request
-        exection:bool - whether to screen print exception or not
-    :params: 
-        status:bool 
-    :return:
-        status 
-    """ 
-    status = False
-    if r is False: 
-        if exception is True:
-            print('Failed to execute command: %s' % command)
-        if isinstance(error, str): 
-            if exception is True: 
-                print('Failed to excute POST on %s (Error: %s)' % (conn, error)) 
-        elif isinstance(error, int):
-            if exception is True: 
-                print('Failed to execute POST on %s due to network error %s' % (conn, error))
-        status = True
-
-    return status 
 
