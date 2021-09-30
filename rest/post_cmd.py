@@ -3,6 +3,12 @@ import anylog_api
 import get_cmd
 import errors
 
+HEADER = {
+    "command": None,
+    "User-Agent": "AnyLog/1.23"
+}
+
+
 def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool=False)->bool: 
     """
     POST value to dictionary
@@ -14,14 +20,18 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
     :param: 
         status:bool
         cmd:str - command to execute
+        HEADER:dict - header information
     :return: 
         status
     """
-    status = True 
+    status = True
     cmd = "set %s=%s" % (key, value)
-    r, error = conn.post(command=cmd)
-     
-    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True:  
+    if " " in value:
+        cmd = cmd.replace(value, '"%s"' % value)
+    HEADER['command'] = cmd
+
+    r, error = conn.post(headers=header)
+    if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
         status = False 
 
     return status 
@@ -35,14 +45,14 @@ def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
         exception:bool - whether or not to print error to screen 
     :params: 
         status:bool 
-        exception:bool
+        HEADER:dict - header information
     """
     status = True
-    cmd = "run scheduler 1" 
+    HEADER['command'] = "run scheduler 1"
 
     if 'not declared' in get_cmd.get_scheduler(conn=conn, scheduler_name='1', exception=exception): 
-        r, error = conn.post(command=cmd)
-        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True:  
+        r, error = conn.post(headers=HEADER)
+        if errors.print_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True:
             status = False 
 
     return status 
@@ -61,12 +71,15 @@ def run_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str,
         move_json:bool - send file to bkup
         exception:bool - whether or not to print error to screen 
     :params: 
-        status:bool 
+        status:bool
+        HEADER:dict - header information
         cmd:str - command to execute
     :return: 
         status
     """ 
     status = True
+    cmd = 'run publisher where compress_json=%s and move_json=%s and master_node=%s and dbms_name=%s and table_name=%s'
+
     if isinstance(compress_json, bool):
         compress_json = str(compress_json).lower()
     else: 
@@ -75,11 +88,11 @@ def run_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str,
         move_json = str(move_json).lower()
     else: 
         move_json = 'true' 
+    HEADER['command'] = cmd % (compress_json, move_json, master_node, dbms_name, table_name)
 
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Publisher')[-1].split('\r')[0]:
-        cmd = 'run publisher where compress_json=%s and move_json=%s and master_node=%s and dbms_name=%s and table_name=%s' % (compress_json, move_json, master_node, dbms_name, table_name)
-        r, error = conn.post(command=cmd)
-        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True:  
+        r, error = conn.post(headers=HEADER)
+        if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
             status = False 
 
     return status 
@@ -122,16 +135,17 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
         distributor = 'true'
     else:
         distributor = 'true'
-    cmd  = cmd % (create_table, update_tsd_info, archive, distributor, master_node)
+    HEADER['command'] = cmd % (create_table, update_tsd_info, archive, distributor, master_node)
 
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Operator')[-1].split('\r')[0]:
         r, error = conn.post(command=cmd)
-        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True:
+        if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
             status = False
 
         for cmd in ['run streamer', 'run data distributor', 'run data consumer where start_date=-30d']:
-            r, error = conn.post(command=cmd)
-            if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True:
+            HEADER['command'] = cmd
+            r, error = conn.post(headrs=HEADER)
+            if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
                 status = False
 
     return status
@@ -150,10 +164,10 @@ def set_immediate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)
         status 
     """
     status = True
-    cmd = "set buffer threshold where write_immediate = true"
+    HEADER['command'] = "set buffer threshold where write_immediate = true"
 
-    r, error = conn.post(command=cmd)
-    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True: 
+    r, error = conn.post(headers=HEADER)
+    if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
         status = False 
 
     return status 
@@ -217,12 +231,13 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
         cmd += ' and topic=%s' % config['mqtt_topic_name']
     else:
         execute_cmd = cmd + ' and topic=(name=%s and dbms=%s and table=%s and column.timestamp.timestamp=%s and column.value=(type=%s and value=%s))'
-        execute_cmd = execute_cmd % (config['mqtt_topic_name'], config['mqtt_topic_dbms'], config['mqtt_topic_table'],
+        cmd = execute_cmd % (config['mqtt_topic_name'], config['mqtt_topic_dbms'], config['mqtt_topic_table'],
                      config['mqtt_column_timestamp'], config['mqtt_column_value_type'], config['mqtt_column_value'])
-
-    r, error = conn.post(command=execute_cmd)
-    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) is True:
+    HEADER['command'] = cmd
+    r, error = conn.post(headers=HEAD)
+    if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
         status = False
+
     """
     # Bug with function
     if config['enable_other_mqtt'] == 'true' and status is not False and config['mqtt_topic_name'] != '#':

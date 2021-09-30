@@ -62,33 +62,26 @@ class AnyLogConnect:
 
         return r, error
 
-
-    def put_data(self, dbms:str, table:str, payloads:str)->(str, str):
+    def post(self, headers:dict, payload:dict=None):
         """
-        Send data to AnyLog via PUT
-        :sample payload:
-            {'column1': 'column value', 'column2': 'column value', 'column3': 'column value'...}
+        Execute POST command against AnyLog. payload is required under the following conditions:
+            1. payload can be data that you want to add into AnyLog, in which case you should also have an
+                MQTT client of type REST running on said node
+            2. payload can be a policy you'd like to add into the blockchain
+            3. payload can be a policy you'd like to remove from the blokchain -
+                note only works with Master, cannot remove a policy on a real blockchain like Ethereum.
         :args:
-            dbms:str - database name
-            table:str - table name
-            payloads:str - payloads to send data to AnyLog
+            headers:dict - request headers
+            payloads:dict - data to post
         :params:
             r:requests.response - response from requests
-            error:str - error meessage
-            headers:dict - REST headers
+            error:str - If exception during error
         :return:
             r, error
         """
-        headers = {
-            'type': 'json',
-            'dbms': dbms,
-            'table': table,
-            'mode': 'file',
-            'Content-Type': 'text/plain'
-        }
-
         try:
-            r = requests.put('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers, data=payloads)
+            r = requests.post('http://%s' % self.conn, headers=headers, data=payload, auth=self.auth,
+                              timeout=self.timeout)
         except Exception as e:
             error = str(e)
             r = False
@@ -96,8 +89,8 @@ class AnyLogConnect:
             if int(r.status_code) != 200:
                 error = int(r.status_code)
                 r = False
-
         return r, error
+
 
     def post(self, command:str, remote_node:str=None)->(str, str):
         """
@@ -122,109 +115,6 @@ class AnyLogConnect:
 
         try:
             r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
-        except Exception as e:
-            error = str(e)
-            r = False
-        else:
-            if int(r.status_code) != 200:
-                error = int(r.status_code)
-                r = False
-
-        return r, error
-
-    def post_data (self, data:dict)->(str, str):
-        """
-        Send data to AnyLog via POST (requires MQTT on node receiving the data)
-        :sample payload:
-            {'dbms': 'db_name', 'table': 'table_name', 'column1': 'column value', 'column2': 'column value'...}
-        :args:
-            data:dict - data to send to Operator
-        :params:
-            r:requests.response - response from requests
-            error:str - if exection during error
-            headers:dict - headers for REST
-            jdata:str - JSON conversion of data
-        :return:
-            r, error
-        """
-        error = None
-        headers = {
-            'command': 'data',
-            'User-Agent': 'AnyLog/1.23',
-            'Content-Type': 'text/plain'
-        }
-        try:
-            r = requests.post('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers, data=data)
-        except Exception as e:
-            error = str(e)
-            r = False
-        else:
-            if int(r.status_code) != 200:
-                error = int(r.status_code)
-                r = False
-
-        return r, error
-
-    def post_policy(self, policy:str, master_node:str)->(str, str):
-        """
-        POST to blockchain
-        :link:
-            https://github.com/AnyLog-co/documentation/blob/master/using%20rest.md#the-message-body-setups
-        :args:
-            policy:str - policy to POST to blockchain
-            master_node:str - master node to post to
-        :params:
-            r:requests.response - response from requests
-            error:str - If exception during error
-            headers:dict - REST header info
-            raw_data:str - data to POST
-        :return:
-            r, error
-        """
-        error = None
-        headers = {
-            "command": "blockchain push !policy",
-            "destination": master_node,
-            "Content-Type": "text/plain",
-            "User-Agent": "AnyLog/1.23"
-        }
-
-        try:
-            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout, data=policy)
-        except Exception as e:
-            error = str(e)
-            r = False
-        else:
-            if int(r.status_code) != 200:
-                error = int(r.status_code)
-                r = False
-
-        return r, error
-
-    def drop_policy(self, policy:str, master_node:str)->bool:
-        """
-        Drop policy from blockchain
-        :args:
-            policy:str - policy to POST to blockchain
-            master_node:str - master node to post to
-        :params:
-            r:requests.response - response from requests
-            error:str - If exception during error
-            headers:dict - REST header info
-            raw_data:str - data to POST
-        :return:
-            r, error
-        """
-        error = None
-        headers = {
-            "command": "blockchain drop policy !policy",
-            "destination": master_node,
-            "Content-Type": "text/plain",
-            "User-Agent": "AnyLog/1.23"
-        }
-        try:
-            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout,
-                              data=policy)
         except Exception as e:
             error = str(e)
             r = False
