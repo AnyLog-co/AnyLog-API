@@ -246,4 +246,71 @@ def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception
                 print('Failed to get information regarding MQTT client from: %s (Error: %s)' % (conn, e))
 
 
+def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destination='network', format:str='json', timezone:str='local',
+                  include:str=None, drop:bool=False, dest:str='stdout', file:str=None, output_table:str=None)->str:
+    """
+    Execute Query against AnyLog
+    :link:
+        https://github.com/AnyLog-co/documentation/blob/master/queries.md
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        dbms:str - logical databasee name
+        query:str - SELECT statement to execute
+        destination:str - Whether to query remote nodes ('network') or local node ('')
+        format:str - The format of the result set
+            * table
+            * json
+        timezone:str - timezone used for time values in the result set
+            * utc
+            * local
+        include:str - allows to treat remote tables with a different name as the table being queried
+        drop:bool - drop local output table when new query starts
+        dest:str - destination of result set
+            * stdout
+            * file
+            * dbms - requires to query sql system_query "SELECT * from output_table"...
+        file:str - file name for the output data
+        output_table:str - table name for the output data
+    :params:
+        HEADER:dict - header information
+        cmd:str - Query to execute
+    """
+    header = HEADER
+    cmd = 'sql %s "%s"' % (dbms, query)
+
+    """
+    validate destination type
+        if destination is of type file and file is not None - write results to file
+        if destination is of type dbms and table is not None - write to new table 
+        else: print to screen (stdout) 
+    """
+    if dest in ['stdout', 'file', 'dbms']:
+        if dest == 'file' and file is not None:
+            cmd = cmd.replace(dbms, dbms + 'dest=%s and file=%s and ' % (dest, file))
+        elif dest == 'dbms' and output_table is not None:
+            cmd = cmd.replace(dbms, dbms + ' dest=%s and table=%s and drop=%s and ' % (dest, output_table, drop))
+
+    if include is not None:
+        cmd = cmd.replace(dbms, dbms + ' include=(%s) and extend=(@table_name as table) and ' % include)
+
+    if timezone in ['utc', 'local']:
+        cmd = cmd.replace(dbms, dbms + ' timezone=%s and ' % timezone)
+
+    if format in ['table', 'json']:
+        cmd = cmd.replace(dbms, dbms + 'format=%s and ' % format)
+
+    if 'and "' in cmd.lower():
+        cmd = cmd.replace('and "', '"')
+
+    header['command'] = cmd
+    if destination is 'network':
+        header['destination'] = 'network'
+
+    r, error = conn.get(headers=header)
+    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
+        try:
+            return r.text
+        except Exception as e:
+            if exception is True:
+                print('Failed execute query [%s] from: %s (Error: %s)' % (conn, cmd, e))
 
