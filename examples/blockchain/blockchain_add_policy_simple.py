@@ -1,5 +1,6 @@
 import argparse
 import json
+import time
 
 import __init__
 import anylog_api
@@ -44,7 +45,7 @@ def main():
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # personalized hierarchy
-    policy = { 'panel': {
+    policy = {'panel': {
         'name': None,
         'city': None,
         'loc': None,
@@ -52,17 +53,39 @@ def main():
     }}
 
     for location in LOCATIONS:
+        run = 0
+        policy_id = None
         policy['panel']['name'] = 'Panel %s' % str(int(list(LOCATIONS).index(location)) + 1)
         policy['panel']['city'] = location
         policy['panel']['loc'] = LOCATIONS[location]
-        send_policy = "<policy=%s>" % json.dumps(policy)
 
-        # POST policy
-        if blockchain_cmd.drop_policy(conn=anylog_conn, policy=policy, master_node=args.master_node,
-                                      exception=True):
-            print('Policy Added')
+        while run <= 10:
+            # Pull from blockchain
+            if blockchain_cmd.pull_json(conn=anylog_conn, master_node=config['master_node'], exception=exception):
+                # check if policy in blockchain
+                blockchain = blockchain_cmd.blockchain_get(conn=anylog_conn, policy_type='panel',
+                                                           where=['company="%s"' % policy['panel']['company'],
+                                                                  'name=%s' % policy['panel']['name']],
+                                                           exception=exception)
+            if len(blockchain) == 0: # edd to blockchain
+                blockchain_cmd.post_policy(conn=anylog_conn, policy=policy, master_node=config['master_node'],
+                                           exception=exception)
+
+            if len(blockchain) >= 1 and 'id' in blockchain[0]['panel']: # extract policy id
+                try:
+                    policy_id = blockchain[0][policy_type]['id']
+                except Exception as e:
+                    pass
+                run = 11
+            else:
+                time.sleep(10)
+            run += 1
+
+        if policy_id is not None:
+            print('Policy added to blockchain')
         else:
-            print('Failed to add policy')
+            print('Failed to add policy to blockchain')
+
 
 if __name__ == '__main__':
     main()

@@ -1,3 +1,14 @@
+"""
+The following are generic GET commands often used by AnyLog. Examples:
+    * getting help
+    * information about the node
+    * logs
+    * executing a query
+They do not include
+    * blockchain processes
+    * database processes
+    * authentication
+"""
 import __init__
 import anylog_api
 import errors
@@ -58,7 +69,7 @@ def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     return status
 
 
-def get_node_id(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
+def get_node_id(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
     Execute get node id
     :args:
@@ -303,7 +314,7 @@ def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destinatio
         cmd = cmd.replace('and "', '"')
 
     header['command'] = cmd
-    if destination is 'network':
+    if destination == 'network':
         header['destination'] = 'network'
 
     r, error = conn.get(headers=header)

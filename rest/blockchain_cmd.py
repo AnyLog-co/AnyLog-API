@@ -5,6 +5,36 @@ import anylog_api
 import get_cmd
 import errors
 
+HEADER = {
+    "command": None,
+    "User-Agent": "AnyLog/1.23"
+}
+
+
+def master_pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:bool=False)->bool:
+    """
+    Blockchain pull to JSON from master node
+    :args:
+        conn:str - REST connection info
+        master_node:str - master node
+    :param:
+        status:bool
+        header:dict - Header
+    :return:
+        status
+    """
+    status = True
+    header = HEADER
+    header['command'] = "blockchain pull to json !blockchain_file"
+    if master_node != 'local':
+        header['command'] = header['command'].replace('!blockchain_file', '!!blockchain_file')
+        header['destination'] = master_node
+
+    r, error = conn.post(headers=header)
+    if errors.print_error(conn=conn.conn, request_type='post', command='blockchain pull to json', r=r, error=error, exception=exception):
+        status = False
+    return status
+
 
 def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:list=[], exception:bool=False)->list:
     """
@@ -32,6 +62,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
                cmd += " and"
 
     blockchain = []
+
     r, error = conn.get(command=cmd)
     if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
@@ -69,40 +100,7 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
             if 'true' in r.text: 
                 status = True
 
-    return status 
-
-
-def pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exception:bool=False)->bool: 
-    """
-    pull json from blockchain
-    :args: 
-        conn:str - REST connection info
-        master_node:str - master node
-        auth:tuple - Authentication information
-        timeout:int - REST timeout
-    :param: 
-        cmd:str - command to execute 
-        status:bool
-    :return:
-        status
-    """
-    status = True
-    cmd = "blockchain pull to json !blockchain_file"
-    if master_node == 'local':
-        r, error = conn.post(command=cmd)
-    else:
-        r, error = conn.post(command=cmd, remote_node=master_node)
-
-    if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
-        if master_node != 'local':
-            cmd = 'file get !!blockchain_file !blockchain_file'
-            r, error = conn.post(command=cmd, remote_node=master_node)
-            if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
-                status = True
-    else: 
-        status = False 
-
-    return status 
+    return status
 
 
 def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exception:bool=False)->bool: 

@@ -6,7 +6,7 @@ import errors
 
 def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, payloads:list, mode:str='streaming', exception:bool=False)->bool:
     """
-    Execute PUT datta against against AnyLog
+    Execute PUT data against against AnyLog
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         dbms:str - database name
@@ -19,7 +19,7 @@ def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, payloads:list, 
         header:dict - header to add
         json_payload:json format of payload
         r:requests.response - response from requests
-        error:str - error meessage
+        error:str - error message
     :return:
         status
     """

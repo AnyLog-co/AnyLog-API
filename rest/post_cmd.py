@@ -1,3 +1,12 @@
+"""
+The following are generic POST commands often used by AnyLog. Examples:
+    * adding a value to dictionary
+    * starting a procees such as scheduler
+They do not include
+    * blockchain processes
+    * database processes
+    * authentication
+"""
 import __init__
 import anylog_api
 import get_cmd
@@ -31,10 +40,34 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
     HEADER['command'] = cmd
 
     r, error = conn.post(headers=header)
-    if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
+    if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception):
         status = False 
 
     return status 
+
+
+def copy_file(conn:anylog_api.AnyLogConnect, remote_node:str, remote_file:str, local_file:str)->bool:
+    """
+    Copy from one node to another
+    :args:
+        conn:anylo_api.AnyLogConnect - REST connection to AnyLog, this should be the machine receiving the file(s)
+        remote_node:str - TCP IP & port of node sending the files
+        remote_file:str - path of remote file
+        loccal_file:str - path of local file
+    :params:
+        status:bool
+        header:dict - REST header
+    """
+    status = True
+    if remote_file.startswith('!') and not remote_file.startswith('!!'):
+        remote_file = remote_file.replace('!', '!!')
+    header['command'] = 'file get %s %s' % (remote_file, local_file)
+    header['destination'] == remote_node
+
+    r, error = conn.post(headers=header)
+    if errors.print_error(conn=conn.conn, request_type='post', command=header['coommand'], r=r, error=error, exception=exception):
+        status = False
+    return status
 
 
 def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
