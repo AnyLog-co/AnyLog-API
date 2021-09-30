@@ -3,6 +3,10 @@ import anylog_api
 import blockchain_cmd
 import errors
 
+HEADER = {
+    "command": None,
+    "User-Agent": "AnyLog/1.23"
+}
 
 def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """"
@@ -17,15 +21,17 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
         output
     """
     output = None
-    cmd = "get databases" 
-    r, error = conn.get(command=cmd, query=False)
+    HEADER['command'] = "get databases"
+    r, error = conn.get(headers=HEADER)
 
-    if not errors.get_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
+    if not errors.print_error(conn=conn.conn, request_type="get", command=HEADER['command'], r=r, error=error,
+                            exception=exception):
         try: 
             output = r.text
         except Exception as e:
             if exception is True:
                 print('Failed to extract data from GET (Error: %s)' % e)
+
     return output
 
 

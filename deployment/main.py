@@ -1,19 +1,22 @@
 import argparse
 import os
 
-import __init__
-import anylog_api
-import blockchain_cmd
-import get_cmd
-import post_cmd
-import config
-
+# deployment scripts
+import file_deployment
 import master
 import operator_node
-import file_deployment
 import publisher
 import query
 
+import __init__
+# REST directory
+import anylog_api
+import dbms_cmd
+import get_cmd
+import post_cmd
+
+# support directory
+import config
 
 def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->dict:
     """
@@ -58,8 +61,44 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
     return config_data
 
 
+def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->dict:
+    """
+    Deploy components that are required by all nodes at the start of the code
+        - validate connections
+        - read config_file
+        - validate node type
+        - connect to SQLite system_query if node_type isn't Query
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        config_file:str - User config file
+        post_config:bool - whether to update config within AnyLog
+        excpetion:bool - whether to print exception or not
+    :params:
+        config:dict - configs from file
+        dbms_list:dict - extracted db list
+    :return:
+        config
+    """
+    if get_cmd.get_status(conn=conn, exception=exception) is False:
+        print('Failed to get status from %s, cannot continue' % conn.conn)
+        exit(1)
 
-def __default_components(conn:anylog_api.AnyLogConnect, node_type:str, master_node:str, deployment_file:str=None, exception:bool=False):
+    config = __set_config(conn=conn, config_file=config_file, post_config=post_config, exception=exception)
+
+    if config['node_type'].lower() not in ['master', 'publisher', 'operator', 'query']:
+        print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query'."
+               +"Cannot continue") % config['node_type'])
+        exit(1)
+
+    dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+    if 'system_query' not in dbms_list:
+        if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
+            print('Failed to deploy system_query against %s node' % config['node_type'])
+
+    return config
+
+
+def __default_end_components(conn:anylog_api.AnyLogConnect, config:dict, deployment_file:str=None, exception:bool=False):
     """
     Deploy components that are required by all nodes
         - blockchain sync
@@ -74,7 +113,8 @@ def __default_components(conn:anylog_api.AnyLogConnect, node_type:str, master_no
         exception:bool - Exception print
     """
     # blockchain sync
-    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=master_node, exception=exception):
+    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'],
+                                          exception=exception):
         print('Failed to set blockchain sync process')
 
     # Post scheduler 1
@@ -87,7 +127,13 @@ def __default_components(conn:anylog_api.AnyLogConnect, node_type:str, master_no
         if os.path.isfile(full_path) and deployment_file is not None:
             file_deployment.deploy_file(conn=conn, deployment_file=full_path)
         elif deployment_file is not None:
-            print("File: '%s' does not exist" %     full_path)
+            print("File: '%s' does not exist" % full_path)
+
+    process_list = get_cmd.get_processes(conn=conn, exception=exception)
+    if process_list is not None:
+        print(process_list)
+    else:
+        print('Unable to get process list as such it is unclear whether an %s node was deployed...' % config['node_type'])
 
 def deployment():
     """
@@ -111,8 +157,7 @@ def deployment():
         -l, --location          LOCATION        If set to True & location not in config, add lat/long coordinates for new policies (default: True)
         -e, --exception         EXCEPTION       print exception errors (default: False)
     :params: 
-       anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
-       config_file:str - full path from args.config_file
+       anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog
        config_data:dict - config data (from file + hostname + AnyLog) 
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -129,33 +174,13 @@ def deployment():
     # Connect to AnyLog REST 
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
-    # Validate REST node is accessible 
-    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) is False: 
-        print('Failed to get status from %s, cannot continue' % args.rest_conn)
-        exit(1) 
+    # Prerequsit deployment
+    config_data = __default_start_components(conn=anylog_conn, config_file=args.config_file,
+                                             post_config=args.update_config, exception=args.exception)
 
-    # Get config
-    config_data = __set_config(conn=anylog_conn,config_file=args.config_file, post_config=args.update_config, exception=args.exception)
-    if config_data == {}:
-        print("Failed to extract config from: '%s'" % args.config_file)
-        exit(1)
-
-    if config.validate_config(config=config_data) is True:
-        if config_data['node_type'] == 'master':
-            master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
-        elif config_data['node_type'] == 'query':
-            query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
-        elif config_data['node_type'] == 'publisher':
-            publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
-        elif config_data['node_type'] == 'operator':
-            operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
-
-        __default_components(conn=anylog_conn, node_type=config_data['node_type'], master_node=config_data['master_node'],
-                             deployment_file=args.script_file, exception=args.exception)
-    
-
-        print('List of running processes for node type: %s' % config_data['node_type'])
-        print(get_cmd.get_processes(conn=anylog_conn, exception=args.exception))
+    print(config_data)
+    # post AnyLOg
+    __default_end_components(conn=anylog_conn, config=config, deployment_file=args.script_file, exception=args.exception)
 
 
 if __name__ == '__main__':

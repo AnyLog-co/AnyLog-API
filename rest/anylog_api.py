@@ -92,35 +92,3 @@ class AnyLogConnect:
         return r, error
 
 
-    def post(self, command:str, remote_node:str=None)->(str, str):
-        """
-        Generic POST command
-        :args:
-            command:str - command to execute
-            remote_node:str - IP & Port of a remote node. If set headers will include 'destination' header
-        :param:
-            r:requests.response - response from requests
-            error:str - If exception during error
-            headers:dict - REST header info
-        :return:
-            r, error
-        """
-        error = None
-        headers = {
-            'command': command,
-            'User-Agent': 'AnyLog/1.23'
-        }
-        if remote_node is not None:
-            headers['destination'] = remote_node
-
-        try:
-            r = requests.post('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
-        except Exception as e:
-            error = str(e)
-            r = False
-        else:
-            if int(r.status_code) != 200:
-                error = int(r.status_code)
-                r = False
-
-        return r, error

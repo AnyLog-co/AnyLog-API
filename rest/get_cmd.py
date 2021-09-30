@@ -285,6 +285,10 @@ def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destinatio
     :params:
         HEADER:dict - header information
         cmd:str - Query to execute
+    :return:
+        results from query
+    :notes:
+        code may move to dbms section
     """
     header = HEADER
     cmd = 'sql %s "%s"' % (dbms, query)
@@ -320,8 +324,7 @@ def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destinatio
     r, error = conn.get(headers=header)
     if not errors.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try:
-            return r.text
+            return r.json()
         except Exception as e:
-            if exception is True:
-                print('Failed execute query [%s] from: %s (Error: %s)' % (conn, cmd, e))
+            return r.text
 

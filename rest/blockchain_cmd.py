@@ -60,11 +60,11 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
            cmd += " " + value
            if value != where[-1]: 
                cmd += " and"
-
+    HEADER['command'] = cmd
     blockchain = []
 
-    r, error = conn.get(command=cmd)
-    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
+    r, error = conn.get(headers=HEADER)
+    if not errors.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             blockchain = r.json()
         except:
@@ -89,10 +89,10 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
         status
     """
     status = False 
-    cmd = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
+    HEADER['command'] = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
     
-    r, error = anylog_api.get(command=cmd, query=False)
-    if not errors.get_error(conn.conn, command=cmd, r=r, error=error, exception=exception):
+    r, error = anylog_api.get(headers=HEADER)
+    if not errors.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             if r.json()['local'] == 'true':
                 status = True 
@@ -117,12 +117,20 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     :return: 
         status
     """
+    status = True
+    header = HEADER
+    header['command'] = 'blockchain post policy !policy'
+    header['destination'] = master_node
+
     if isinstance(policy, dict): # convert policy to str if dict
         policy = json.dumps(policy)
-    raw_data="<policy=%s>" % policy 
+    raw_policy="<policy=%s>" % policy
 
-    r, error = conn.post_policy(policy=raw_data, master_node=master_node)
-    status = errors.post_error(conn=conn.conn, command='blockchain post policy %s' % raw_data, r=r, error=error, exception=exception)
+    r, error = conn.post(headers=header, payload=raw_policy)
+    if not errors.print_error(conn=conn.conn, request_type="post", command='blockchain post policy %s' % raw_policy,
+                              r=r, error=error, exception=exception):
+        status = False
+
     return status 
 
 
