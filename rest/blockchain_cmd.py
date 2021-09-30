@@ -44,7 +44,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
 
 def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bool: 
     """
-    Check if table exists blockchain 
+    Check if table exists in blockchain
     :args: 
         conn:str - REST connection info
         db_name:str - database you'd like to use
@@ -133,7 +133,7 @@ def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     Drop policy from blockchain
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
-        policy:dict - policy to remove
+        policy:dict - policy to drop
         master_node:str - master IP & Port
         exception:bool
     :params:
@@ -142,13 +142,16 @@ def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     :return: 
         status
     """
+    status = True
     if isinstance(policy, dict): # convert policy to str if dict
         policy = json.dumps(policy)
     raw_data="<policy=%s>" % policy 
 
-    r, error = conn.post_policy(policy=raw_data, master_node=master_node)
-    status = errors.post_error(conn=conn.conn, command='blockchain drop policy policy %s' % raw_data, r=r, error=error, exception=exception)
-    return status 
+    r, error = conn.drop_policy(policy=raw_data, master_node=master_node)
+    if errors.post_error(conn=conn.conn, command='blockchain drop policy policy %s' % raw_data, r=r, error=error, exception=exception):
+        status = False
+
+    return status
 
 
 def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connection:str=None, exception:bool=False)->bool: 
