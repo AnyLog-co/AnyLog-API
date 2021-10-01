@@ -3,7 +3,7 @@ import anylog_api
 import blockchain_cmd
 import dbms_cmd
 import post_cmd
-import declare_policy_cmd
+import policy_cmd
 
 
 def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
@@ -34,7 +34,7 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
         if not dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
             print('Failed to create table blockchain.ledger') 
 
-    node_id = declare_policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
+    node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
                                              master_node='local', location=location, exception=exception)
     if node_id is None:
         print('Failed to add node to blockchain')

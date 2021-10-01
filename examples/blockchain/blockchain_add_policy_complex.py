@@ -4,7 +4,7 @@ import time
 
 import __init__
 import anylog_api
-import declare_policy_cmd
+import policy_cmd
 import errors
 
 POLICIES = {
@@ -104,7 +104,7 @@ def main():
             policy['sensor']['sensor_type'] = policy_id['sensor_type']
 
         # declare policy
-        policy_id[key] = declare_policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node,
+        policy_id[key] = policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node,
                                                            new_policy=policy, exception=True)
 
         # validate policy was added

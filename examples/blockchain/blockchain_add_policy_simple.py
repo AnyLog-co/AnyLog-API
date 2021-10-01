@@ -4,7 +4,7 @@ import time
 
 import __init__
 import anylog_api
-import declare_policy_cmd
+import policy_cmd
 import errors
 
 LOCATIONS = {
@@ -57,7 +57,7 @@ def main():
         policy['panel']['name'] = 'Panel %s' % str(int(list(LOCATIONS).index(location)) + 1)
         policy['panel']['city'] = location
         policy['panel']['loc'] = LOCATIONS[location]
-        policy_id = declare_policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node, new_policy=policy, exception=True)
+        policy_id = policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node, new_policy=policy, exception=True)
 
         if policy_id is not None:
             print('Policy for %s added to blockchain' % policy['panel']['city'])
