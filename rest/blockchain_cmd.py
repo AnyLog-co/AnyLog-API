@@ -154,12 +154,17 @@ def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
         status
     """
     status = True
+    header = HEADER
+    header['command'] = 'blockchain drop policy !policy'
+    header['destination'] = master_node
+
     if isinstance(policy, dict): # convert policy to str if dict
         policy = json.dumps(policy)
-    raw_data="<policy=%s>" % policy 
+    raw_policy="<policy=%s>" % policy
 
-    r, error = conn.drop_policy(policy=raw_data, master_node=master_node)
-    if errors.post_error(conn=conn.conn, command='blockchain drop policy policy %s' % raw_data, r=r, error=error, exception=exception):
+    r, error = conn.post(headers=header, payload=raw_policy)
+    if errors.print_error(conn=conn.conn, request_type='post', command='blockchain drop policy %s' % raw_policy, r=r,
+                            error=error, exception=exception):
         status = False
 
     return status

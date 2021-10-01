@@ -3,7 +3,7 @@ import json
 
 import __init__
 import anylog_api
-import blockchain_cmd
+import policy_cmd
 import errors
 
 LOCATIONS = [
@@ -45,25 +45,14 @@ def main():
     # connect to AnyLog
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
-    # Pull latest blockchain
-    if blockchain_cmd.pull_json(conn=anylog_conn, master_node=args.master_node, exception=True):
-        for city in LOCATIONS:
-            # get value(s) from blockchain
-            where_condition = ['city="%s"' % city]
-            blockchain = blockchain_cmd.blockchain_get(conn=anylog_conn, policy_type="panel",
-                                                       where=where_condition, exception=True)
-
-            if len(blockchain) == 1:
-                policy = blockchain[0]
-                # Drop policy, when an error is returned the code
-                if blockchain_cmd.drop_policy(conn=anylog_conn, policy=policy, master_node=args.master_node,
-                                              exception=True):
-                    print('Policy with ID %s was dropped' % blockchain[0]['panel']['id'])
-                else:
-                    print('Policy with ID %s was not dropped' % blockchain[0]['panel']['id'])
-            else:
-                print(('With the given where condition(s) {%s} either no policies were returned or more than one policy'
-                     +' returned. As such wil not remove from blockchain.\nPlease update WHERE condition.') % where_condition)
+    # drop policy
+    for city in LOCATIONS:
+        status = policy_cmd.drop_policy(conn=anylog_conn, master_node=args.master_node, policy_type='panel',
+                                       query_params={'city': city}, exception=True)
+        if status is True:
+            print('Policy for %s was dropped' % city)
+        else:
+            print('Policy fro %s was not dropped' % city)
 
 
 if __name__ == '__main__':
