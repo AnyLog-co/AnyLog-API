@@ -64,7 +64,9 @@ POLICIES = {
 def main():
     """
     The following is an example of adding a set of policies where each policy requires the ID of the previous policy.
-    The example is used by a client who's interested in knowing where their solar panels are located.
+    The example is used by a client who's interested in a hierarchical view of their sensors both in terms of
+        manufacturer and customer.
+    Note - in their case each sensor corresponds to a different table in the database.
     :positional arguments:
         rest_conn             REST connection information
         master_node           TCP master information
