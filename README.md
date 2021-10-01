@@ -58,19 +58,18 @@ python3 $HOME/AnyLog-API/deployment/main.py ${IP}:${PORT} ${CONFIG_FILE}
 
 **To stop AnyLog docker instance docker**: 
 ```
-for cmd in stop rm ; do docker ${cmd} ${NODE_NAME} ; done
+docker stop ${NODE_NAME}
 ```
 
 
-## Issue
-1. [Questionnaire](config/questionnaire.sh) may have some bugs in it 
+## Next Steps
+1. Single execution for [Questionnaire](config/questionnaire.sh) and [docker instance deployment](deploy_node.sh) 
+    * Phase 1 - against local machine
+    * Phase 2 - against a remote machine
+   
 
+2. Improve [configuration](config/config.ini) to support more options. Such as:
+   * blockchain sync time
+   * unique partitions per table 
+   * For MQTT support more than one "value" column under a given topic
 
-2. Could add more variables to [config](config/config.ini) files  
-
-
-3. MQTT is very basic with only a single column support. Until issue is fixed we suggest using a script 
-file to deploy complex MQTT commands - [Sample File](examples/sample_complex_mqtt_call.al)
-
-
-5. Init node (remotely) using [docker_calls.py](deployment/docker_calls.py)
