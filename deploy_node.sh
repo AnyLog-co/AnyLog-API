@@ -50,7 +50,7 @@ thens
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
     -v ${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
-    -d oshadmon/anylog:${BUILD}
+    -it --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
 else # deploy AnyLog with broker port
   docker run --network host --name ${NODE_NAME} --rm \
     -e NODE_TYPE=rest \
@@ -59,6 +59,5 @@ else # deploy AnyLog with broker port
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
     -v ${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
-    -d oshadmon/anylog:${BUILD}
+    -it --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
 fi
-
