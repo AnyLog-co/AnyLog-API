@@ -4,6 +4,7 @@ import time
 
 import __init__
 import anylog_api
+import declare_policy_cmd
 import errors
 
 LOCATIONS = {
@@ -53,36 +54,13 @@ def main():
     }}
 
     for location in LOCATIONS:
-        run = 0
-        policy_id = None
         policy['panel']['name'] = 'Panel %s' % str(int(list(LOCATIONS).index(location)) + 1)
         policy['panel']['city'] = location
         policy['panel']['loc'] = LOCATIONS[location]
-
-        while run <= 10:
-            # Pull from blockchain
-            if blockchain_cmd.pull_json(conn=anylog_conn, master_node=config['master_node'], exception=exception):
-                # check if policy in blockchain
-                blockchain = blockchain_cmd.blockchain_get(conn=anylog_conn, policy_type='panel',
-                                                           where=['company="%s"' % policy['panel']['company'],
-                                                                  'name=%s' % policy['panel']['name']],
-                                                           exception=exception)
-            if len(blockchain) == 0: # edd to blockchain
-                blockchain_cmd.post_policy(conn=anylog_conn, policy=policy, master_node=config['master_node'],
-                                           exception=exception)
-
-            if len(blockchain) >= 1 and 'id' in blockchain[0]['panel']: # extract policy id
-                try:
-                    policy_id = blockchain[0][policy_type]['id']
-                except Exception as e:
-                    pass
-                run = 11
-            else:
-                time.sleep(10)
-            run += 1
+        policy_id = declare_policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node, new_policy=policy, exception=True)
 
         if policy_id is not None:
-            print('Policy added to blockchain')
+            print('Policy for %s added to blockchain' % policy['panel']['city'])
         else:
             print('Failed to add policy to blockchain')
 

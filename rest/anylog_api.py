@@ -50,6 +50,7 @@ class AnyLogConnect:
         :return:
             r, error
         """
+        error = None
         try:
             r = requests.put('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers, data=payload)
         except Exception as e:
@@ -79,6 +80,7 @@ class AnyLogConnect:
         :return:
             r, error
         """
+        error = None
         try:
             r = requests.post('http://%s' % self.conn, headers=headers, data=payload, auth=self.auth,
                               timeout=self.timeout)

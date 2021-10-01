@@ -11,6 +11,7 @@ import query
 import __init__
 # REST directory
 import anylog_api
+import blockchain_cmd
 import dbms_cmd
 import get_cmd
 import post_cmd
@@ -98,7 +99,7 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, p
     return config
 
 
-def __default_end_components(conn:anylog_api.AnyLogConnect, config:dict, deployment_file:str=None, exception:bool=False):
+def __default_end_components(conn:anylog_api.AnyLogConnect, config_data:dict, deployment_file:str=None, exception:bool=False):
     """
     Deploy components that are required by all nodes
         - blockchain sync
@@ -113,8 +114,7 @@ def __default_end_components(conn:anylog_api.AnyLogConnect, config:dict, deploym
         exception:bool - Exception print
     """
     # blockchain sync
-    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'],
-                                          exception=exception):
+    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', master_node=config_data['master_node'], exception=exception):
         print('Failed to set blockchain sync process')
 
     # Post scheduler 1
@@ -134,6 +134,7 @@ def __default_end_components(conn:anylog_api.AnyLogConnect, config:dict, deploym
         print(process_list)
     else:
         print('Unable to get process list as such it is unclear whether an %s node was deployed...' % config['node_type'])
+
 
 def deployment():
     """
@@ -174,13 +175,16 @@ def deployment():
     # Connect to AnyLog REST 
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
-    # Prerequsit deployment
+    # prerequisite deployment
     config_data = __default_start_components(conn=anylog_conn, config_file=args.config_file,
                                              post_config=args.update_config, exception=args.exception)
 
-    print(config_data)
-    # post AnyLOg
-    __default_end_components(conn=anylog_conn, config=config, deployment_file=args.script_file, exception=args.exception)
+
+    # node specific deployment
+    if config_data['node_type'] == 'master':
+        master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+
+    __default_end_components(conn=anylog_conn, config_data=config_data, deployment_file=args.script_file, exception=args.exception)
 
 
 if __name__ == '__main__':

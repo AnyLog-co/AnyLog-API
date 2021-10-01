@@ -2,12 +2,65 @@ import time
 
 import __init__
 import anylog_api
-import create_declaration
 import blockchain_cmd
+import create_declaration
+import post_cmd
 
+def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:dict, exception:bool=False)->str:
+    """
+    Code to call corresponding blockchain in order to declare policy & return node ID
+    :args:
+        conn:anylog_api.AnyLogConnect - connction to AnyLog
+        master_node:str - master node IP & Port
+        new_policy:dict - policy to deploy
+        exception:bool - whether to print exceptions
+    :params:
+        run:int - variable to use in while loop
+        policy_id:str - ID of either existing or created policy
+    :return:
+        node_id
+    """
+    run = 0
+    policy_id = None
+    while_conditions = []
+    policy_type = list(new_policy)[0]
+    for key in new_policy[policy_type]:
+        value = new_policy[policy_type][key]
+        if isinstance(value, str):
+            value = value.replace('"', '').replace("'", "").lstrip().rstrip()
+        stmt = '%s=%s'
+        if isinstance(value, str) and (" " in value or "+" in value):
+            stmt = '%s="%s"'
+        while_conditions.append(stmt % (key, value))
 
-def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config:dict, location:bool=False,
-                          exception:bool=False)->str:
+    while run <= 10:
+        # Pull from blockchain
+        pull_status = blockchain_cmd.master_pull_json(conn=conn, master_node=master_node, exception=exception)
+        if pull_status is True and master_node != 'local':
+            # copy file
+            post_cmd.copy_file(conn=conn, remote_node=master_node, remote_file='!!blockchain_file',
+                               local_file='!blockchain_file', exception=exception)
+        if pull_status is True:
+            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=while_conditions,
+                                                       exception=exception)
+        if len(blockchain) == 0: # add to blockchain
+            blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node,
+                                       exception=exception)
+        if len(blockchain) == 1 and 'id' in blockchain[0][policy_type]: # extract policy id
+            try:
+                policy_id = blockchain[0][policy_type]['id']
+            except Exception as e:
+                pass
+            else:
+                run = 11
+        else: # wait a few seconds between each iteration
+            time.sleep(10)
+        run += 1
+
+    return policy_id
+
+def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config:dict, master_node:str,
+                          location:bool=False, exception:bool=False)->str:
     """
     Declare an AnyLog policy to blockchain
         - master
@@ -18,12 +71,11 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         policy_type:str - type of policy to declare
+        master_node:str - IP & Port of master node, set to 'local' if running against master
         config:dict - configuration from file
         location:bool - whether to declare location in policy
         exception:bool - whether to print exceptions
     :params:
-        run:int - variable to use in while loop
-        policy_id:str - ID of either existing or created policy
         policy_name:str - from config extract policy_name
         new_policy:str - Policy to declare
     :retunr:
@@ -34,37 +86,13 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
 
     if policy_type.lower() in ['master', 'operator', 'publisher', 'query']:
         new_policy = create_declaration.declare_node(config=config, location=location)
-        policy_name = config['name']
     elif policy_type.lower() == 'cluster':
         new_policy = create_declaration.declare_cluster(config=config)
-        policy_name = config['cluster_name']
     else:
         if exception is True:
             print('Invalid policy of type: %s' % policy_type)
-        return policy_id
 
-    while run <= 10:
-        # Pull from blockchain
-        if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-            # check if in blockchain
-            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type,
-                                                       where=['company="%s"' % config['company_name'],
-                                                              'name=%s' % policy_name],
-                                                       exception=exception)
-        if len(blockchain) == 0: # add to blockchain
-            blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
-                                       exception=exception)
-        if len(blockchain) == 1 and 'id' in blockchain[0][policy_type]: # extract policy id
-            try:
-                policy_id = blockchain[0][policy_type]['id']
-            except Exception as e:
-                pass
-            run = 11
-        else: # wait a few seconds between each iteration
-            time.sleep(10)
-        run += 1
-
-    return policy_id
+    return declare_policy(conn=conn, master_node=master_node, new_policy=new_policy, exception=exception)
 
 
 

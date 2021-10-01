@@ -33,6 +33,9 @@ def master_pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exc
     r, error = conn.post(headers=header)
     if errors.print_error(conn=conn.conn, request_type='post', command='blockchain pull to json', r=r, error=error, exception=exception):
         status = False
+
+    if 'destination' in HEADER:
+        del HEADER['destination']
     return status
 
 
@@ -67,7 +70,8 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
     if not errors.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             blockchain = r.json()
-        except:
+        except Exception as e:
+            print(e, r.text)
             blockchain = r.text
             
     return blockchain 
@@ -90,7 +94,6 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
     """
     status = False 
     HEADER['command'] = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
-    
     r, error = anylog_api.get(headers=HEADER)
     if not errors.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
@@ -119,7 +122,7 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     """
     status = True
     header = HEADER
-    header['command'] = 'blockchain post policy !policy'
+    header['command'] = 'blockchain push !policy'
     header['destination'] = master_node
 
     if isinstance(policy, dict): # convert policy to str if dict
@@ -131,6 +134,8 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
                               r=r, error=error, exception=exception):
         status = False
 
+    if 'destination' in HEADER:
+        del HEADER['destination']
     return status 
 
 
@@ -160,7 +165,7 @@ def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     return status
 
 
-def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connection:str=None, exception:bool=False)->bool: 
+def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, master_node:str=None, exception:bool=False)->bool:
     """
     Set Blockchain sync 
     :args: 
@@ -169,7 +174,7 @@ def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connect
             --> master 
             --> dbms 
         time:str - how often data is synced
-        connection:str - for master source, the corresponding IP:PORT 
+        master_node:str - for master source, the corresponding IP:PORT
         exception:bool - whether to print error to screen
     :params: 
         status:bool 
@@ -182,18 +187,20 @@ def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, connect
         if exception is True:
             print('Invalid source: %s. Options: master, dbms' % source)
         status = False 
-    if source == 'master' and connection is None:
+    if source == 'master' and master_node is None:
         if exception is True:
-            print('When source is set to master, connection must be set')
+            print('When source is set to master, master_node must be set')
         status = False 
 
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Blockchain Sync')[-1].split('\r')[0] and status is True:
-        cmd = 'run blockchain sync where source=%s and time=%s and dest=file' % (source, time) 
-        if source == 'master': 
-            cmd += " and connection=%s" % connection
+        cmd = 'run blockchain sync where source=%s and time=%s and dest=file' % (source, time)
 
-        r, error = conn.post(command=cmd)
-        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
+        if source == 'master': 
+            cmd += " and connection=%s" % master_node
+        print(cmd)
+        HEADER['command'] = cmd
+        r, error = conn.post(headers=HEADER)
+        if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
             status = False
 
     return status 

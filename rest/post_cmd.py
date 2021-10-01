@@ -46,7 +46,7 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
     return status 
 
 
-def copy_file(conn:anylog_api.AnyLogConnect, remote_node:str, remote_file:str, local_file:str)->bool:
+def copy_file(conn:anylog_api.AnyLogConnect, remote_node:str, remote_file:str, local_file:str, exception:bool=False)->bool:
     """
     Copy from one node to another
     :args:
@@ -61,12 +61,16 @@ def copy_file(conn:anylog_api.AnyLogConnect, remote_node:str, remote_file:str, l
     status = True
     if remote_file.startswith('!') and not remote_file.startswith('!!'):
         remote_file = remote_file.replace('!', '!!')
+    header=HEADER
     header['command'] = 'file get %s %s' % (remote_file, local_file)
     header['destination'] = remote_node
 
     r, error = conn.post(headers=header)
-    if errors.print_error(conn=conn.conn, request_type='post', command=header['coommand'], r=r, error=error, exception=exception):
+    if errors.print_error(conn=conn.conn, request_type='post', command=header['command'], r=r, error=error, exception=exception):
         status = False
+
+    if 'destination' in HEADER:
+        del HEADER['destination']
     return status
 
 
@@ -85,7 +89,7 @@ def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
 
     if 'not declared' in get_cmd.get_scheduler(conn=conn, scheduler_name='1', exception=exception): 
         r, error = conn.post(headers=HEADER)
-        if errors.print_error(conn=conn.conn, command=HEADER['command'], r=r, error=error, exception=exception) is True:
+        if errors.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception) is True:
             status = False 
 
     return status 
