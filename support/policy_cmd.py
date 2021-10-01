@@ -41,6 +41,9 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
             # copy file
             post_cmd.copy_file(conn=conn, remote_node=master_node, remote_file='!!blockchain_file',
                                local_file='!blockchain_file', exception=exception)
+        else:
+            print('Faileed to pull from blockchain. Please double check master_node params in config. Current master: %s' % master_node)
+            exit(1)
         if pull_status is True:
             blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=while_conditions,
                                                        exception=exception)
