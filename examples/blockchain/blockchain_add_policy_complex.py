@@ -16,7 +16,7 @@ POLICIES = {
         'phone': '+4971140040990'
 
     },
-    'owner': {  # Owner of device (usually the customer)
+    'owner': {  # Owner of device (usually the customer or company generating the data)
         'name': 'Precision Engineering Inc',
         'Address': '400 St Louis St, Mobile, Alabama 36602, US',
         'url': 'http://www.precision-eng.com/',
@@ -29,7 +29,8 @@ POLICIES = {
         'manufacturer': '',
         'serial_number': 'SFb6HfZz'
     },
-    # for AnyLog API a user can (optionally) add a layer for each type of sensor or go directly to sensor(s) policies
+    # for AnyLog GUI a user can (optionally) add a layer for each type of sensor or go directly to sensor(s) policies
+    # in this case we're showing having a middle layer between the device(s) and sensor(s)
     'sensor_type': {
         'name': 'fic11',
         'device': '',
@@ -66,7 +67,7 @@ def main():
     The following is an example of adding a set of policies where each policy requires the ID of the previous policy.
     The example is used by a client who's interested in a hierarchical view of their sensors both in terms of
         manufacturer and customer.
-    Note - in their case each sensor corresponds to a different table in the database.
+    Note - in this case each sensor would corresponds to a different table in the database.
     :positional arguments:
         rest_conn             REST connection information
         master_node           TCP master information
