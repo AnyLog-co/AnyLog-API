@@ -183,6 +183,8 @@ def deployment():
     # node specific deployment
     if config_data['node_type'] == 'master':
         master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+    if config_data['node_type'] == 'publisher':
+        publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
 
     __default_end_components(conn=anylog_conn, config_data=config_data, deployment_file=args.script_file, exception=args.exception)
 

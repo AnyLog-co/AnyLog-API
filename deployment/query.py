@@ -3,7 +3,7 @@ import post_cmd
 import anylog_api
 import blockchain_cmd
 import dbms_cmd
-import declare_policy_cmd
+import policy_cmd
 import create_declaration
 
 

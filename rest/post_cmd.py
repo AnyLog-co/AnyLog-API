@@ -39,11 +39,39 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
         cmd = cmd.replace(value, '"%s"' % value)
     HEADER['command'] = cmd
 
-    r, error = conn.post(headers=header)
+    r, error = conn.post(headers=HEADER)
     if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception):
         status = False 
 
     return status 
+
+
+def generic_post(conn:anylog_api.AnyLogConnect, command:str, destination:str=None, exception:bool=False)->bool:
+    """
+    Execute a generic command via POST - used for deploying commands(s) in file
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        command:str - command to execute
+        destination:str - remote destination to execute against
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        header:dict - header for REST request
+    :return:
+        status
+    """
+    header = HEADER
+    header['command'] = command
+    if destination is not None:
+        header['destination'] = destination
+
+    r, error = conn.post(headers=header)
+    if errors.print_error(conn=conn.conn, request_type='post', command=command, r=r, error=error, exception=exception):
+        status = False
+
+    if 'destination' in HEADER:
+        del HEADER['destination']
+    return status
 
 
 def copy_file(conn:anylog_api.AnyLogConnect, remote_node:str, remote_file:str, local_file:str, exception:bool=False)->bool:
@@ -273,7 +301,7 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
         cmd = execute_cmd % (config['mqtt_topic_name'], config['mqtt_topic_dbms'], config['mqtt_topic_table'],
                      config['mqtt_column_timestamp'], config['mqtt_column_value_type'], config['mqtt_column_value'])
     HEADER['command'] = cmd
-    r, error = conn.post(headers=HEAD)
+    r, error = conn.post(headers=HEADER)
     if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
         status = False
 

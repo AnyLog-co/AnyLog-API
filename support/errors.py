@@ -14,7 +14,7 @@ def print_error(conn:str, request_type:str, command:str, r, error, exception:boo
         if no error print False, else print True
     """
     status = False
-    base_error = 'Failed to execute %s against %s for "%s"' % (request_type.upper(), conn, command)
+    base_error = 'Failed to execute %s against %s for: %s' % (request_type.upper(), conn, command)
     if r is False:
         status = True
         if isinstance(error, str) and exception is True:
