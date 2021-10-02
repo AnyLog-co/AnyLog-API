@@ -3,7 +3,7 @@ import json
 import __init__
 import anylog_api
 import get_cmd
-import errors
+import other_cmd
 
 HEADER = {
     "command": None,
@@ -31,7 +31,7 @@ def master_pull_json(conn:anylog_api.AnyLogConnect, master_node:str='local', exc
         header['destination'] = master_node
 
     r, error = conn.post(headers=header)
-    if errors.print_error(conn=conn.conn, request_type='post', command='blockchain pull to json', r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command='blockchain pull to json', r=r, error=error, exception=exception):
         status = False
 
     if 'destination' in HEADER:
@@ -67,7 +67,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where:lis
     blockchain = []
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             blockchain = r.json()
         except Exception as e:
@@ -95,7 +95,7 @@ def check_table(conn:str, db_name:str, table_name:str, exception:bool=False)->bo
     status = False 
     HEADER['command'] = "get table blockchain status where dbms = %s and name = %s" % (db_name, table_name)
     r, error = anylog_api.get(headers=HEADER)
-    if not errors.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             if r.json()['local'] == 'true':
                 status = True 
@@ -130,7 +130,7 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     raw_policy="<policy=%s>" % policy
 
     r, error = conn.post(headers=header, payload=raw_policy)
-    if not errors.print_error(conn=conn.conn, request_type="post", command='blockchain post policy %s' % raw_policy,
+    if not other_cmd.print_error(conn=conn.conn, request_type="post", command='blockchain post policy %s' % raw_policy,
                               r=r, error=error, exception=exception):
         status = False
 
@@ -163,7 +163,7 @@ def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     raw_policy="<policy=%s>" % policy
 
     r, error = conn.post(headers=header, payload=raw_policy)
-    if errors.print_error(conn=conn.conn, request_type='post', command='blockchain drop policy %s' % raw_policy, r=r,
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command='blockchain drop policy %s' % raw_policy, r=r,
                             error=error, exception=exception):
         status = False
 
@@ -205,7 +205,7 @@ def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, master_
         print(cmd)
         HEADER['command'] = cmd
         r, error = conn.post(headers=HEADER)
-        if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+        if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
             status = False
 
     return status 

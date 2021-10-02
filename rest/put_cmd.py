@@ -1,7 +1,7 @@
 import json
 import __init__
 import anylog_api
-import errors
+import other_cmd
 
 
 def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, payloads:list, mode:str='streaming', exception:bool=False)->bool:
@@ -38,17 +38,17 @@ def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, payloads:list, 
     if isinstance(payloads, dict):
         json_payload = json.dumps(payloads)
         r, error = conn.put(headers=header, payload=json_payload)
-        if errors.print_error(conn=conn.conn, request_type='PUT', command='PUT data', r=r, error=error, exception=exception):
+        if other_cmd.print_error(conn=conn.conn, request_type='PUT', command='PUT data', r=r, error=error, exception=exception):
             status = False
     elif isinstance(payloads, list):
         for payload in payloads:
             json_payload = json.dumps(payload)
             r, error = conn.put(headers=header, payload=json_payload)
-            if errors.print_error(conn=conn.conn, request_type='PUT', command='PUT data', r=r, error=error, exception=exception):
+            if other_cmd.print_error(conn=conn.conn, request_type='PUT', command='PUT data', r=r, error=error, exception=exception):
                 status = False
     elif isinstance(payloads, str):
         r, error = conn.put(headers=header, payload=payloads)
-        if errors.print_error(conn=conn.conn, request_type='PUT', command='PUT data', r=r, error=error, exception=exception):
+        if other_cmd.print_error(conn=conn.conn, request_type='PUT', command='PUT data', r=r, error=error, exception=exception):
             status = False
     else:
         status = False

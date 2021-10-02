@@ -1,3 +1,11 @@
+"""
+The following are simple methods used throughout the code, but aren't necesserily part of the code
+Examples:
+    * Error messages
+    * String formatting
+"""
+
+
 def print_error(conn:str, request_type:str, command:str, r, error, exception:bool=True)->bool:
     """
     Print exception for GET command
@@ -26,3 +34,25 @@ def print_error(conn:str, request_type:str, command:str, r, error, exception:boo
     return status
 
 
+def format_string(key:str, value:str)->str:
+    """
+    For blockchain WHERE conditions format key value pairs
+        if value is string: key="value"
+        else: key=value
+    :args:
+        key:str - key
+        value:str - value
+    :params:
+        frmt_string:str - formatted string
+    :return:
+        frmt_string
+    """
+    if isinstance(value , str):
+        value = value.replace('"', '').replace("'", "").lstrip().rstrip()
+
+    if isinstance(value, str) and (" " in value or "+" in value):
+        frmt_string = '%s="%s"' % (key, value)
+    else:
+        frmt_string = "%s=%s" % (key, value)
+
+    return frmt_string

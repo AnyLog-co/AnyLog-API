@@ -5,6 +5,7 @@ import anylog_api
 import blockchain_cmd
 import create_declaration
 import post_cmd
+import other_cmd
 
 def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:dict, exception:bool=False)->str:
     """
@@ -26,13 +27,7 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
     while_conditions = []
     policy_type = list(new_policy)[0]
     for key in new_policy[policy_type]:
-        value = new_policy[policy_type][key]
-        if isinstance(value, str):
-            value = value.replace('"', '').replace("'", "").lstrip().rstrip()
-        stmt = '%s=%s'
-        if isinstance(value, str) and (" " in value or "+" in value):
-            stmt = '%s="%s"'
-        while_conditions.append(stmt % (key, value))
+        while_conditions.append(other_cmd.format_string(key, new_policy[policy_type][key]))
 
     while run <= 10:
         # Pull from blockchain
@@ -99,8 +94,7 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
     return declare_policy(conn=conn, master_node=master_node, new_policy=new_policy, exception=exception)
 
 
-def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str, query_params:dict,
-                exception:bool)->bool:
+def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str, query_params:dict, exception:bool)->bool:
     """
     Drop policy based on type and a subset of parameters
     :args:
@@ -117,13 +111,7 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
     run = 0
     while_conditions = []
     for key in query_params:
-        value = query_params[key]
-        if isinstance(value, str):
-            value = value.replace('"', '').replace("'", "").lstrip().rstrip()
-        stmt = '%s=%s'
-        if isinstance(value, str) and (" " in value or "+" in value):
-            stmt = '%s="%s"'
-        while_conditions.append(stmt % (key, value))
+        while_conditions.append(other_cmd.format_string(key, query_params[key]))
 
     while run < 2 and status is True:
         # pull from blockchain
@@ -136,8 +124,6 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
             blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=while_conditions,
                                                        exception=exception)
 
-        print(blockchain)
-        exit(1)
         if run > 0 and len(blockchain) == 0: # if not first iteration validate policy was dropped
             pass
         elif len(blockchain) != 1: # if first iteration and len(blockchain) is 0 or greater than 1 there's an "issue" with the where
@@ -146,4 +132,5 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
             status = blockchain_cmd.drop_policy(conn=conn, policy=blockchain, master_node=master_node, exception=exception)
             time.sleep(10)
         run += 1
+        
     return status

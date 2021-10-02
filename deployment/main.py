@@ -171,7 +171,7 @@ def deployment():
     parser.add_argument('-u', '--update-config', type=bool, nargs='?', const=True,  default=False, help='Whether to update config within AnyLog')
     parser.add_argument('-l', '--location',      type=bool, nargs='?', const=False, default=True,  help='If set to True & location not in config, add lat/long coordinates for new policies')
     parser.add_argument('-e', '--exception',     type=bool, nargs='?', const=True,  default=False, help='print exception errors')
-    parser.add_argument('-s', '--stop-node',     type=bool, nargs='?', const=True,  default=True,  help='disconnect node without dropping corresponding policy')
+    parser.add_argument('-s', '--stop-node',     type=bool, nargs='?', const=True,  default=False,  help='disconnect node without dropping corresponding policy')
     parser.add_argument('-d', '--drop-node',     type=bool, nargs='?', const=True, default=False,  help='disconnect node and drop policy')
     args = parser.parse_args()
 

@@ -1,5 +1,6 @@
 import __init__
 import anylog_api
+import dbms_cmd
 import get_cmd
 import post_cmd
 import policy_cmd
@@ -12,15 +13,19 @@ def format_string(key:str, value:str)->str:
         value:str - value to be formatted
     """
 
-def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, drop_policy:bool=False, exception:bool=False):
+def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, clean_node:bool=False, exception:bool=False):
     """
     Disconnect node from network. If drop_policy is True policy will be dropped
-    Code does not drop table or cluster from ledger
+    Steps:
+        1. disconnect from processes lin process list
+        2. disconnect from databases
+        3. If "clean_node" is True:
+            - drop database(s)
+            - drop policy from node
     :args:
         conn:anylog_api.AnyLogConnect - connect to AnyLog
         config:dict - config from file
-
-        drop_policy:bool - whether to drop policy
+        clean_node:bool - to remove everything (but files) from node
         exception:bool - whether to print exceptions
     :params:
         master_node:str - corresponding master node
@@ -36,7 +41,6 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, drop_policy:bool
     if process_list is not None:
         for process in process_list.split('\n'):
             process_status = True
-            print(process)
             if 'running' in process.lower():
                 if process.split('|')[0].lstrip().rstrip() == 'Operator':
                     process_status = post_cmd.stop_process(conn=conn, process_name='operator', exception=exception)
@@ -51,14 +55,30 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, drop_policy:bool
 
                 if process_status is False:
                     print('Failed to stop %s' % process.split('|')[0].lstrip().rstrip())
-    # Drop policy
-    if 'company_name' in config:
-        if isinstance(value, str):
-            value = value.replace('"', '').replace("'", "").lstrip().rstrip()
-        stmt = '%s=%s'
-        if isinstance(value, str) and (" " in value or "+" in value):
-            stmt = '%s="%s"'
-        while_conditions.append(stmt % (key, value))
-    exit(1)
-    #post_cmd.drop_policy(conn=conn, master_node=master_node, policy_type=config['node_type'], query_params:dict,
-     #           exception:bool)->bool:
+
+    dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+    for dbms in dbms_list:
+
+    if clean_node is True:
+        """
+        Drop policy based on the following params: 
+            * company name
+            * node name
+            * external and internal IPs
+            * TCP and REST port
+        """
+        query_parmas = {}
+        if 'company_name' in config:
+            query_parmas['company'] = config['company_name']
+        if 'node_name' in config:
+            query_parmas['name'] = config['node_name']
+        if 'external_ip' in config:
+            query_parmas['ip'] = config['external_ip']
+        if 'ip' in config:
+            query_parmas['local_ip'] = config['ip']
+        if 'anylog_server_port' in config:
+            query_parmas['port'] = config['anylog_server_port']
+        if 'anylog_rest_port' in config:
+            query_parmas['rest_port'] = config['anylog_rest_port']
+        if not policy_cmd.drop_policy(conn=conn, master_node=master_node, policy_type=config['node_type'], query_params=query_parmas, exception=exception):
+            print('Failed to drop %s policy named: %s' % (config['node_type'], config['node_name']))

@@ -11,7 +11,7 @@ They do not include
 """
 import __init__
 import anylog_api
-import errors
+import other_cmd
 
 HEADER = {
     "command": None,
@@ -36,7 +36,7 @@ def get_help(conn:anylog_api.AnyLogConnect, command:str=None)->str:
     HEADER['command'] = help_stmt
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command=help_stmt, r=r, error=error, exception=True):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=help_stmt, r=r, error=error, exception=True):
         try: 
             return r.text()
         except Exception as e:
@@ -60,7 +60,7 @@ def get_status(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     HEADER['command'] = "get status"
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command='get status', r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get status', r=r, error=error, exception=exception):
         if 'running' not in r.text or 'not' in r.text:
             status = False
     else: 
@@ -83,7 +83,7 @@ def get_node_id(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     HEADER['command'] = 'get node id'
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command='get node id', r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get node id', r=r, error=error, exception=exception):
         try: # if returned as JSON then ID doesn't exist
             r.json()
         except Exception as e:
@@ -104,7 +104,7 @@ def get_event_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     HEADER['command'] = 'get event log'
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command='get event log', r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get event log', r=r, error=error, exception=exception):
         try: 
             return r.text
         except Exception as e: 
@@ -126,7 +126,7 @@ def get_error_log(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     HEADER['command'] = 'get error log'
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command='get error log', r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get error log', r=r, error=error, exception=exception):
         try: 
             return r.text
         except Exception as e: 
@@ -150,7 +150,7 @@ def get_dictionary(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     HEADER['command'] = 'get dictionary'
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command='get dictionary', r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get dictionary', r=r, error=error, exception=exception):
         try: 
             return r.text
         except Exception as e: 
@@ -171,7 +171,7 @@ def get_hostname(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """
     HEADER['command'] = 'get hostname'
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command='get hostname', r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get hostname', r=r, error=error, exception=exception):
         try: 
             return r.text
         except Exception as e: 
@@ -193,7 +193,7 @@ def get_processes(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     HEADER['command'] = 'get processes'
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command='get processes', r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get processes', r=r, error=error, exception=exception):
         try: 
             return r.text
         except Exception as e: 
@@ -221,7 +221,7 @@ def get_scheduler(conn:anylog_api.AnyLogConnect, scheduler_name:str=None, except
     HEADER['command'] = cmd
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             return r.text
         except Exception as e: 
@@ -249,7 +249,7 @@ def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception
     HEADER['command'] = cmd
 
     r, error = conn.get(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             return r.text
         except Exception as e: 
@@ -322,7 +322,7 @@ def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destinatio
         header['destination'] = 'network'
 
     r, error = conn.get(headers=header)
-    if not errors.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try:
             return r.json()
         except Exception as e:

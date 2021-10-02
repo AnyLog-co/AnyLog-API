@@ -10,7 +10,7 @@ They do not include
 import __init__
 import anylog_api
 import get_cmd
-import errors
+import other_cmd
 
 HEADER = {
     "command": None,
@@ -40,7 +40,7 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
     HEADER['command'] = cmd
 
     r, error = conn.post(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception):
         status = False 
 
     return status 
@@ -66,7 +66,7 @@ def generic_post(conn:anylog_api.AnyLogConnect, command:str, destination:str=Non
         header['destination'] = destination
 
     r, error = conn.post(headers=header)
-    if errors.print_error(conn=conn.conn, request_type='post', command=command, r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command=command, r=r, error=error, exception=exception):
         status = False
 
     if 'destination' in HEADER:
@@ -94,7 +94,7 @@ def copy_file(conn:anylog_api.AnyLogConnect, remote_node:str, remote_file:str, l
     header['destination'] = remote_node
 
     r, error = conn.post(headers=header)
-    if errors.print_error(conn=conn.conn, request_type='post', command=header['command'], r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command=header['command'], r=r, error=error, exception=exception):
         status = False
 
     if 'destination' in HEADER:
@@ -117,7 +117,7 @@ def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
 
     if 'not declared' in get_cmd.get_scheduler(conn=conn, scheduler_name='1', exception=exception): 
         r, error = conn.post(headers=HEADER)
-        if errors.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception) is True:
+        if other_cmd.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception) is True:
             status = False 
 
     return status 
@@ -157,7 +157,7 @@ def run_publisher(conn:anylog_api.AnyLogConnect, master_node:str, dbms_name:str,
 
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Publisher')[-1].split('\r')[0]:
         r, error = conn.post(headers=HEADER)
-        if errors.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error,
+        if other_cmd.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error,
                               exception=exception) is True:
             status = False 
 
@@ -205,14 +205,14 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
 
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Operator')[-1].split('\r')[0]:
         r, error = conn.post(headers=HEADER)
-        if errors.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error,
+        if other_cmd.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error,
                               exception=exception) is True:
             status = False
 
         for cmd in ['run streamer', 'run data distributor', 'run data consumer where start_date=-30d']:
             HEADER['command'] = cmd
             r, error = conn.post(headers=HEADER)
-            if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
+            if other_cmd.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
                 status = False
 
     return status
@@ -234,7 +234,7 @@ def set_immediate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)
     HEADER['command'] = "set buffer threshold where write_immediate = true"
 
     r, error = conn.post(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error, exception=exception) is True:
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error, exception=exception) is True:
         status = False 
 
     return status 
@@ -302,7 +302,7 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
                      config['mqtt_column_timestamp'], config['mqtt_column_value_type'], config['mqtt_column_value'])
     HEADER['command'] = cmd
     r, error = conn.post(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
         status = False
 
     """
@@ -353,6 +353,6 @@ def stop_process(conn:anylog_api.AnyLogConnect, process_name:str, exception:bool
 
     HEADER['command'] = 'exit %s' % process_name
     r, error = conn.post(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
         status = False
     return status

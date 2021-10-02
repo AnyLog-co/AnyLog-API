@@ -1,7 +1,7 @@
 import __init__
 import anylog_api
 import blockchain_cmd
-import errors
+import other_cmd
 
 HEADER = {
     "command": None,
@@ -24,7 +24,7 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     HEADER['command'] = "get databases"
     r, error = conn.get(headers=HEADER)
 
-    if not errors.print_error(conn=conn.conn, request_type="get", command=HEADER['command'], r=r, error=error,
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=HEADER['command'], r=r, error=error,
                             exception=exception):
         try: 
             output = r.text
@@ -69,11 +69,13 @@ def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, e
         cmd = "connect dbms %s %s %s %s" % (config['db_type'],  config['db_user'], config['db_port'], db_name)
         HEADER['command'] = cmd
         r, error = conn.post(headers=HEADER)
-        if not errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+        if not other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
             status = True
 
     return status 
 
+def disconnect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
+    pass
 
 def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool:
     """
@@ -96,7 +98,7 @@ def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, except
 
     r, error = conn.get(headers=HEADER)
 
-    if not errors.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
             if r.json()['local'] == 'true':
                 status = True 
@@ -130,7 +132,7 @@ def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exc
         cmd = "create table %s where dbms=%s" % (table_name, db_name)
         HEADER['command'] = cmd
         r, error = conn.post(headers=HEADER)
-        if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+        if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
             status = False 
     else: 
         status = False 
@@ -161,7 +163,7 @@ def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name
     cmd = "partition %s %s using %s by %s" % (db_name, table_name, ts_column, interval)
     HEADER['command'] = cmd
     r, error = conn.post(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception) :
+    if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception) :
             status = False
 
     return status
@@ -189,7 +191,7 @@ def get_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*
     cmd = "get partitions where dbms=%s and table=%s" % (db_name, table_name)
     HEADER['command'] = cmd
     r, error = conn.get(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception) :
+    if other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception) :
             status = False
     else:
         if r.text == 'No partitions declared' or r.status_code != 200:
