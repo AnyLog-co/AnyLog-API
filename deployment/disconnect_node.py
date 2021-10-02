@@ -48,7 +48,7 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, node_types:list=
                 elif process.split('|')[0].lstrip().rstrip() == 'Blockchain Sync':
                     process_status = post_cmd.stop_process(conn=conn, process_name='synchronizer', exception=exception)
                 elif process.split('|')[0].lstrip().rstrip() == 'MQTT':
-                    process_status = post_cmd.stop_process(conn=conn, process_name='mqtt, exception=exception')
+                    process_status = post_cmd.stop_process(conn=conn, process_name='mqtt', exception=exception)
                 elif process.split('|')[0].lstrip().rstrip() == 'Scheduler':
                     process_status = post_cmd.stop_process(conn=conn, process_name='scheduler', exception=exception)
 
@@ -107,7 +107,7 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, node_types:list=
                                               query_params=query_params, exception=exception) and node != 'query':
                         print('Failed to drop policy of type %s' % node)
         elif not policy_cmd.drop_policy(conn=conn, master_node=master_node, policy_type=config['node_type'],
-                                        query_params=query_params, exception=exception)
+                                        query_params=query_params, exception=exception):
                 print('Failed to drop policy of type %s' % config['node_type'])
 
 

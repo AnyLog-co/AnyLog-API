@@ -186,7 +186,7 @@ def deployment():
     parser.add_argument('-l', '--location',      type=bool, nargs='?', const=False, default=True,  help='If set to True & location not in config, add lat/long coordinates for new policies')
     parser.add_argument('-e', '--exception',     type=bool, nargs='?', const=True,  default=False, help='print exception errors')
     parser.add_argument('-s', '--stop-node',     type=bool, nargs='?', const=True,  default=False,  help='disconnect node without dropping corresponding policy')
-    parser.add_argument('-d', '--drop-node',     type=bool, nargs='?', const=True, default=False,  help='disconnect node and drop policy')
+    parser.add_argument('-c', '--clean-node',    type=bool, nargs='?', const=True, default=False,  help='disconnect node and drop database and policy from blockchain')
     args = parser.parse_args()
 
     # Connect to AnyLog REST 
@@ -196,7 +196,7 @@ def deployment():
     node_types, config_data = __default_start_components(conn=anylog_conn, config_file=args.config_file,
                                              post_config=args.update_config, exception=args.exception)
 
-    if args.stop_node is False and args.drop_node is False:
+    if args.stop_node is False and args.clean_node is False:
         if config_data['node_type'] == 'master':
             master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         if config_data['node_type'] == 'operator':
@@ -209,8 +209,8 @@ def deployment():
             single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.location,
                                          exception=args.exception)
         __default_end_components(conn=anylog_conn, config_data=config_data, deployment_file=args.script_file, exception=args.exception)
-    #else:
-    #    disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, drop_policy=args.drop_node, exception=args.exception)
+    else:
+        disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, clean_node=args.clean_node, exception=args.exception)
 
 if __name__ == '__main__':
     deployment() 
