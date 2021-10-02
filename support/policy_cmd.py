@@ -126,6 +126,7 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
         while_conditions.append(stmt % (key, value))
 
     while run < 2 and status is True:
+        # pull from blockchain
         pull_status = blockchain_cmd.master_pull_json(conn=conn, master_node=master_node, exception=exception)
         if pull_status is True and master_node != 'local':
             # copy file
@@ -135,6 +136,8 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
             blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=while_conditions,
                                                        exception=exception)
 
+        print(blockchain)
+        exit(1)
         if run > 0 and len(blockchain) == 0: # if not first iteration validate policy was dropped
             pass
         elif len(blockchain) != 1: # if first iteration and len(blockchain) is 0 or greater than 1 there's an "issue" with the where

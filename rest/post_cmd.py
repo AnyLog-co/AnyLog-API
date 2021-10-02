@@ -204,14 +204,14 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
     HEADER['command'] = cmd % (create_table, update_tsd_info, archive, distributor, master_node)
 
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Operator')[-1].split('\r')[0]:
-        r, error = conn.post(command=cmd)
+        r, error = conn.post(headers=HEADER)
         if errors.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error,
                               exception=exception) is True:
             status = False
 
         for cmd in ['run streamer', 'run data distributor', 'run data consumer where start_date=-30d']:
             HEADER['command'] = cmd
-            r, error = conn.post(headrs=HEADER)
+            r, error = conn.post(headers=HEADER)
             if errors.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception) is True:
                 status = False
 
@@ -314,4 +314,45 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
             status = False
     """
     
+    return status
+
+
+def stop_process(conn:anylog_api.AnyLogConnect, process_name:str, exception:bool=False)->bool:
+    """
+    process to exit specific node processes
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        process_name:str - process to exit
+            Process --> exit command
+            TCP --> tcp
+            REST --> rest
+            Operator --> operator
+            Publisher --> publisher
+            Blockchain Sync --> synchronizer
+            Scheduler --> scheduler
+            MQTT --> mqtt
+            SMTP --> smtp
+            Query Pool --> workers
+        It is not recommended to disconnect TCP or REST user will lose connection to AnyLog without using AL interface
+
+        exception:bool - whether to print error messages to screen 
+    :params: 
+        status:bool 
+        HEADER:dict - REST header 
+        r, error - request error messages 
+    :return: 
+        status
+    """
+    status = True
+    if process_name.lower() in ['tcp', 'rest']:
+        execute = input('Stopping %s process will require manually accessing the AL interface. Are you sure you want to continue (y/n)? ' % process_name)
+        while execute.lower() not in ['y', 'n']:
+            execute = input("Invalid option: %s. Are you sure you want disconnect '%s' (y/n)? " % (execute, process_name))
+        if execute.lower() == 'n':
+            return False
+
+    HEADER['command'] = 'exit %s' % process_name
+    r, error = conn.post(headers=HEADER)
+    if errors.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
+        status = False
     return status

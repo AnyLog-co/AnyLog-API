@@ -159,9 +159,9 @@ def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name
     """
     status = True
     cmd = "partition %s %s using %s by %s" % (db_name, table_name, ts_column, interval)
-
-    r, error = conn.post(command=cmd)
-    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) :
+    HEADER['command'] = cmd
+    r, error = conn.post(headers=HEADER)
+    if errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception) :
             status = False
 
     return status
@@ -187,9 +187,9 @@ def get_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*
     """
     status = True
     cmd = "get partitions where dbms=%s and table=%s" % (db_name, table_name)
-
-    r, error = conn.get(command=cmd, query=False)
-    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) :
+    HEADER['command'] = cmd
+    r, error = conn.get(headers=HEADER)
+    if errors.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception) :
             status = False
     else:
         if r.text == 'No partitions declared' or r.status_code != 200:
