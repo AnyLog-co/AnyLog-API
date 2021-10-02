@@ -162,31 +162,34 @@ def deployment():
         3. Set config - 4 part process  
         4. Based on node_type (from config) deploy a node via REST   
     :positional arguments:
-        rest_conn             REST connection information
-        config_file           AnyLog INI config file
+        rest-conn       REST_CONN       REST connection information
+        config-file     CONFIG_FILE     AnyLog INI config file
     :optional arguments:
-        -h, --help                              show this help message and exit
-        -a, --auth              AUTH            REST authentication information (default: None)
-        -t, --timeout           TIMEOUT         REST timeout period (default: 30)
-        -f, --script-file       SCRIPT_sFILE     If set run commands in file at the end of the deployment (default: None)
-        -u, --update-config     UPDATE_CONFIG   whether to update config within AnyLog                   (default: False)
-        -l, --location          LOCATION        If set to True & location not in config, add lat/long coordinates for new policies (default: True)
-        -e, --exception         EXCEPTION       print exception errors (default: False)
-    :params: 
+        -h, --help              HELP                     show this help message and exit
+        -a, --auth              AUTH:tuple               REST authentication information                                                     [default: None]
+        -t, --timeout           TIMEOUT:int              REST timeout period                                                                 [default: 30]
+        -f, --script-file       SCRIPT_FILE:str          If set run commands in file at the end of the deployment (must include path)        [default: None]
+        -u, --update-config     UPDATE_CONFIG:bool       Whether to update config within AnyLog dictionary                                   [default: False]
+        -l, --disable-location  DISABLE_LOCATION:bool    If set to True & location not in config, add lat/long coordinates for new policies  [default: True]
+        -s, --stop-node         STOP_NODE:bool           disconnect node without dropping corresponding policy                               [default: False]
+        -c, --clean-node        CLEAN_NODE:bool          disconnect node and drop database and policy from blockchain                        [default: False]
+        -e, --exception         EXCEPTION:bool           print exception errors                                                              [default: False]
+    :params:
        anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog
-       config_data:dict - config data (from file + hostname + AnyLog) 
+       config_data:dict - config data (from file + hostname + AnyLog)
+       node_types:list - config['node_type] if value contains more than one node
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('rest_conn',       type=str,   default='127.0.0.1:2049', help='REST connection information')
-    parser.add_argument('config_file',     type=str,   default=None, help='AnyLog INI config file')
+    parser.add_argument('rest-conn',       type=str,   default='127.0.0.1:2049', help='REST connection information')
+    parser.add_argument('config-file',     type=str,   default=None, help='AnyLog INI config file')
     parser.add_argument('-a', '--auth',    type=tuple, default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     parser.add_argument('-f', '--script-file',   type=str,   default=None, help='If set run commands in file at the end of the deployment (must include path)')
-    parser.add_argument('-u', '--update-config', type=bool, nargs='?', const=True,  default=False, help='Whether to update config within AnyLog')
-    parser.add_argument('-l', '--location',      type=bool, nargs='?', const=False, default=True,  help='If set to True & location not in config, add lat/long coordinates for new policies')
-    parser.add_argument('-e', '--exception',     type=bool, nargs='?', const=True,  default=False, help='print exception errors')
-    parser.add_argument('-s', '--stop-node',     type=bool, nargs='?', const=True,  default=False,  help='disconnect node without dropping corresponding policy')
-    parser.add_argument('-c', '--clean-node',    type=bool, nargs='?', const=True, default=False,  help='disconnect node and drop database and policy from blockchain')
+    parser.add_argument('-u', '--update-config', type=bool, nargs='?', const=True,  default=False, help='Whether to update config within AnyLog dictionary')
+    parser.add_argument('-l', '--disable-location', type=bool, nargs='?', const=False, default=True,  help='If set to True & location not in config, add lat/long coordinates for new policies')
+    parser.add_argument('-s', '--stop-node',  type=bool, nargs='?', const=True,  default=False,  help='disconnect node without dropping corresponding policy')
+    parser.add_argument('-c', '--clean-node', type=bool, nargs='?', const=True, default=False,  help='disconnect node and drop database and policy from blockchain')
+    parser.add_argument('-e', '--exception',  type=bool, nargs='?', const=True, default=False, help='print exception errors')
     args = parser.parse_args()
 
     # Connect to AnyLog REST 
@@ -198,19 +201,20 @@ def deployment():
 
     if args.stop_node is False and args.clean_node is False:
         if config_data['node_type'] == 'master':
-            master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+            master.master_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
         if config_data['node_type'] == 'operator':
-            operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+            operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
         if config_data['node_type'] == 'publisher':
-            publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+            publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
         if config_data['node_type'] == 'query':
-            query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+            query.query_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
         if config_data['node_type'] == 'single_node':
-            single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.location,
+            single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.disable_location,
                                          exception=args.exception)
         __default_end_components(conn=anylog_conn, config_data=config_data, deployment_file=args.script_file, exception=args.exception)
     else:
         disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, clean_node=args.clean_node, exception=args.exception)
+
 
 if __name__ == '__main__':
     deployment() 
