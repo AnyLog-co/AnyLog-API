@@ -63,7 +63,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                                                       master_node=config['master_node'], location=location,
                                                       exception=exception)
         if node_id is None:
-            rint('Failed to add % node to blockchain' % config['node_typp'])
+            print('Failed to add % node to blockchain' % config['node_typp'])
     else:
         print("Notice: Operator node was not added to the blockchain as a corresponding cluster ID wasn't found.")
 

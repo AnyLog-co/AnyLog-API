@@ -8,6 +8,7 @@ import master
 import operator_node
 import publisher
 import query
+import single_node
 
 import __init__
 # REST directory
@@ -77,6 +78,7 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, p
         excpetion:bool - whether to print exception or not
     :params:
         config:dict - configs from file
+        node_types:list - extraction of config['node_type'] as a list
         dbms_list:dict - extracted db list
     :return:
         config
@@ -87,17 +89,29 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, p
 
     config = __set_config(conn=conn, config_file=config_file, post_config=post_config, exception=exception)
 
-    if config['node_type'].lower() not in ['master', 'publisher', 'operator', 'query']:
-        print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query'."
-               +"Cannot continue") % config['node_type'])
+    node_types = config['node_type'].split(',')
+    if len(node_types) == 1:
+        config['node_type'] = node_types[0]
+    else:
+        config['node_type'] = 'single_node'
+        for node in node_types:
+            if node not in ['master', 'publisher', 'operator', 'query']:
+                print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' "
+                     + "or 'single_node'. Cannot continue...") % config['node_type'])
+                exit(1)
+
+    if config['node_type'].lower() not in ['master', 'publisher', 'operator', 'query', 'single_node']:
+        print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' or"
+               +"'single_node'. Cannot continue...") % config['node_type'])
         exit(1)
 
-    dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
-    if 'system_query' not in dbms_list:
-        if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
-            print('Failed to deploy system_query against %s node' % config['node_type'])
+    if config['node_type'] != 'query' and 'query' not in node_types:
+        dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+        if 'system_query' not in dbms_list:
+            if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
+                print('Failed to deploy system_query against %s node' % config['node_type'])
 
-    return config
+    return node_types, config
 
 
 def __default_end_components(conn:anylog_api.AnyLogConnect, config_data:dict, deployment_file:str=None, exception:bool=False):
@@ -179,11 +193,10 @@ def deployment():
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # prerequisite deployment
-    config_data = __default_start_components(conn=anylog_conn, config_file=args.config_file,
+    node_types, config_data = __default_start_components(conn=anylog_conn, config_file=args.config_file,
                                              post_config=args.update_config, exception=args.exception)
 
     if args.stop_node is False and args.drop_node is False:
-        # node specific deployment
         if config_data['node_type'] == 'master':
             master.master_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         if config_data['node_type'] == 'operator':
@@ -192,9 +205,12 @@ def deployment():
             publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
         if config_data['node_type'] == 'query':
             query.query_init(conn=anylog_conn, config=config_data, location=args.location, exception=args.exception)
+        if config_data['node_type'] == 'single_node':
+            single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.location,
+                                         exception=args.exception)
         __default_end_components(conn=anylog_conn, config_data=config_data, deployment_file=args.script_file, exception=args.exception)
-    else:
-        disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, drop_policy=args.drop_node, exception=args.exception)
+    #else:
+    #    disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, drop_policy=args.drop_node, exception=args.exception)
 
 if __name__ == '__main__':
     deployment() 

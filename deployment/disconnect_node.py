@@ -58,7 +58,8 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, clean_node:bool=
 
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
     for dbms in dbms_list:
-
+        pass
+    
     if clean_node is True:
         """
         Drop policy based on the following params: 

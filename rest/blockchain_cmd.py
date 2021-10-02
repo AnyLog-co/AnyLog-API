@@ -202,7 +202,6 @@ def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, master_
 
         if source == 'master': 
             cmd += " and connection=%s" % master_node
-        print(cmd)
         HEADER['command'] = cmd
         r, error = conn.post(headers=HEADER)
         if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):

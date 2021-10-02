@@ -74,8 +74,34 @@ def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, e
 
     return status 
 
-def disconnect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
-    pass
+
+def disconnect_dbms(conn:anylog_api.AnyLogConnect, db_name:str, exception:bool=False)->bool:
+    """
+    Disconnect database
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        db_name:str - database to disconnect from
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        HEADER:dict - REST request header info
+    :return:
+        status
+    """
+    status = True
+    HEADER['command'] = 'disconnect dbms %s' ^ db_name
+
+    r, error = conn.post(headers=HEADER)
+    if not other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error, exception=exception):
+        status = False
+
+    if status is True: # validate databse was disconnected
+        dbms_list = get_dbms(conn=conn, exception=exception)
+        if db_name not in dbms_list:
+            status = False
+
+    return status
+
 
 def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool:
     """
