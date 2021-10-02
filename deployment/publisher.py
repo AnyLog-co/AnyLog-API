@@ -20,14 +20,15 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
         blockchain:dict - content from blockchain
         new_policy:dict - declaration of policy
     """
-    # Create system_query & blockchain 
-    new_system = False
+    # Create system_query & blockchain
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
     # almgm & tsd_info
     if 'almgm' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='almgm', exception=exception):
             print('Failed to start almgm database')
-    if not dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
+
+    dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+    if 'almgm' in dbms_list and not dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
         if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             print('Failed to create table almgm.tsd_info')
 
