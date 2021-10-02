@@ -8,13 +8,13 @@ HEADER = {
     "User-Agent": "AnyLog/1.23"
 }
 
-def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
+def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     """"
-    Get list of connected databases 
-    :args: 
+    Get list of connected databases
+    :args:
         conn:anylog_api.AnyLogConnect - REST AnyLog Connection
         exception:bool - whether or not to print exception
-    :params: 
+    :params:
         output:str - list of databases
         cmd:str - command to execute
     :return:
@@ -26,7 +26,7 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
 
     if not other_cmd.print_error(conn=conn.conn, request_type="get", command=HEADER['command'], r=r, error=error,
                             exception=exception):
-        try: 
+        try:
             output = r.text
         except Exception as e:
             if exception is True:
@@ -89,17 +89,41 @@ def disconnect_dbms(conn:anylog_api.AnyLogConnect, db_name:str, exception:bool=F
         status
     """
     status = True
-    HEADER['command'] = 'disconnect dbms %s' ^ db_name
+    HEADER['command'] = 'disconnect dbms %s' % db_name
 
     r, error = conn.post(headers=HEADER)
     if not other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error, exception=exception):
         status = False
 
-    if status is True: # validate databse was disconnected
+    if status is True: # validate database was disconnected
         dbms_list = get_dbms(conn=conn, exception=exception)
         if db_name not in dbms_list:
             status = False
 
+    return status
+
+
+def drop_dbms(conn:anylog_api.AnyLogConnect, db_name:str, db_type:str, exception:bool=False)->bool:
+    """
+    Drop database
+        :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        db_name:str - database to drop
+        db_type:str - logical database type (ex. SQLite, Postgres)
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        HEADER:dict - REST request header info
+    :return:
+        status
+    """
+    status = True
+    HEADER['command'] = 'drop dbms %s from %s' % (db_name, db_type)
+
+    r, error = conn.post(headers=HEADER)
+    if not other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error,
+                                 exception=exception):
+        status = False
     return status
 
 
