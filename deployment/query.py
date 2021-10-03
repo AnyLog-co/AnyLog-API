@@ -3,8 +3,9 @@ import post_cmd
 import anylog_api
 import blockchain_cmd
 import dbms_cmd
+import policy_cmd
 import create_declaration
-import execute_anylog_file
+
 
 def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
     """
@@ -22,46 +23,18 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
         blockchain:dict - content from blockchain
         new_policy:dict - declaration of policy
     """
-    # Create system_query & blockchain 
-    new_system = False
+    # Create system_query & blockchain
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
-    if dbms_list == 'No DBMS connections found': 
-        new_system = True
-    if new_system is True or 'system_query' not in dbms_list:
+
+    if 'system_query' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception):
-            print('Failed to start system_query database') 
+            print('Failed to start system_query database')
 
-    # Pull blockchain & declare node if not exists 
-    if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception):
-        blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                   where=['ip=%s' % config['external_ip'],
-                                                          'port=%s' % config['anylog_tcp_port']],
-                                                   exception=exception)
-        if len(blockchain) == 0:
-            new_policy = create_declaration.declare_node(config=config, location=location)
-            post_policy = blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=config['master_node'],
-                                                     exception=exception)
+    node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
+                                               master_node=config['master_node'], location=location, exception=exception)
+    if node_id is None:
+        print('Failed to add % node to blockchain' % config['node_typp'])
 
-        if len(blockchain) == 0 and blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'],
-                                                             exception=exception):
-            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=config['node_type'],
-                                                       where=['ip=%s' % config['external_ip'],
-                                                              'port=%s' % config['anylog_tcp_port']],
-                                                       exception=exception)
-            if len(blockchain) == 0:
-                print('Failed to declare policy')
 
-    # blockchain sync 
-    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', connection=config['master_node'], exception=exception):
-        print('Failed to set blockchain sync process')
 
-    # execute AnyLog file
-    if 'execute_file' in config and config['execute_file'] == 'true':
-        if 'anylog_file' in config:
-            if not execute_anylog_file.execute_file(conn=conn, anylog_file=config['anylog_file'],
-                                                    exception=exception):
-                print('Failed to execute AnyLog file: %s' % config['anylog_file'])
 
-    # Post scheduler 1 
-    if not post_cmd.start_scheduler1(conn=conn, exception=exception):
-        print('Failed to start scheduler 1') 

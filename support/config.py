@@ -54,7 +54,7 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
             print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
 
 
-def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
+def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
     """
     Extract parameters from AnyLog dictionary into dictionary  
     :args: 
@@ -68,7 +68,7 @@ def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
     """
     data = {} 
     dictionary = get_cmd.get_dictionary(conn=conn, exception=exception)
-    if dictionary != None: 
+    if dictionary is not None:
         for value in dictionary.split('\n'):
             if value != '\r' and value != '':  
                 data[value.split(':', )[0].rstrip().lstrip()] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
@@ -118,7 +118,11 @@ def validate_config(config:dict)->bool:
                 if key not in config:
                     status = False
                     params.append(key)
-        if len(params) > 0:
-            print('Missing the following params in config: %s' % params)
+                    
+    if config['node_type'] not in ['master', 'operator', 'publisher', 'query']:
+        print('Invalid node_type: %s' % config['node_type'])
+        status = False
+    if len(params) > 0:
+        print('Missing the following params in config: %s' % params)
 
     return status

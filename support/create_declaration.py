@@ -1,9 +1,14 @@
+"""
+The following configures AnyLog node policy based on the provided configuration
+"""
 import requests
 
 
 def __get_location()->str:
     """
     Get location using https://ipinfo.io/json
+    :note:
+        the location provided is that of the IP from which the REST process is running
     :param:
         location:str - location information from request (default: 0.0, 0.0)
     :return:
@@ -63,10 +68,13 @@ def declare_cluster(config:dict)->dict:
         cluster['cluster']['name'] = '%s-cluster' % config['company_name'].lower().replace(' ', '-')
     else:
         cluster['cluster']['name'] = 'new-cluster'
-    if 'table' in config:
-        cluster['cluster']['table'] = __format_tables(config['default_dbms'], config['table'].split(','))
-    else:
-        cluster['cluster']['dbms'] = config['default_dbms']
+
+    if 'default_dbms' in config:
+        if 'table' in config:
+            cluster['cluster']['table'] = __format_tables(config['default_dbms'], config['table'].split(','))
+        else:
+            cluster['cluster']['dbms'] = config['default_dbms']
+
     return cluster
 
 
@@ -122,8 +130,11 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['cluster'] = config['cluster_id']
 
     if 'default_dbms' in config:
-        node[config['node_type']]['dbms'] = config['default_dbms']
-    elif 'table' in config:
-        node[config['node_type']]['table'] = config['table']
+        if 'table' in config and 'cluster_id' not in config:
+            # if node is correlated to a cluster there's no need to specify tables within policy
+            node[config['node_type']]['table'] = config['table'].split(',')
+        else:
+            node[config['node_type']]['dbms'] = config['default_dbms']
 
     return node
+
