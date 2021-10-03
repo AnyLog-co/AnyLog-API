@@ -223,7 +223,7 @@ def get_scheduler(conn:anylog_api.AnyLogConnect, scheduler_name:str=None, except
     r, error = conn.get(headers=HEADER)
     if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
         try: 
-            if 'Scheduler Status: Not Running' in r.text:
+            if 'Scheduler Status: Not Running' in r.text or 'Scheduler %s not declared' % scheduler_name == r.text:
                 return 'not declared'
             return r.text
         except Exception as e: 

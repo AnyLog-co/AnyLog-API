@@ -105,7 +105,7 @@ AnyLog-API anylog-node$ python3 $HOME/AnyLog-API/deployment/main.py ${IP}:${PORT
 AnyLog-API anylog-node$ python3 $HOME/AnyLog-API/deployment/main.py 10.0.0.80:2049 $HOME/AnyLog-API/config/publisher.ini -f $HOME/AnyLog-API/examples/sample_complex_mqtt_call.al -e   
 ```
 
-
+    
 5. To stop AnyLog docker instance docker 
 ```
 docker stop ${NODE_NAME}

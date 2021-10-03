@@ -64,34 +64,44 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
     return config_data
 
 
-def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->dict:
+def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, deployment_file:str=None,
+                               post_config:bool=False, exception:bool=False)->dict:
     """
+    # Part 1
     Deploy components that are required by all nodes at the start of the code
         - validate connections
         - read config_file
         - validate node type
         - connect to SQLite system_query if node_type isn't Query
+    # Part 2
+    Deploy components that are required by all nodes
+        - blockchain sync
+        - scheduler 1
+        - extra commands from file
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         config_file:str - User config file
+        deployment_file:str - file to execute
         post_config:bool - whether to update config within AnyLog
         excpetion:bool - whether to print exception or not
     :params:
-        config:dict - configs from file
+        config_data:dict - configs from file
         node_types:list - extraction of config['node_type'] as a list
         dbms_list:dict - extracted db list
     :return:
-        config
+        config_data
     """
+    # Check status
     if get_cmd.get_status(conn=conn, exception=exception) is False:
         print('Failed to get status from %s, cannot continue' % conn.conn)
         exit(1)
 
-    config = __set_config(conn=conn, config_file=config_file, post_config=post_config, exception=exception)
+    # Read config & set node_types if len(config_data['node_type]) > 1
+    config_data = __set_config(conn=conn, config_file=config_file, post_config=post_config, exception=exception)
 
-    node_types = config['node_type'].split(',')
+    node_types = config_data['node_type'].split(',')
     if len(node_types) == 1:
-        config['node_type'] = node_types[0]
+        config_data['node_type'] = node_types[0]
     else:
         config['node_type'] = 'single_node'
         for node in node_types:
@@ -100,45 +110,33 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, p
                      + "or 'single_node'. Cannot continue...") % config['node_type'])
                 exit(1)
 
-    if config['node_type'].lower() not in ['master', 'publisher', 'operator', 'query', 'single_node']:
+    # Validate node type
+    if config_data['node_type'].lower() not in ['master', 'publisher', 'operator', 'query', 'single_node']:
         print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' or"
-               +"'single_node'. Cannot continue...") % config['node_type'])
+               +"'single_node'. Cannot continue...") % config_data['node_type'])
         exit(1)
 
-    if config['node_type'] != 'query' and 'query' not in node_types:
+    # Post config
+    if post_config is True:
+        if not config.post_config(conn=conn, config=config_data, exception=exception):
+            print('Failed to post configuration into AnyLog dictionary')
+
+    # configure system_query to run against SQLite if node type doesn't contain query node
+    if config_data['node_type'] != 'query' and 'query' not in node_types:
         dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
         if 'system_query' not in dbms_list:
             if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
                 print('Failed to deploy system_query against %s node' % config['node_type'])
 
-    return node_types, config
-
-
-def __default_end_components(conn:anylog_api.AnyLogConnect, config_data:dict, deployment_file:str=None, exception:bool=False):
-    """
-    Deploy components that are required by all nodes
-        - blockchain sync
-        - scheduler 1 
-        - extra commands from file
-        - threshold for Publisher & Operator
-    :args:
-        conn:anylog_api.AnyLogConnect - Connection to AnyLog
-        node_type:str - Node type
-        master_node:str - Master IP & Port
-        deployment_file:str - file to execute
-        exception:bool - Exception print
-    """
     # blockchain sync
-    if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', master_node=config_data['master_node'], exception=exception):
+    if not blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='master', time='1 minute', master_node=config_data['master_node'], exception=exception):
         print('Failed to set blockchain sync process')
     
-    
     # Start scheduler(s)
-    if not post_cmd.start_exitings_scheduler(conn=conn, scheduler_id=0, exception=exception):
-        print('Failed to start scheduler 0')
-
-    if not post_cmd.start_exitings_scheduler(conn=conn, scheduler_id=1, exception=exception):
-        print('Failed to start scheduler 1')
+    for schedule in [0, 1]:
+        if get_cmd.get_scheduler(conn=conn, scheduler_name=schedule, exception=exception) == 'not declared':
+            if not post_cmd.start_exitings_scheduler(conn=conn, scheduler_id=schedule, exception=exception):
+                print('Failed to start scheduler %s' % schedule)
 
     # execute deployment file
     if deployment_file is not None:
@@ -148,11 +146,7 @@ def __default_end_components(conn:anylog_api.AnyLogConnect, config_data:dict, de
         elif deployment_file is not None:
             print("File: '%s' does not exist" % full_path)
 
-    process_list = get_cmd.get_processes(conn=conn, exception=exception)
-    if process_list is not None:
-        print(process_list)
-    else:
-        print('Unable to get process list as such it is unclear whether an %s node was deployed...' % config['node_type'])
+    return node_types, config_data
 
 
 def deployment():
@@ -201,7 +195,8 @@ def deployment():
 
     # prerequisite deployment
     node_types, config_data = __default_start_components(conn=anylog_conn, config_file=args.config_file,
-                                             post_config=args.update_config, exception=args.exception)
+                                                         deployment_file=args.script_file,
+                                                         post_config=args.update_config, exception=args.exception)
 
     if args.stop_node is False and args.clean_node is False:
         if config_data['node_type'] == 'master':
@@ -215,9 +210,14 @@ def deployment():
         if config_data['node_type'] == 'single_node':
             single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.disable_location,
                                          exception=args.exception)
-        __default_end_components(conn=anylog_conn, config_data=config_data, deployment_file=args.script_file, exception=args.exception)
     else:
         disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, clean_node=args.clean_node, exception=args.exception)
+
+    process_list = get_cmd.get_processes(conn=anylog_conn, exception=args.exception)
+    if process_list is not None:
+        print(process_list)
+    else:
+        print('Unable to get process list as such it is unclear whether an %s node was deployed...' % config['node_type'])
 
 
 if __name__ == '__main__':

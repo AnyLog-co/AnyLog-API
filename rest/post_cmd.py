@@ -34,9 +34,7 @@ def post_value(conn:anylog_api.AnyLogConnect, key:str, value:str, exception:bool
         status
     """
     status = True
-    cmd = "set %s=%s" % (key, value)
-    if " " in value:
-        cmd = cmd.replace(value, '"%s"' % value)
+    cmd = 'set %s' % other_cmd.format_string(key=key, value=value)
     HEADER['command'] = cmd
 
     r, error = conn.post(headers=HEADER)
@@ -117,7 +115,7 @@ def start_exitings_scheduler(conn:anylog_api.AnyLogConnect, scheduler_id:int, ex
     status = True
     HEADER['command'] = "run scheduler %s" % scheduler_id
 
-    if 'not declared' != get_cmd.get_scheduler(conn=conn, scheduler_name=scheduler_id, exception=exception):
+    if 'not declared' == get_cmd.get_scheduler(conn=conn, scheduler_name=scheduler_id, exception=exception):
         r, error = conn.post(headers=HEADER)
         if other_cmd.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception) is True:
             status = False 

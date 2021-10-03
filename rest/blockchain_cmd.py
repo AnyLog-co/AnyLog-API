@@ -170,7 +170,7 @@ def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     return status
 
 
-def blockchain_sync(conn:anylog_api.AnyLogConnect, source:str, time:str, master_node:str=None, exception:bool=False)->bool:
+def blockchain_sync_scheduler(conn:anylog_api.AnyLogConnect, source:str, time:str, master_node:str=None, exception:bool=False)->bool:
     """
     Set Blockchain sync 
     :args: 
