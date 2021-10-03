@@ -1,6 +1,6 @@
 # Deployment 
 
-The following is intended as a tool to easily deploy AnyLog via REST rather. 
+The following is intended as a tool to easily deploy AnyLog via REST. 
 
 ```
 $HOME/AnyLog-API 
