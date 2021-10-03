@@ -102,9 +102,11 @@ def copy_file(conn:anylog_api.AnyLogConnect, remote_node:str, remote_file:str, l
     return status
 
 
-def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
+def start_exitings_scheduler(conn:anylog_api.AnyLogConnect, scheduler_id:int, exception:bool=False)->bool:
     """
-    POST scheduler 1 to AnyLog 
+    POST start a built in scheduler
+        Scheduler 0
+        Scheduler 1  
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         exception:bool - whether or not to print error to screen 
@@ -113,9 +115,9 @@ def start_scheduler1(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
         HEADER:dict - header information
     """
     status = True
-    HEADER['command'] = "run scheduler 1"
+    HEADER['command'] = "run scheduler %s" % scheduler_id
 
-    if 'not declared' in get_cmd.get_scheduler(conn=conn, scheduler_name='1', exception=exception): 
+    if 'not declared' != get_cmd.get_scheduler(conn=conn, scheduler_name=scheduler_id, exception=exception):
         r, error = conn.post(headers=HEADER)
         if other_cmd.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception) is True:
             status = False 

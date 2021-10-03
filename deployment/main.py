@@ -131,9 +131,13 @@ def __default_end_components(conn:anylog_api.AnyLogConnect, config_data:dict, de
     # blockchain sync
     if not blockchain_cmd.blockchain_sync(conn=conn, source='master', time='1 minute', master_node=config_data['master_node'], exception=exception):
         print('Failed to set blockchain sync process')
+    
+    
+    # Start scheduler(s)
+    if not post_cmd.start_exitings_scheduler(conn=conn, scheduler_id=0, exception=exception):
+        print('Failed to start scheduler 0')
 
-    # Post scheduler 1
-    if not post_cmd.start_scheduler1(conn=conn, exception=exception):
+    if not post_cmd.start_exitings_scheduler(conn=conn, scheduler_id=1, exception=exception):
         print('Failed to start scheduler 1')
 
     # execute deployment file
@@ -162,8 +166,8 @@ def deployment():
         3. Set config - 4 part process  
         4. Based on node_type (from config) deploy a node via REST   
     :positional arguments:
-        rest-conn       REST_CONN       REST connection information
-        config-file     CONFIG_FILE     AnyLog INI config file
+        rest_conn       REST_CONN       REST connection information
+        config_file     CONFIG_FILE     AnyLog INI config file
     :optional arguments:
         -h, --help              HELP                     show this help message and exit
         -a, --auth              AUTH:tuple               REST authentication information                                                     [default: None]
@@ -180,8 +184,8 @@ def deployment():
        node_types:list - config['node_type] if value contains more than one node
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('rest-conn',       type=str,   default='127.0.0.1:2049', help='REST connection information')
-    parser.add_argument('config-file',     type=str,   default=None, help='AnyLog INI config file')
+    parser.add_argument('rest_conn',       type=str,   default='127.0.0.1:2049', help='REST connection information')
+    parser.add_argument('config_file',     type=str,   default=None, help='AnyLog INI config file')
     parser.add_argument('-a', '--auth',    type=tuple, default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     parser.add_argument('-f', '--script-file',   type=str,   default=None, help='If set run commands in file at the end of the deployment (must include path)')

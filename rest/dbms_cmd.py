@@ -101,12 +101,12 @@ def disconnect_dbms(conn:anylog_api.AnyLogConnect, db_name:str, exception:bool=F
     HEADER['command'] = 'disconnect dbms %s' % db_name
 
     r, error = conn.post(headers=HEADER)
-    if not other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error, exception=exception):
         status = False
 
     if status is True: # validate database was disconnected
         dbms_list = get_dbms(conn=conn, exception=exception)
-        if db_name not in dbms_list:
+        if db_name in dbms_list:
             status = False
 
     return status

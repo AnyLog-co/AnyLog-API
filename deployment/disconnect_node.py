@@ -54,12 +54,16 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, node_types:list=
 
                 if process_status is False:
                     print('Failed to stop %s' % process.split('|')[0].lstrip().rstrip())
+                else:
+                    print('Stopped: %s' % process.split('|')[0].lstrip().rstrip())
 
     # disconnect database(s)
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
     for dbms in dbms_list:
         if not dbms_cmd.disconnect_dbms(conn=conn, db_name=dbms, exception=exception):
             print('Failed to disconnect database: %s' % dbms)
+        else:
+            print("Disconnected from: %s" % dbms)
 
     if clean_node is True:
         # clean database(s)
@@ -70,6 +74,8 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, node_types:list=
         if config['node_type'] != 'query':
             if not dbms_cmd.drop_dbms(conn=conn, db_name='system_query', db_type='sqlite', exception=exception):
                 print("Failed to drop '%s' logical database " % 'system_query')
+            else:
+                print("Disconnected from: %s" % dbms)
 
         updated_dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
         for db_name in dbms_list:
@@ -105,10 +111,14 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, node_types:list=
                 """
                 if not policy_cmd.drop_policy(conn=conn, master_node=master_node, policy_type=node,
                                               query_params=query_params, exception=exception) and node != 'query':
-                        print('Failed to drop policy of type %s' % node)
+                    print('Failed to drop policy of type %s' % node)
+                else:
+                    print('Policy of type %s was dropped' % node)
         elif not policy_cmd.drop_policy(conn=conn, master_node=master_node, policy_type=config['node_type'],
                                         query_params=query_params, exception=exception):
-                print('Failed to drop policy of type %s' % config['node_type'])
+            print('Failed to drop policy of type %s' % config['node_type'])
+        else:
+            print('Policy of type %s was dropped' % config['node_type'])
 
 
 
