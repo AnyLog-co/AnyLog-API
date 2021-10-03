@@ -31,7 +31,7 @@ $HOME/AnyLog-API
 **Note**: All Python packages used tend to be standard, thus do not require an installment. However, in case of an issue, 
 installment can be done via [pip3](https://www.activestate.com/resources/quick-reads/how-to-install-and-use-pip3/#:~:text=1%20Open%20the%20Control%20Panel%20and%20navigate%20to,and%20add%20the%20directory%20where%20pip3%20is%20installed%2C)  
 ```buildoutcfg
-pip3 install ${PACKAGE_NNAME}
+pip3 install ${PACKAGE_NAME}
 ```
 
 ## Steps 
@@ -107,7 +107,7 @@ AnyLog-API anylog-node$ python3 $HOME/AnyLog-API/deployment/main.py 10.0.0.80:20
 ```
 
 
-**To stop AnyLog docker instance docker**: 
+5. To stop AnyLog docker instance docker 
 ```
 docker stop ${NODE_NAME}
 ```
