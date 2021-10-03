@@ -1,7 +1,6 @@
 # Deployment 
 
 The following is intended as a tool to easily deploy AnyLog via REST rather. 
-We suggest to review & manipulate the python files as they fit for you. 
 
 ```
 $HOME/AnyLog-API 
