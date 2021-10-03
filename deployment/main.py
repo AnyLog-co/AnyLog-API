@@ -21,7 +21,7 @@ import post_cmd
 # support directory
 import config
 
-def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->dict:
+def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->(list, dict):
     """
     Set configuration object containing data from both file & pre-set within AnyLog
     :args:
@@ -60,12 +60,22 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
         if post_config is True:
             config.post_config(conn=conn, config=config_data, exception=exception)
 
+    node_types = config_data['node_type'].split(',')
+    if len(node_types) == 1:
+        config_data['node_type'] = node_types[0]
+    else:
+        config['node_type'] = 'single_node'
+        for node in node_types:
+            if node not in ['master', 'publisher', 'operator', 'query']:
+                print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' "
+                     + "or 'single_node'. Cannot continue...") % config['node_type'])
+                exit(1)
 
-    return config_data
+    return node_types, config_data
 
 
-def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, deployment_file:str=None,
-                               post_config:bool=False, exception:bool=False)->dict:
+def __default_start_components(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:dict,
+                               deployment_file:str=None, post_config:bool=False, exception:bool=False)->dict:
     """
     # Part 1
     Deploy components that are required by all nodes at the start of the code
@@ -80,36 +90,11 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, d
         - extra commands from file
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
-        config_file:str - User config file
+        config_data:dict - configs from file
         deployment_file:str - file to execute
         post_config:bool - whether to update config within AnyLog
         excpetion:bool - whether to print exception or not
-    :params:
-        config_data:dict - configs from file
-        node_types:list - extraction of config['node_type'] as a list
-        dbms_list:dict - extracted db list
-    :return:
-        config_data
     """
-    # Check status
-    if get_cmd.get_status(conn=conn, exception=exception) is False:
-        print('Failed to get status from %s, cannot continue' % conn.conn)
-        exit(1)
-
-    # Read config & set node_types if len(config_data['node_type]) > 1
-    config_data = __set_config(conn=conn, config_file=config_file, post_config=post_config, exception=exception)
-
-    node_types = config_data['node_type'].split(',')
-    if len(node_types) == 1:
-        config_data['node_type'] = node_types[0]
-    else:
-        config['node_type'] = 'single_node'
-        for node in node_types:
-            if node not in ['master', 'publisher', 'operator', 'query']:
-                print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' "
-                     + "or 'single_node'. Cannot continue...") % config['node_type'])
-                exit(1)
-
     # Validate node type
     if config_data['node_type'].lower() not in ['master', 'publisher', 'operator', 'query', 'single_node']:
         print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' or"
@@ -146,7 +131,7 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_file:str, d
         elif deployment_file is not None:
             print("File: '%s' does not exist" % full_path)
 
-    return node_types, config_data
+
 
 
 def deployment():
@@ -193,12 +178,21 @@ def deployment():
     # Connect to AnyLog REST 
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
-    # prerequisite deployment
-    node_types, config_data = __default_start_components(conn=anylog_conn, config_file=args.config_file,
-                                                         deployment_file=args.script_file,
-                                                         post_config=args.update_config, exception=args.exception)
+    # Check status
+    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) is False:
+        print('Failed to get status from %s, cannot continue' % conn.conn)
+        exit(1)
+
+    # get node_types & config_data
+    node_types, config_data = __set_config(conn=anylog_conn, config_file=args.config_file,
+                                           post_config=args.update_config, exception=args.exception)
 
     if args.stop_node is False and args.clean_node is False:
+        # Deploy default processes
+        __default_start_components(conn=anylog_conn, config_data=config_data, node_types=node_types,
+                                   deployment_file=args.script_file, post_config=args.update_config,
+                                   exception=args.exception)
+        # Deploy rest requests against AnyLog for a specific type of node
         if config_data['node_type'] == 'master':
             master.master_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
         if config_data['node_type'] == 'operator':
@@ -207,7 +201,7 @@ def deployment():
             publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
         if config_data['node_type'] == 'query':
             query.query_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-        if config_data['node_type'] == 'single_node':
+        if config_data['node_type'] == 'single_node':  # a situation where config contains more than one node_type
             single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.disable_location,
                                          exception=args.exception)
     else:
