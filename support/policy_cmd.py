@@ -103,24 +103,13 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
     for key in query_params:
         while_conditions.append(other_cmd.format_string(key, query_params[key]))
 
-    while run < 2 and status is True:
-        # pull from blockchain
-        pull_status = blockchain_cmd.master_pull_json(conn=conn, master_node=master_node, exception=exception)
-        if pull_status is True and master_node != 'local':
-            # copy file
-            post_cmd.copy_file(conn=conn, remote_node=master_node, remote_file='!!blockchain_file',
-                               local_file='!blockchain_file', exception=exception)
-        if pull_status is True:
-            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=while_conditions,
-                                                       exception=exception)
+    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=while_conditions,
+                                               exception=exception)
 
-        if run > 0 and len(blockchain) == 0: # if not first iteration validate policy was dropped
-            pass
-        elif len(blockchain) != 1: # if first iteration and len(blockchain) is 0 or greater than 1 there's an "issue" with the where
-            status = False
-        else: # drop policy if len(blockchain) == 1
-            status = blockchain_cmd.drop_policy(conn=conn, policy=blockchain, master_node=master_node, exception=exception)
-            time.sleep(10)
-        run += 1
+    if len(blockchain) == 1:
+        status = blockchain_cmd.drop_policy(conn=conn, policy=blockchain, master_node=master_node, exception=exception)
+    elif exception is True:
+        print('Failed to drop policy because `blockchain get` returned %s policies. Please update your query_params' % len(blockchain))
+        status = False
         
     return status

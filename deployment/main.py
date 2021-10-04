@@ -21,6 +21,7 @@ import post_cmd
 # support directory
 import config
 
+
 def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->(list, dict):
     """
     Set configuration object containing data from both file & pre-set within AnyLog
@@ -132,8 +133,6 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_data:dict, 
             print("File: '%s' does not exist" % full_path)
 
 
-
-
 def deployment():
     """
     Based on configuration file, deploy a specific node
@@ -170,8 +169,11 @@ def deployment():
     parser.add_argument('-f', '--script-file',   type=str,   default=None, help='If set run commands in file at the end of the deployment (must include path)')
     parser.add_argument('-u', '--update-config', type=bool, nargs='?', const=True,  default=False, help='Whether to update config within AnyLog dictionary')
     parser.add_argument('-l', '--disable-location', type=bool, nargs='?', const=False, default=True,  help='If set to True & location not in config, add lat/long coordinates for new policies')
+    """
+    # need to develop for deployment 
     parser.add_argument('-s', '--stop-node',  type=bool, nargs='?', const=True,  default=False,  help='disconnect node without dropping corresponding policy')
     parser.add_argument('-c', '--clean-node', type=bool, nargs='?', const=True, default=False,  help='disconnect node and drop database and policy from blockchain')
+    """
     parser.add_argument('-e', '--exception',  type=bool, nargs='?', const=True, default=False, help='print exception errors')
     args = parser.parse_args()
 
@@ -187,26 +189,27 @@ def deployment():
     node_types, config_data = __set_config(conn=anylog_conn, config_file=args.config_file,
                                            post_config=args.update_config, exception=args.exception)
 
-    if args.stop_node is False and args.clean_node is False:
-        # Deploy default processes
-        __default_start_components(conn=anylog_conn, config_data=config_data, node_types=node_types,
-                                   deployment_file=args.script_file, post_config=args.update_config,
-                                   exception=args.exception)
-        # Deploy rest requests against AnyLog for a specific type of node
-        if config_data['node_type'] == 'master':
-            master.master_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-        if config_data['node_type'] == 'operator':
-            operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-        if config_data['node_type'] == 'publisher':
-            publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-        if config_data['node_type'] == 'query':
-            query.query_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-        if config_data['node_type'] == 'single_node':  # a situation where config contains more than one node_type
-            single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.disable_location,
-                                         exception=args.exception)
+    #if args.stop_node is False and args.clean_node is False:
+    # Deploy default processes
+    __default_start_components(conn=anylog_conn, config_data=config_data, node_types=node_types,
+                               deployment_file=args.script_file, post_config=args.update_config,
+                               exception=args.exception)
+    # Deploy rest requests against AnyLog for a specific type of node
+    if config_data['node_type'] == 'master':
+        master.master_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+    if config_data['node_type'] == 'operator':
+        operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+    if config_data['node_type'] == 'publisher':
+        publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+    if config_data['node_type'] == 'query':
+        query.query_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+    if config_data['node_type'] == 'single_node':  # a situation where config contains more than one node_type
+        single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.disable_location,
+                                     exception=args.exception)
+    """
     else:
         disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, clean_node=args.clean_node, exception=args.exception)
-
+    """
     process_list = get_cmd.get_processes(conn=anylog_conn, exception=args.exception)
     if process_list is not None:
         print(process_list)
