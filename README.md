@@ -19,7 +19,9 @@ $HOME/AnyLog-API
 * **predevelop** - Beta build using Ubuntu 18.04 operating system for amd64 and arm v7  architecture type
 * **predevelop-arm64** - Beta build using Ubuntu 18.04 operating system for arm64 architecture type
 * **predevelop-alpine** - Beta build using Alpine 3.7 operating system for amd64 and arm v7  architecture type
-* **predevelop-alpine-arm64** - Beta build using Alpine 3.7 operating system for arm64 architecture type
+* **predevelop-alpine-arm64** - Beta build using Alpine 3.7 operating system for arm64 architecture type* 
+
+
 * **debian-798f7** - Stable build using Ubuntu 18.04 operating system for amd64 and arm v7 architecture type
 * **debian-arm64-798f7** - Stable build using Ubuntu 18.04 operating system for arm64 architecture type
 * **alpine-798f7** - Stable build using Alpine 3.7 operating system for amd64 and arm v7 architecture type
@@ -57,6 +59,7 @@ pip3 install ${PACKAGE_NAME}
 3. [Deploy AnyLog](deploy_node.sh) for REST Interface - we suggest to begin with interactive mode and detach once the node is up.
 ```
 export NODE_NAME=new-node
+export BUILD=predevelop
 export SERVER_PORT=2048
 export REST_PORT=2049 
 export BROKER_PORT=2050 # optional
@@ -65,12 +68,12 @@ docker run --network host --name ${NODE_NAME} --rm \
     -e NODE_TYPE=rest \
     -e ANYLOG_SERVER_PORT=${SERVER_PORT} \
     -e ANYLOG_REST_PORT=${REST_PORT} \
-    -e ANYLOG_BROKER_PORT=${BROKER_PORT 
+    -e ANYLOG_BROKER_PORT=${BROKER_PORT} \ 
     -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \ 
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \ 
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \ 
     -v ${NODE_NAME}-local-scripts:/app/AnyLog-Network/local_scripts:rw \
-    -it --detach-keys="ctrl-d" oshadmon/anylog:predevelop
+    -it --detach-keys="ctrl-d" oshadmon/anylog:${BUILD}
 ```
 **Attach to Docker**: `docker attach --detach-keys="ctrl-d"  ${CONTAINER_ID}`
 

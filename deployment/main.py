@@ -179,8 +179,8 @@ def deployment():
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
     # Check status
-    if get_cmd.get_status(conn=anylog_conn, exception=args.exception) is False:
-        print('Failed to get status from %s, cannot continue' % conn.conn)
+    if not get_cmd.get_status(conn=anylog_conn, exception=args.exception):
+        print('Failed to get status from %s, cannot continue' % anylog_conn.conn)
         exit(1)
 
     # get node_types & config_data
