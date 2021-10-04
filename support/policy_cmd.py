@@ -20,42 +20,32 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
         where_conditions:list - list of conditions to search by
         policy_id:str - ID of either existing or created policy
     :return:
-        node_id
+        node_id - if unable to extract node id || fail to POST to blockchain return None (ie fails) 
     """
-    run = 0
+
     policy_id = None
     while_conditions = []
     policy_type = list(new_policy)[0]
     for key in new_policy[policy_type]:
         while_conditions.append(other_cmd.format_string(key, new_policy[policy_type][key]))
 
-    while run <= 10:
-        # Pull from blockchain
-        pull_status = blockchain_cmd.master_pull_json(conn=conn, master_node=master_node, exception=exception)
-        if pull_status is True and master_node != 'local':
-            # copy file
-            post_cmd.copy_file(conn=conn, remote_node=master_node, remote_file='!!blockchain_file',
-                               local_file='!blockchain_file', exception=exception)
-        elif pull_status is False:
-            print('Failed to pull from blockchain. Please double check master_node params in config. Current master: %s' % master_node)
-            exit(1)
-        if pull_status is True:
-            blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where=while_conditions,
-                                                       exception=exception)
-        if len(blockchain) == 0: # add to blockchain
-            blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node,
-                                       exception=exception)
-        if len(blockchain) == 1 and 'id' in blockchain[0][policy_type]: # extract policy id
-            try:
-                policy_id = blockchain[0][policy_type]['id']
-            except Exception as e:
-                pass
-            else:
-                run = 11
-        else: # wait a few seconds between each iteration
-            time.sleep(10)
-        run += 1
+    # Get Policy ID as part of the prepare process
+    blockchain = blockchain_cmd.prepare_policy(conn=conn, policy=new_policy, exception=exception)
 
+    try:
+        policy_id = blockchain[policy_type]['id']
+    except Exception as e:
+        return policy_id
+
+    # Post policy to ledger
+    if blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node, exception=exception):
+        policy_id = None
+
+    if policy_id is not None:
+        # sync & wait until blockchain is updated process
+        blockchain_cmd.blockchain_sync(conn=conn, exception=exception)
+        blockchain_cmd.blockchain_wait(conn=conn,policy_type=policy_type, policy=new_policy)
+    
     return policy_id
 
 def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config:dict, master_node:str,
