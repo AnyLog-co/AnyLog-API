@@ -1,8 +1,6 @@
 import __init__
 import anylog_api
-import blockchain_cmd
 import dbms_cmd
-import post_cmd
 import policy_cmd
 
 
@@ -37,4 +35,4 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
                                              master_node='local', location=location, exception=exception)
     if node_id is None:
-        print('Failed to add % node to blockchain' % config['node_typp'])   
+        print('Failed to add %s node to blockchain' % config['node_type'])

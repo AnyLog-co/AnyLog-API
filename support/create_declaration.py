@@ -130,11 +130,11 @@ def declare_node(config:dict, location:bool=True)->dict:
         node[config['node_type']]['cluster'] = config['cluster_id']
 
     if 'default_dbms' in config:
+        node[config['node_type']]['dbms'] = config['default_dbms']
         if 'table' in config and 'cluster_id' not in config:
             # if node is correlated to a cluster there's no need to specify tables within policy
             node[config['node_type']]['table'] = config['table'].split(',')
-        else:
-            node[config['node_type']]['dbms'] = config['default_dbms']
+
 
     return node
 

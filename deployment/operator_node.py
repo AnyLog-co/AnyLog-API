@@ -1,11 +1,9 @@
-import time
-
 import __init__
-import post_cmd
 import anylog_api
-import blockchain_cmd
 import dbms_cmd
 import policy_cmd
+import post_cmd
+
 
 
 def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False):
@@ -75,12 +73,16 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         for table in tables:
             # create partition
             if not dbms_cmd.declare_db_partitions(conn=conn, db_name=config['default_dbms'], table_name=table,
-                                           ts_column=config['partition_column'], interval=config['partition_interval'],
-                                           exception=exception):
+                                                  ts_column=config['partition_column'], interval=config['partition_interval'],
+                                                  exception=exception):
                 print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
             # validate partition exists
             if not dbms_cmd.get_partitions(conn=conn, db_name=config['default_dbms'], table_name='*'):
                 print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
+            # by default we are dropping partitions that are older than 60 days (~2 months).
+            if not dbms_cmd.drop_partitions(conn=conn, db_name=config['default_dbms'], partition_name=None, table_name='*',
+                                            keep=60, scheduled=True, exception=exception):
+                print('Failed to set a scheduled process to drop partitions')
 
     # MQTT
     if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':

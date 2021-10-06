@@ -199,6 +199,36 @@ def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exc
     return status 
 
 
+def get_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', exception:bool=False)->bool:
+    """
+    Check if partitions exists
+    :sample command:
+        get partition where dbms = sample_data and table = *
+        :args:
+        conn:anylog_api.AnyLogConnect - Connections to AnyLog
+        db_name:str - database name
+        table_name:str - table name
+        ts_column:str - (timestamp) column to partition by
+        interval:str - partition interval (ex. 3 days)
+        exception:bool - whether to print errors
+    :params:
+        status:bool
+        cmd:str - command to executed
+    :return:
+        if partition not declared return False
+    """
+    status = True
+    cmd = "get partitions where dbms=%s and table=%s" % (db_name, table_name)
+    HEADER['command'] = cmd
+    r, error = conn.get(headers=HEADER)
+    if other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception) :
+            status = False
+    else:
+        if r.text == 'No partitions declared' or r.status_code != 200:
+            status = False
+    return status
+
+
 def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', ts_column:str='timestamp',
                           interval:str='day', exception:bool=False)->bool:
     """
@@ -228,33 +258,48 @@ def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name
     return status
 
 
-def get_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*', exception:bool=False)->bool:
+def drop_partitions(conn:anylog_api.AnyLogConnect, db_name:str, partition_name:str=None, table_name:str='*',
+                    keep:int=30, scheduled:bool=False, exception:bool=False)->bool:
     """
-    Check if partitions exists
-    :sample command:
-        get partition where dbms = sample_data and table = *
-        :args:
-        conn:anylog_api.AnyLogConnect - Connections to AnyLog
+    Process to drop partition(s)
+    :options:
+        1. drop a specific partition (partition_name), table_name should correlate to partiiton name (ie not '*')
+        2. drop partitions for a database or table within database
+        3. set option 3 as a scheduled process
+    :args:
+        conn:anylog_api.AnyLogConnect - connection to AnyLog
         db_name:str - database name
-        table_name:str - table name
-        ts_column:str - (timestamp) column to partition by
-        interval:str - partition interval (ex. 3 days)
-        exception:bool - whether to print errors
+        partition_name:str - specific partition to drop (wont run as a scheduled process)
+        table_name:str - table to drop partitions from
+        keep:int - number of days to keep -- if set to 0 won't keep any
+        scheduled:bool - if True set to a scheduled process once a day
+        exception:bool - whether to print exceptions
     :params:
         status:bool
-        cmd:str - command to executed
+        cmd:str - command to execute
+        HEADER:dict - REST header information
     :return:
-        if partition not declared return False
+        status
     """
     status = True
-    cmd = "get partitions where dbms=%s and table=%s" % (db_name, table_name)
-    HEADER['command'] = cmd
-    r, error = conn.get(headers=HEADER)
-    if other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception) :
-            status = False
+    if partition_name is not None:
+        cmd = "drop partition %s where dbms=%s and table=%s" % (partition_name, db_name, table_name)
+    elif keep < 1:
+        cmd = "drop partition where dbms=%s and table=%s" % (db_name, table_name)
     else:
-        if r.text == 'No partitions declared' or r.status_code != 200:
-            status = False
+        cmd = "drop partition where dbms=%s and table=%s and keep=%s" % (db_name, table_name, keep)
+
+    if partition_name is None and scheduled is True:
+        schedule_cmd = "schedule     time=1 day and name='drop partitions' task %s"
+        cmd = schedule_cmd % cmd
+
+    HEADER['command']=cmd
+
+    r, error = conn.post(headers=HEADER)
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error,
+                                 exception=exception):
+        status = False
+
     return status
 
 

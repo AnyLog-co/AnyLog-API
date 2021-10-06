@@ -356,3 +356,4 @@ def stop_process(conn:anylog_api.AnyLogConnect, process_name:str, exception:bool
     if other_cmd.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
         status = False
     return status
+

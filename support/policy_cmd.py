@@ -4,7 +4,6 @@ import __init__
 import anylog_api
 import blockchain_cmd
 import create_declaration
-import post_cmd
 import other_cmd
 
 def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:dict, exception:bool=False)->str:
@@ -22,30 +21,32 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
     :return:
         node_id - if unable to extract node id || fail to POST to blockchain return None (ie fails) 
     """
-
     policy_id = None
-    while_conditions = []
+    where_conditions = []
     policy_type = list(new_policy)[0]
     for key in new_policy[policy_type]:
-        while_conditions.append(other_cmd.format_string(key, new_policy[policy_type][key]))
+        where_conditions.append(other_cmd.format_string(key, new_policy[policy_type][key]))
 
     # Get Policy ID as part of the prepare process
-    blockchain = blockchain_cmd.prepare_policy(conn=conn, policy=new_policy, exception=exception)
+    policy_id = blockchain_cmd.prepare_policy(conn=conn, policy_type=policy_type, policy=new_policy, exception=exception)
 
-    try:
-        policy_id = blockchain[policy_type]['id']
-    except Exception as e:
-        return policy_id
+    # check if policy already in ledger based on where_conditions
+    where_conditions.append('id=%s' % policy_id)
+    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions,
+                                  exception=exception)
+    if len(blockchain) == 0:
+        # Post policy to ledger
+        if blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node, exception=exception):
+            policy_id = None
 
-    # Post policy to ledger
-    if blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node, exception=exception):
-        policy_id = None
-
-    if policy_id is not None:
-        # sync & wait until blockchain is updated process
-        blockchain_cmd.blockchain_sync(conn=conn, exception=exception)
-        blockchain_cmd.blockchain_wait(conn=conn,policy_type=policy_type, policy=new_policy)
-    
+        """
+        # There's a bug with `blockchain wait` via rest, as such cannot validate blockchain has been updated until issue is fixed   
+        if policy_id is not None:
+            # sync & wait until blockchain is updated process
+            blockchain_cmd.blockchain_sync(conn=conn, exception=exception)
+            blockchain_cmd.blockchain_wait(conn=conn, policy_type=policy_type, where_conditions=while_conditions,
+                                           exception=exception)
+        """
     return policy_id
 
 def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config:dict, master_node:str,
