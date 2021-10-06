@@ -1,47 +1,32 @@
 import __init__
 import anylog_api
 import blockchain_cmd
-import other_cmd
+import errors
 
-HEADER = {
-    "command": None,
-    "User-Agent": "AnyLog/1.23"
-}
 
-def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
+def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """"
-    Get list of connected databases
-    :args:
+    Get list of connected databases 
+    :args: 
         conn:anylog_api.AnyLogConnect - REST AnyLog Connection
         exception:bool - whether or not to print exception
-    :params:
+    :params: 
         output:str - list of databases
         cmd:str - command to execute
     :return:
         output
     """
     output = None
-    datbase_list = []
-    HEADER['command'] = "get databases"
-    r, error = conn.get(headers=HEADER)
+    cmd = "get databases" 
+    r, error = conn.get(command=cmd, query=False)
 
-    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=HEADER['command'], r=r, error=error,
-                            exception=exception):
-        try:
+    if not errors.get_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
+        try: 
             output = r.text
         except Exception as e:
             if exception is True:
                 print('Failed to extract data from GET (Error: %s)' % e)
-
-    if output == 'No DBMS connections found':
-        datbase_list = output
-    else:
-        for db in output.split('\n'):
-            if 'sqlite' in db or 'psql' in db:
-                datbase_list.append(db.split(' ')[0].rstrip().lstrip())
-
-    return datbase_list
-
+    return output
 
 
 def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
@@ -76,64 +61,11 @@ def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, e
             config['db_port'] = 5432
 
         cmd = "connect dbms %s %s %s %s" % (config['db_type'],  config['db_user'], config['db_port'], db_name)
-        HEADER['command'] = cmd
-        r, error = conn.post(headers=HEADER)
-        if not other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+        r, error = conn.post(command=cmd)
+        if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
             status = True
 
     return status 
-
-
-def disconnect_dbms(conn:anylog_api.AnyLogConnect, db_name:str, exception:bool=False)->bool:
-    """
-    Disconnect database
-    :args:
-        conn:anylog_api.AnyLogConnect - connection to AnyLog
-        db_name:str - database to disconnect from
-        exception:bool - whether to print exceptions
-    :params:
-        status:bool
-        HEADER:dict - REST request header info
-    :return:
-        status
-    """
-    status = True
-    HEADER['command'] = 'disconnect dbms %s' % db_name
-
-    r, error = conn.post(headers=HEADER)
-    if other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error, exception=exception):
-        status = False
-
-    if status is True: # validate database was disconnected
-        dbms_list = get_dbms(conn=conn, exception=exception)
-        if db_name in dbms_list:
-            status = False
-
-    return status
-
-
-def drop_dbms(conn:anylog_api.AnyLogConnect, db_name:str, db_type:str, exception:bool=False)->bool:
-    """
-    Drop database
-        :args:
-        conn:anylog_api.AnyLogConnect - connection to AnyLog
-        db_name:str - database to drop
-        db_type:str - logical database type (ex. SQLite, Postgres)
-        exception:bool - whether to print exceptions
-    :params:
-        status:bool
-        HEADER:dict - REST request header info
-    :return:
-        status
-    """
-    status = True
-    HEADER['command'] = 'drop dbms %s from %s' % (db_name, db_type)
-
-    r, error = conn.post(headers=HEADER)
-    if not other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error,
-                                 exception=exception):
-        status = False
-    return status
 
 
 def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool:
@@ -153,18 +85,15 @@ def get_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, except
     """
     status = False 
     cmd = "get table local status where dbms = %s and name = %s" % (db_name, table_name)
-    HEADER['command'] = cmd
-
-    r, error = conn.get(headers=HEADER)
-
-    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
+    
+    r, error = conn.get(command=cmd, query=False) 
+    if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
         try: 
             if r.json()['local'] == 'true':
                 status = True 
         except: 
             if 'true' in r.text: 
                 status = True
-
     return status 
 
 
@@ -185,13 +114,10 @@ def create_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exc
     """
     status = True
     # Check if table can be executed either hardcode or blockchain 
-    if {db_name: table_name} in [{'blockchain': 'ledger'}, {'almgm': 'tsd_info'}] or \
-            blockchain_cmd.check_table(conn=conn, db_name=db_name, table_name=table_name, exception=exception) == True:
-
+    if {db_name: table_name} in [{'blockchain': 'ledger'}, {'almgm': 'tsd_info'}] or blockchain_cmd.check_table(conn=conn, db_name=db_name, table_name=table_name, exception=exception) == True:  
         cmd = "create table %s where dbms=%s" % (table_name, db_name)
-        HEADER['command'] = cmd
-        r, error = conn.post(headers=HEADER)
-        if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+        r, error = conn.post(command=cmd)
+        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
             status = False 
     else: 
         status = False 
@@ -220,9 +146,9 @@ def declare_db_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name
     """
     status = True
     cmd = "partition %s %s using %s by %s" % (db_name, table_name, ts_column, interval)
-    HEADER['command'] = cmd
-    r, error = conn.post(headers=HEADER)
-    if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception) :
+
+    r, error = conn.post(command=cmd)
+    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) :
             status = False
 
     return status
@@ -248,9 +174,9 @@ def get_partitions(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str='*
     """
     status = True
     cmd = "get partitions where dbms=%s and table=%s" % (db_name, table_name)
-    HEADER['command'] = cmd
-    r, error = conn.get(headers=HEADER)
-    if other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception) :
+
+    r, error = conn.get(command=cmd, query=False)
+    if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception) :
             status = False
     else:
         if r.text == 'No partitions declared' or r.status_code != 200:

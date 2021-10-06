@@ -1,15 +1,6 @@
-"""
-Link: https://github.com/AnyLog-co/documentation/blob/master/authentication.md
-"""
 import __init__
 import anylog_api
-import get_cmd
 import errors
-
-HEADER = {
-    "command": None,
-    "User-Agent": "AnyLog/1.23"
-}
 
 
 def set_authentication_off(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
@@ -20,41 +11,49 @@ def set_authentication_off(conn:anylog_api.AnyLogConnect, exception:bool=False)-
         exception:bool - whether to print exception
     :params:
         status:bool
-        HEADER:dict - header for POST request
+        cmd:str - command to execute
     :return:
         status - True if no issues
     """
-    status = True
-    HEADER['command'] = "set authentication off"
-    r, error = conn.post(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
-        status = False
+    status = False
+    cmd = "set authentication off"
+    r, error = conn.post(command=cmd)
+    if not errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
+        status = True
     return status
 
 
-def set_node_authentication(conn:anylog_api.AnyLogConnect, auth:tuple=None, exception:bool=False)->str:
+def set_node_id(conn:anylog_api.AnyLogConnect, auth:tuple=None, exception:bool=False)->bool:
     """
-    Set node authentication
+    Set node id if not exists
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         auth:tuple - authentication information
         exception:bool - whether to print exception
     :params:
-        node_id:str - Node ID
+        status:bool
+        node_id:str - node id
         cmd:str - command to execute
-        HEADER:dict - header for POST request
     :return:
-        node id, if fails to set authentication or extract ID returns None
+        status
     """
-    node_id = None
-    cmd = "id create key for node where password=anylog"
+    status = True
+    node_id = get_cmd.get_node_id(conn=conn, exception=exception)
+    cmd = "id create keys for node where password=anylog"
     if auth is not None:
-        cmd = cmd.replace('=anylog', '=%s' % auth[0])
+        cmd = "id create keys for node where password=%s" % auth[1]
 
-    HEADER['command'] = cmd
-
-    r, error = conn.post(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+    if node_id is None:
+        r, error = conn.post(command=cmd)
+        if errors.post_error(conn=conn.conn, command=cmd, r=r, error=error, exception=exception):
+           status = False
         node_id = get_cmd.get_node_id(conn=conn, exception=exception)
 
     return node_id
+
+
+def set_rest_authentication():
+    """
+    REST authentication
+    """
+    pass

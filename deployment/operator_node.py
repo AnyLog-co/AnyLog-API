@@ -5,7 +5,7 @@ import post_cmd
 import anylog_api
 import blockchain_cmd
 import dbms_cmd
-import policy_cmd
+import declare_policy_cmd
 
 
 def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False):
@@ -25,47 +25,39 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
         new_policy:dict - declaration of policy
     """
     # Create system_query & blockchain
+    new_system = False
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+    if dbms_list == 'No DBMS connections found':
+        new_system = True
+    if new_system is True or 'system_query' not in dbms_list:
+        if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
+            print('Failed to start system_query database')
     # almgm & tsd_info
-    if 'almgm' not in dbms_list:
+    if new_system is True or 'almgm' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='almgm', exception=exception):
             print('Failed to start almgm database')
-
-    dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
-    if 'almgm' in dbms_list and not dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
+    if new_system is True or dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info',
+                                                      exception=exception) is False:
         if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             print('Failed to create table almgm.tsd_info')
-
     # default dbms
-    if config['default_dbms'] not in dbms_list:
+    if new_system is True or config['default_dbms'] not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name=config['default_dbms'], exception=exception):
             print('Failed to start %s database' % config['default_dbms'])
 
-    # declare cluster & operator in blockchain
-    deploy_operator = 'y'
-    if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
-        cluster_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type='cluster', config=config,
-                                                      master_node=config['master_node'], location=location,
-                                                      exception=exception)
+    # Declare policies on blockchain
+    declare_operator='y'
+    if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true': # declare cluster & extract ID
+        cluster_id = declare_policy_cmd.declare_cluster(conn=conn, config=config, exception=exception)
         if cluster_id is not None:
             config['cluster_id'] = cluster_id
         else:
-            boolean = False
-            while boolean is False:
-                deploy_operator = input('Failed to get cluster ID. Would you still like to set an operator (y/n)? ')
-                deploy_operator = deploy_operator.lower()
-                if deploy_operator not in ['y', 'n']:
-                    deploy_operator = input('Invalid option: %s. Would you still like to set an operator (y/n)? ')
-                else:
-                    boolean = True
-    if deploy_operator == 'y':
-        node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                                      master_node=config['master_node'], location=location,
-                                                      exception=exception)
-        if node_id is None:
-            print('Failed to add % node to blockchain' % config['node_typp'])
-    else:
-        print("Notice: Operator node was not added to the blockchain as a corresponding cluster ID wasn't found.")
+            declare_operator = input('Failed to get cluster ID, would you like to declare an operator without it (y/n)? ').lower()
+            while declare_operator not in ['y', 'n']:
+                declare_operator = input('Invalid option: %s. Would you like to like to declare an operator without cluster (y/n)? ').lower()
+    if declare_operator == 'y': # declare operator
+        if not declare_policy_cmd.declare_node(conn=conn, config=config, location=location, exception=exception):
+            print('Failed to declare operator node on blockchain')
 
     # Partition
     if 'enable_partition' in config and config['enable_partition'].lower() == 'true':
@@ -94,3 +86,4 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
     if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,
                                       update_tsd_info=True, archive=True, distributor=True, exception=False):
         print('Failed to set buffering to start publisher')
+
