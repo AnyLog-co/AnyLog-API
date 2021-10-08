@@ -24,6 +24,7 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
     policy_id = None
     where_conditions = []
     policy_type = list(new_policy)[0]
+    print(new_policy)
     for key in new_policy[policy_type]:
         where_conditions.append(other_cmd.format_string(key, new_policy[policy_type][key]))
 
@@ -66,14 +67,10 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
         location:bool - whether to declare location in policy
         exception:bool - whether to print exceptions
     :params:
-        policy_name:str - from config extract policy_name
         new_policy:str - Policy to declare
-    :retunr:
+    :return:
         policy_id - this can be used to verify policy and/or added to a consequent policy
     """
-    run = 0
-    policy_id = None
-
     if policy_type.lower() in ['master', 'operator', 'publisher', 'query']:
         new_policy = create_declaration.declare_node(config=config, location=location)
     elif policy_type.lower() == 'cluster':

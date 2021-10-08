@@ -1,0 +1,30 @@
+# list of configuration values to add into the original config
+# Operator
+1. In `run operator`
+    * create_table - if set to cluster with tables then set to False, else True
+    * update_tsd_info - true
+    * archive - true
+    * distributor - true
+
+2.  set_immediate_threshold - currently set True by default
+
+3. drop_partitions -- currently runs automatically and keeps last 60 days
+    * Enable/disable
+    * number of days to keep
+    * per table or overall - currently set to overall
+
+# Publisher --
+1. In `run publisher`
+    * compress_json
+    * move_json
+
+2.  set_immediate_threshold - currently set True by default
+
+# Data monitoring params
+1. enable/disable
+2. params to support
+    * table_name(s) & value column (overall || per table)    
+    * intervals
+    * frequency
+
+Link: https://github.com/AnyLog-co/documentation/blob/master/monitoring%20data.md

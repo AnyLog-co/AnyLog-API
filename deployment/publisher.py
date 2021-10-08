@@ -46,7 +46,8 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
         print('Failed to set data streaming to immediate')
 
     # Start publisher
-    if not post_cmd.run_publisher(conn=conn, master_node=config['master_node'], dbms_name='file_name[0]', table_name='file_name[1]', compress_json=True, move_json=True, exception=exception):
+    if not post_cmd.run_publisher(conn=conn, master_node=config['master_node'], dbms_name='file_name[0]',
+                                  table_name='file_name[1]', compress_json=True, move_json=True, exception=exception):
         print('Failed to set buffering to start publisher')
 
 

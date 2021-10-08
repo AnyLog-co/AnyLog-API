@@ -1,7 +1,7 @@
 import __init__
 import anylog_api
-import blockchain_cmd
 import dbms_cmd
+import monitoring_cmd
 import policy_cmd
 import post_cmd
 
@@ -129,6 +129,25 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
                         # validate partition exists
                         if not dbms_cmd.get_partitions(conn=conn, db_name=config['default_dbms'], table_name='*'):
                             print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
+
+                    # by default we are dropping partitions that are older than 60 days (~2 months).
+                    if not dbms_cmd.drop_partitions(conn=conn, db_name=config['default_dbms'],
+                                                    partition_name=None, table_name='*',
+                                                    keep=60, scheduled=True, exception=exception):
+                        print('Failed to set a scheduled process to drop partitions')
+
+                if not monitoring_cmd.set_monitor_streaming_data(conn=conn, db_name=config['default_dbms'],
+                                                                 table_name='*', intervals=10, frequency='1 minute',
+                                                                 value_col='value', exception=exception):
+                    print('Failed to set monitoring for streaming data')
+
+                """
+                If an operator is an associated with a cluster that has tables then the code doesn't allow adding new 
+                tables to be added into the cluster 
+                """
+                create_table = True
+                if 'enable' in config and config['enable_cluster'] == 'true' and 'table' in config:
+                    create_table = False
 
                 # start 'run operator' process
                 if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,
