@@ -3,7 +3,7 @@ import anylog_api
 import blockchain_cmd
 import dbms_cmd
 import post_cmd
-import declare_policy_cmd
+import policy_cmd
 
 
 def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
@@ -22,15 +22,9 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
         blockchain:dict - conetent from blockchain
         new_policy:dict - decleration of policy
     """
-    # Create system_query & blockchain 
-    new_system = False
+    # Create system_query & blockchain
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
-    if dbms_list == 'No DBMS connections found': 
-        new_system = True
-    if new_system is True or 'system_query' not in dbms_list:
-        if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
-            print('Failed to start system_query database') 
-    if new_system is True or 'blockchain' not in dbms_list:
+    if 'blockchain' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='blockchain', exception=exception):
             print('Failed to start blockchain database') 
 
@@ -40,5 +34,7 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
         if not dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
             print('Failed to create table blockchain.ledger') 
 
-    if not declare_policy_cmd.declare_node(conn=conn, config=config, location=location, exception=exception):
-        print('Failed to declare master node on blockchain')
+    node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
+                                             master_node='local', location=location, exception=exception)
+    if node_id is None:
+        print('Failed to add % node to blockchain' % config['node_typp'])   

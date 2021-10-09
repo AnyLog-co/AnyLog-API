@@ -47,14 +47,19 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         config:dict - configuration to POST 
         exception:bool - whether or not to print error to screen
+    :params:
+        status
     """
+    status = True
     for key in config: 
-        status = post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception)
-        if status is False:
-            print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
+        if not post_cmd.post_value(conn=conn, key=key, value=config[key], exception=exception):
+            status = False
+            if exception is True:
+                print('Failed to add object to dictionary on %s (key: %s | value: %s)' % (conn.conn, key, config[key]))
+    return status
 
 
-def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict: 
+def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
     """
     Extract parameters from AnyLog dictionary into dictionary  
     :args: 
@@ -68,7 +73,7 @@ def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
     """
     data = {} 
     dictionary = get_cmd.get_dictionary(conn=conn, exception=exception)
-    if dictionary != None: 
+    if dictionary is not None:
         for value in dictionary.split('\n'):
             if value != '\r' and value != '':  
                 data[value.split(':', )[0].rstrip().lstrip()] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
