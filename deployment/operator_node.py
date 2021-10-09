@@ -99,15 +99,18 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                                                      exception=exception):
         print('Failed to set monitoring for streaming data')
 
+    '''
+    # Issue 256
     """
     If an operator is an associated with a cluster that has tables then the code doesn't allow adding new 
     tables to be added into the cluster 
     """
     create_table = True
-    if 'enable' in config and config['enable_cluster'] == 'true' and 'table' in config:
+    if 'enable_cluster' in config and config['enable_cluster'] == 'true' and 'table' in config:
         create_table = False
+    '''
 
     # Start operator
-    if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=create_table,
+    if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,
                                       update_tsd_info=True, archive=True, distributor=True, exception=False):
         print('Failed to set buffering to start publisher')

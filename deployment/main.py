@@ -162,6 +162,8 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_data:dict, 
         elif deployment_file is not None:
             print("File: '%s' does not exist" % full_path)
 
+    blockchain_cmd.blockchain_sync(conn=conn, exception=exception)
+
 
 def deployment():
     """
