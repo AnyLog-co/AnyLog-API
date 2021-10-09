@@ -1,4 +1,5 @@
 import argparse
+import socket
 import os
 
 # deployment scripts
@@ -20,6 +21,32 @@ import post_cmd
 
 # support directory
 import config
+
+
+def __get_rest_conn():
+    """
+    Get IP address of node
+    :params:
+        ip_addr:str - IP address
+    """
+    ip_addr = '127.0.0.1'
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            try:
+                sock.connect(("8.8.8.8", 80))
+            except:
+                pass
+            else:
+                try:
+                    ip_addr = sock.getsockname()[0]
+                except:
+                    pass
+    except:
+        pass
+    else:
+        ip_addr = '%s:2049' % ip_addr
+
+    return ip_addr
 
 
 def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:bool=False, exception:bool=False)->(list, dict):
@@ -47,6 +74,9 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
     # Attempt to read config file
     if os.path.isfile(config_file):
         config_data = config.read_config(config_file)
+    else:
+        print('Unable to locate file: %s -- Cannot continue' % config_file)
+        exit(1)
 
     # Update config object with pre-set commands
     if config_data != {}:
@@ -65,11 +95,11 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
     if len(node_types) == 1:
         config_data['node_type'] = node_types[0]
     else:
-        config['node_type'] = 'single_node'
+        config_data['node_type'] = 'single_node'
         for node in node_types:
             if node not in ['master', 'publisher', 'operator', 'query']:
                 print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' "
-                     + "or 'single_node'. Cannot continue...") % config['node_type'])
+                     + "or 'single_node'. Cannot continue...") % config_data['node_type'])
                 exit(1)
 
     return node_types, config_data
@@ -161,8 +191,9 @@ def deployment():
        config_data:dict - config data (from file + hostname + AnyLog)
        node_types:list - config['node_type] if value contains more than one node
     """
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('rest_conn',       type=str,   default='127.0.0.1:2049', help='REST connection information')
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description='Send REST requests to configure an AnyLog instance.')
+    parser.add_argument('rest_conn',       type=str,   default=__get_rest_conn(), help='REST connection information')
     parser.add_argument('config_file',     type=str,   default=None, help='AnyLog INI config file')
     parser.add_argument('-a', '--auth',    type=tuple, default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')

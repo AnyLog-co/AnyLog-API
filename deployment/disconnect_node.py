@@ -4,7 +4,6 @@ import dbms_cmd
 import get_cmd
 import post_cmd
 import policy_cmd
-import other_cmd
 
 
 def disconnect_node(conn:anylog_api.AnyLogConnect, config:dict, node_types:list=None,
