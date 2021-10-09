@@ -95,11 +95,11 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
     if len(node_types) == 1:
         config_data['node_type'] = node_types[0]
     else:
-        config['node_type'] = 'single_node'
+        config_data['node_type'] = 'single_node'
         for node in node_types:
             if node not in ['master', 'publisher', 'operator', 'query']:
                 print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query' "
-                     + "or 'single_node'. Cannot continue...") % config['node_type'])
+                     + "or 'single_node'. Cannot continue...") % config_data['node_type'])
                 exit(1)
 
     return node_types, config_data

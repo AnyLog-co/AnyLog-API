@@ -52,7 +52,7 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
             node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=node, config=config,
                                                    master_node='local', location=location, exception=exception)
             if node_id is None:
-                print('Failed to add % node to blockchain' % node)
+                print('Failed to add %s node to blockchain' % node)
         elif node == 'query':
             if 'system_query' not in dbms_list:
                 if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception):

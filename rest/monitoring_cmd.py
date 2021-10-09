@@ -40,7 +40,7 @@ def set_monitor_streaming_data(conn:anylog_api.AnyLogConnect, db_name:str, table
     HEADERS['command'] = cmd
 
     r, error = conn.post(headers=HEADERS)
-    if other_cmd.print_errors(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type='post', command=cmd, r=r, error=error, exception=exception):
         status = False
     return status
 
