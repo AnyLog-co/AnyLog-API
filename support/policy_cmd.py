@@ -24,7 +24,7 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
     policy_id = None
     where_conditions = []
     policy_type = list(new_policy)[0]
-    print(new_policy)
+
     for key in new_policy[policy_type]:
         where_conditions.append(other_cmd.format_string(key, new_policy[policy_type][key]))
 

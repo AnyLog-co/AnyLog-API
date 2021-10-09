@@ -184,7 +184,6 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
     """
     status = True
     cmd = 'run operator where create_table=%s and update_tsd_info=%s and archive=%s and distributor=%s and master_node=%s'
-
     if isinstance(create_table, bool):
         create_table = str(create_table).lower()
     else:
@@ -202,7 +201,7 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
     else:
         distributor = 'true'
     HEADER['command'] = cmd % (create_table, update_tsd_info, archive, distributor, master_node)
-
+    print(HEADER['command'])
     if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Operator')[-1].split('\r')[0]:
         r, error = conn.post(headers=HEADER)
         if other_cmd.print_error(conn=conn.conn, request_type='post', command=HEADER['command'], r=r, error=error,
