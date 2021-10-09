@@ -31,7 +31,7 @@ def set_monitor_streaming_data(conn:anylog_api.AnyLogConnect, db_name:str, table
     """
     status = True
     cmd = "data monitor where dbms=%s" % db_name
-    print(cmd)
+
     # must specify a single table - otherwise will accept all tables
     if table_name != '*' and ',' not in table_name and not isinstance(table_name, list):
         cmd += " and table=%s" % table_name
