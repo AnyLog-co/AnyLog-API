@@ -294,12 +294,13 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
             config['mqtt_column_value_type'] = 'str'
 
     if status is False:
-        cmd += ' and topic=%s' % config['mqtt_topic_name']
+        cmd += ' and topic=(name=%s)' % config['mqtt_topic_name']
     else:
         execute_cmd = cmd + ' and topic=(name=%s and dbms=%s and table=%s and column.timestamp.timestamp=%s and column.value=(type=%s and value=%s))'
         cmd = execute_cmd % (config['mqtt_topic_name'], config['mqtt_topic_dbms'], config['mqtt_topic_table'],
                      config['mqtt_column_timestamp'], config['mqtt_column_value_type'], config['mqtt_column_value'])
     HEADER['command'] = cmd
+    print(HEADER['command'])
     r, error = conn.post(headers=HEADER)
     if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
         status = False
