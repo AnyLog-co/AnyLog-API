@@ -8,7 +8,7 @@ HEADER = {
     "User-Agent": "AnyLog/1.23"
 }
 
-def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
+def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->list:
     """"
     Get list of connected databases
     :args:
@@ -43,6 +43,41 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     return datbase_list
 
 
+def get_dbms_type(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
+    """"
+    Get list of connected databases with their database type
+    :args:
+        conn:anylog_api.AnyLogConnect - REST AnyLog Connection
+        exception:bool - whether or not to print exception
+    :params:
+        output:str - list of databases
+        cmd:str - command to execute
+    :return:
+        output
+    """
+    output = None
+    datbase_list = {}
+    HEADER['command'] = "get databases"
+    r, error = conn.get(headers=HEADER)
+
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=HEADER['command'], r=r, error=error,
+                            exception=exception):
+        try:
+            output = r.text
+        except Exception as e:
+            if exception is True:
+                print('Failed to extract data from GET (Error: %s)' % e)
+
+    if output == 'No DBMS connections found':
+        datbase_list = output
+    else:
+        for db in output.split('\n'):
+            if 'sqlite' in db or 'psql' in db:
+                db = ' '.join(db.split())
+                # print(db.split(' ')[0].rstrip().lstrip(), db.split(' ')[1].rstrip().lstrip())
+                datbase_list[db.split(' ')[0]] = db.split(' ')[1]
+
+    return datbase_list
 
 def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
     """
@@ -130,7 +165,7 @@ def drop_dbms(conn:anylog_api.AnyLogConnect, db_name:str, db_type:str, exception
     HEADER['command'] = 'drop dbms %s from %s' % (db_name, db_type)
 
     r, error = conn.post(headers=HEADER)
-    if not other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error,
+    if other_cmd.print_error(conn=conn, request_type="pull", command=HEADER['command'], r=r, error=error,
                                  exception=exception):
         status = False
     return status

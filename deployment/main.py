@@ -3,7 +3,7 @@ import socket
 import os
 
 # deployment scripts
-import disconnect_node
+import clean_node
 import file_deployment
 import master
 import operator_node
@@ -202,13 +202,19 @@ def deployment():
     parser.add_argument('-f', '--script-file',   type=str,   default=None, help='If set run commands in file at the end of the deployment (must include path)')
     parser.add_argument('-u', '--update-config', type=bool, nargs='?', const=True,  default=False, help='Whether to update config within AnyLog dictionary')
     parser.add_argument('-l', '--disable-location', type=bool, nargs='?', const=False, default=True,  help='If set to True & location not in config, add lat/long coordinates for new policies')
-    """
-    # need to develop for deployment 
-    parser.add_argument('-s', '--stop-node',  type=bool, nargs='?', const=True,  default=False,  help='disconnect node without dropping corresponding policy')
-    parser.add_argument('-c', '--clean-node', type=bool, nargs='?', const=True, default=False,  help='disconnect node and drop database and policy from blockchain')
-    """
+    parser.add_argument('-d',   '--disconnect', type=bool, nargs='?', const=True, default=False, help="disconnect node from network but don't remove anything (ie just stop processes)")
+    parser.add_argument('-dd', '--drop-data',   type=bool, nargs='?', const=True, default=False, help='clean databases (but not files) in addition to disconnecting from network')
+    parser.add_argument('-rp', '--remove-policy', type=bool, nargs='?', const=True, default=False, help='remove policy from ledger in disconnecting from network (does not remove policies of type cluster or table) in additon to disconnecting from network')
+    parser.add_argument('--format-instance', type=bool, nargs='?', const=True, default=False, help='Reformat AnyLog instance - will remove all data (including files) from node & remove from ledger')
     parser.add_argument('-e', '--exception',  type=bool, nargs='?', const=True, default=False, help='print exception errors')
     args = parser.parse_args()
+
+    if args.format_instance is True:
+        args.disconnect = True
+        args.remove_policy = True
+        args.drop_data = True
+    elif args.drop_data or args.remove_policy is True:
+        args.disconnect = True
 
     # Connect to AnyLog REST 
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
@@ -222,27 +228,29 @@ def deployment():
     node_types, config_data = __set_config(conn=anylog_conn, config_file=args.config_file,
                                            post_config=args.update_config, exception=args.exception)
 
-    #if args.stop_node is False and args.clean_node is False:
-    # Deploy default processes
-    __default_start_components(conn=anylog_conn, config_data=config_data, node_types=node_types,
-                               deployment_file=args.script_file, post_config=args.update_config,
-                               exception=args.exception)
-    # Deploy rest requests against AnyLog for a specific type of node
-    if config_data['node_type'] == 'master':
-        master.master_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-    if config_data['node_type'] == 'operator':
-        operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-    if config_data['node_type'] == 'publisher':
-        publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-    if config_data['node_type'] == 'query':
-        query.query_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
-    if config_data['node_type'] == 'single_node':  # a situation where config contains more than one node_type
-        single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.disable_location,
-                                     exception=args.exception)
-    """
+    if args.disconnect is False:
+        __default_start_components(conn=anylog_conn, config_data=config_data, node_types=node_types,
+                                   deployment_file=args.script_file, post_config=args.update_config,
+                                   exception=args.exception)
+        # Deploy rest requests against AnyLog for a specific type of node
+        if config_data['node_type'] == 'master':
+            master.master_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+        if config_data['node_type'] == 'operator':
+            operator_node.operator_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+        if config_data['node_type'] == 'publisher':
+            publisher.publisher_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+        if config_data['node_type'] == 'query':
+            query.query_init(conn=anylog_conn, config=config_data, location=args.disable_location, exception=args.exception)
+        if config_data['node_type'] == 'single_node':  # a situation where config contains more than one node_type
+            single_node.single_node_init(conn=anylog_conn, config=config_data, node_types=node_types, location=args.disable_location,
+                                         exception=args.exception)
     else:
-        disconnect_node.disconnect_node(conn=anylog_conn, config=config_data, clean_node=args.clean_node, exception=args.exception)
-    """
+        status = clean_node.disconnect_node(conn=anylog_conn, exception=args.exception)
+        # Disconnect DBMS - if args.drop_data drop databse(s)
+        if status is True:
+            clean_node.disconnect_dbms(conn=anylog_conn, drop_data=args.drop_data, config_data=config_data, exception=args.exception)
+
+
     process_list = get_cmd.get_processes(conn=anylog_conn, exception=args.exception)
     if process_list is not None:
         print(process_list)

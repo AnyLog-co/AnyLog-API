@@ -123,17 +123,18 @@ def declare_node(config:dict, location:bool=True)->dict:
     elif location is True:
         node[config['node_type']]['loc'] = __get_location()
 
-    if 'cluster_id' in config:
-        node[config['node_type']]['cluster'] = config['cluster_id']
+    if config['node_type'] == 'operator':
+        if 'cluster_id' in config:
+            node[config['node_type']]['cluster'] = config['cluster_id']
 
-    if 'default_dbms' in config:
-        node[config['node_type']]['dbms'] = config['default_dbms']
-        if 'table' in config and 'cluster_id' not in config:
-            # if node is correlated to a cluster there's no need to specify tables within policy
-            nodes = []
-            for table in config['table'].split(','):
-                node[config['node_type']]['table'] = table
-                nodes.append(node)
-            node = nodes
+        if 'default_dbms' in config:
+            node[config['node_type']]['dbms'] = config['default_dbms']
+            if 'table' in config and 'cluster_id' not in config:
+                # if node is correlated to a cluster there's no need to specify tables within policy
+                nodes = []
+                for table in config['table'].split(','):
+                    node[config['node_type']]['table'] = table
+                    nodes.append(node)
+                node = nodes
     return node
 
