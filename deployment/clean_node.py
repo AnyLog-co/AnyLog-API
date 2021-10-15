@@ -1,5 +1,6 @@
 import __init__
 import anylog_api
+import rest.blockchain_cmd as blockchain_cmd
 import dbms_cmd
 import get_cmd
 import post_cmd
@@ -65,6 +66,8 @@ def disconnect_dbms(conn:anylog_api.AnyLogConnect, drop_data:bool=False, config_
     statuses = []
     psql_status = False
     database_list = dbms_cmd.get_dbms_type(conn=conn, exception=exception)
+    if 'blockchain' in database_list:
+        del database_list['blockchain']
 
     if 'psql' in list(database_list.values()) and drop_data is True and config_data != {}:
         psql_status = True
@@ -122,8 +125,12 @@ def remove_policy(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
 
     if config_data['node_type'] == 'single_node':
         for node in node_types:
-            status = policy_cmd.drop_policy(conn=conn, master_node=config_data['master_node'], policy_type=node, query_params=where_conditions, exception=exception)
-            statuses.append(status)
+            if node != 'query': # query node isn't written to blockchain in sing_node config as all nodes can act as query node
+                status = policy_cmd.drop_policy(conn=conn, master_node=config_data['master_node'], policy_type=node, query_params=where_conditions, exception=exception)
+                statuses.append(status)
+                if status is True:
+                    blockchain_cmd.master_pull_json(conn=conn, master_node='local', master_file='!blockchain_file',
+                                                    local_file='!blockchain_file', exception=exception)
         status = True
         if False in statuses:
             status = False
@@ -139,11 +146,12 @@ def remove_policy(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
                 drop_db = input('Invalid Option: %s.  Would you like to drop the blockchain logical database [yes/no]? ' % drop_db)
 
         if drop_db == 'yes':
-            database_list = dbms_cmd.get_dbms_type(conn=conn, exception=exception)
-            if 'psql' in list(database_list.values()) and dbms_cmd.connect_dbms(conn=conn, config_data=config_data, db_name='postgres', exception=exception):
-                status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='psql', exception=exception)
-            else:
-                status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='sqlite', exception=exception)
+            if dbms_cmd.disconnect_dbms(conn=conn, db_name='blockchain', exception=exception):
+                database_list = dbms_cmd.get_dbms_type(conn=conn, exception=exception)
+                if 'psql' in list(database_list.values()) and dbms_cmd.connect_dbms(conn=conn, config_data=config_data, db_name='postgres', exception=exception):
+                    status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='psql', exception=exception)
+                else:
+                    status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='sqlite', exception=exception)
 
     return status
 
