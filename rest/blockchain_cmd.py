@@ -150,7 +150,7 @@ def prepare_policy(conn:anylog_api.AnyLogConnect, policy_type:str, policy:dict, 
 
     # prepare policy
     r, error = conn.post(headers=HEADER, payload=raw_policy)
-    if not other_cmd.print_error(conn=conn.conn, request_type='post', command='blockchain drop policy %s' % raw_policy,
+    if not other_cmd.print_error(conn=conn.conn, request_type='post', command='blockchain prepare policy %s' % raw_policy,
                                  r=r, error=error, exception=exception):
         policy_id = __extract_policy_id(conn=conn, policy_type=policy_type, exception=exception)
 

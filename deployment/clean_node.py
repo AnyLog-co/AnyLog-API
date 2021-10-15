@@ -5,6 +5,7 @@ import get_cmd
 import post_cmd
 import policy_cmd
 
+
 def disconnect_node(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     """
     Disconnect from network
@@ -94,6 +95,55 @@ def disconnect_dbms(conn:anylog_api.AnyLogConnect, drop_data:bool=False, config_
     if False in statuses:
         print('Failed to disconnect and/or drop one or more databases')
         status = False
+
+    return status
+
+def remove_policy(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:list=[], exception:bool=False)->bool:
+    """
+    Remove policy from blockchain - does not remove cluster or table policies
+    :args:
+        conn:anylog_api.AnyLogConnect - REST connection into AnyLog
+        config_data:dict - node configuration information
+        node_types:list - for "single node deployment" the nodes correlated to the node
+        exception:bool - whether to print exceptions
+    :params:
+    :return:
+        if successfully drop policy return True, else return False - code doesn't validate policy was dropped
+    """
+    statuses = []
+    where_conditions = {
+        'name': config_data['node_name'],
+        'company': config_data['company_name'],
+        'ip': config_data['external_ip'],
+        'local_ip': config_data['ip'],
+        'port': int(config_data['anylog_server_port']),
+        'rest_port': int(config_data['anylog_rest_port'])
+    }
+
+    if config_data['node_type'] == 'single_node':
+        for node in node_types:
+            status = policy_cmd.drop_policy(conn=conn, master_node=config_data['master_node'], policy_type=node, query_params=where_conditions, exception=exception)
+            statuses.append(status)
+        status = True
+        if False in statuses:
+            status = False
+    else:
+        status = policy_cmd.drop_policy(conn=conn, master_node=config_data['master_node'], policy_type=config['node_type'], query_params=where_conditions, exception=exception)
+
+    if config_data['node_type'] == 'master' or 'master' in node_types and status is True:
+        drop_db = None
+        while drop_db not in ['yes', 'no']:
+            if drop_db is None:
+                drop_db = input('Would you like to drop the blockchain logical database [yes/no]? ')
+            else:
+                drop_db = input('Invalid Option: %s.  Would you like to drop the blockchain logical database [yes/no]? ' % drop_db)
+
+        if drop_db == 'yes':
+            database_list = dbms_cmd.get_dbms_type(conn=conn, exception=exception)
+            if 'psql' in list(database_list.values()) and dbms_cmd.connect_dbms(conn=conn, config_data=config_data, db_name='postgres', exception=exception):
+                status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='psql', exception=exception)
+            else:
+                status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='sqlite', exception=exception)
 
     return status
 

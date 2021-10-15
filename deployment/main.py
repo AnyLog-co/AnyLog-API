@@ -249,6 +249,10 @@ def deployment():
         # Disconnect DBMS - if args.drop_data drop databse(s)
         if status is True:
             clean_node.disconnect_dbms(conn=anylog_conn, drop_data=args.drop_data, config_data=config_data, exception=args.exception)
+        if status is True and args.remove_policy is True:
+            clean_node.remove_policy(conn=anylog_conn, config_data=config_data, node_types=node_types, exception=args.exception)
+
+
 
 
     process_list = get_cmd.get_processes(conn=anylog_conn, exception=args.exception)
