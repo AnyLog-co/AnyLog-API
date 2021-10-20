@@ -1,6 +1,11 @@
+import import_packages
+import_packages.import_dirs()
+
+import anylog_api
+import other_cmd
+
 import json
 import random
-import requests
 from paho.mqtt import client as mqtt_client
 
 MQTT_CLIENT_ID = 'python-mqtt-%s' % random.randint(random.choice(range(0, 500)), random.choice(range(501, 1000)))
@@ -25,15 +30,16 @@ def __convert_data(data:dict)->str:
     return json_data
 
 
-def put_data(conn:str, dbms:str, table:str, data:dict, mode:str='streaming') -> bool:
+def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, data:dict, mode:str='streaming', exception:bool=False)->bool:
     """
     Send data via REST using PUT command
     :args:
-        conn:str - REST IP & port
+        conn:anylog_api.AnyLogConnect - connection to AnyLog via REST
         dbms:str - logical database name
         table:str - table name to store data in
         data:dict - data to post into AnyLog
         mode:str - whether to PUT data continuously (streaming) or one at a time (file)
+        exception:bool - print exception
     :params:
         status:bool -
         headers:dict - REST header
@@ -45,23 +51,19 @@ def put_data(conn:str, dbms:str, table:str, data:dict, mode:str='streaming') -> 
         'type': 'json',
         'dbms': dbms,
         'table': table,
-        'mode': 'streaming',
+        'mode': mode,
         'Content-Type': 'text/plain'
     }
 
-    try:
-        r = requests.put(url='http://%s' % conn, headers=headers, data=__convert_data(data))
-    except Exception as e:
-        print('Failed to PUT data into %s (Error: %s)' % (conn, e))
+    r, error = conn.put(headers=headers, payload=__convert_data(data))
+
+    if other_cmd.print_error(conn=conn.conn, request_type="put", command="insert data ", r=r, error=error, exception=exception):
         status = False
-    else:
-        if int(r.status_code) != 200:
-            print('Failed to PUT data into %s (Network Error: %s)' % (conn, r.status_code))
-            status = False
+
     return status
 
 
-def post_data(conn:str, rest_topic:str, data:dict) -> bool:
+def post_data(conn:anylog_api.AnyLogConnect, rest_topic:str, data:dict, exception:bool=False)->bool:
     """
     Send data via REST using POST command
     :requirement:
@@ -70,6 +72,7 @@ def post_data(conn:str, rest_topic:str, data:dict) -> bool:
         conn:str - REST IP & port
         rest_topic:str - topic correlated to the MQTT client using a REST
         data:dict - data to post into AnyLog - should contain logical database name and table
+        exception:bool - whether to print exceptions
     :params:
         status:bool -
         headers:dict - REST header
@@ -93,19 +96,14 @@ def post_data(conn:str, rest_topic:str, data:dict) -> bool:
         'Content-Type': 'text/plain'
     }
 
-    try:
-        r = requests.post(url='http://%s' % conn, headers=headers, data=__convert_data(data))
-    except Exception as e:
-        print('Failed to POST data into %s (Error: %s)' % (conn, e))
+    r, error = conn.post(headers=headers, payload=__convert_data(data))
+    if other_cmd.print_error(conn=conn.conn, request_type="post", command="insert data ", r=r, error=error, exception=exception):
         status = False
-    else:
-        if int(r.status_code) != 200:
-            print('Failed to POST data into %s (Network Error: %s)' % (conn, r.status_code))
-            status = False
+
     return status
 
 
-def mqtt_post_data(conn:str, mqtt_conn:str, mqtt_port:str, mqtt_topic:str, data:dict) -> bool:
+def mqtt_post_data(conn:anylog_api.AnyLogConnect, mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception:bool=False)->bool:
     """
     Send data into the MQTT broker using AnyLog's MQTT publisher tool -
     :requirement:
@@ -114,7 +112,7 @@ def mqtt_post_data(conn:str, mqtt_conn:str, mqtt_port:str, mqtt_topic:str, data:
     :args:
         conn:str - REST IP & Port
         mqtt_conn:str - MQTT connection info ( [usr]@[ip]:[passwrd] ), if using AnyLogg brokerr only IP is required
-        mqtt_port:str - MQTT port
+        mqtt_port:int - MQTT port
         mqtt_topic:str - Topic correlated to the MQTT client
         data:dict - data to post into AnyLog - should contain logical database name and table
     :params:
@@ -149,27 +147,23 @@ def mqtt_post_data(conn:str, mqtt_conn:str, mqtt_port:str, mqtt_topic:str, data:
         'User-Agent': 'AnyLog/1.23'
     }
 
-    try:
-        r = requests.post('http://%s' % conn, headers=headers)
-    except Exception as e:
-        print('Failed to POST data into %s (Error: %s)' % (conn, e))
+    r, error = conn.post(headers=headers)
+    if other_cmd.print_error(conn=conn.conn, request_type="post", command="insert data using `mqtt publish` command",
+                             r=r, error=error, exception=exception):
         status = False
-    else:
-        if int(r.status_code) != 200:
-            print('Failed to POST data into %s (Network Error: %s)' % (conn, r.status_code))
-            status = False
     return status
 
 
-def mqtt_data(mqtt_conn:str, mqtt_port:str, mqtt_topic:str, data:dict)->bool:
+def mqtt_data(mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception:bool=False)->bool:
     """
     Send data directly using MQTT
 
     :args:
         mqtt_conn:str - MQTT connection info ( [usr]@[ip]:[passwrd] ), if using AnyLogg brokerr only IP is required
-        mqtt_port:str - MQTT port
+        mqtt_port:int - MQTT port
         mqtt_topic:str - Topic correlated to the MQTT client
         data:dict - data to send into AnyLog
+        exception:bool - whether to print exception(s) or not
     :params:
         status:bool
         cur - connection to MQTT client
@@ -191,14 +185,16 @@ def mqtt_data(mqtt_conn:str, mqtt_port:str, mqtt_topic:str, data:dict)->bool:
         cur = mqtt_client.Client(client_id=MQTT_CLIENT_ID)
     except Exception as e:
         status = False
-        print('Failed to declare client connection (Error: %s)' % e)
+        if exception is True:
+            print('Failed to declare client connection (Error: %s)' % e)
     else:
         broker = mqtt_conn.split('@')[-1].split(':')[0]
         try:
             cur.connect(host=broker, port=mqtt_port)
         except Exception as e:
             status = False
-            print('Failed to connect client to MQTT broker %s:%s (Error: %s)' % (broker, mqtt_port, e))
+            if exception is True:
+                print('Failed to connect client to MQTT broker %s:%s (Error: %s)' % (broker, mqtt_port, e))
 
     if status is not False:
         if '@' in mqtt_conn and ':' in mqtt_conn:
@@ -206,14 +202,17 @@ def mqtt_data(mqtt_conn:str, mqtt_port:str, mqtt_topic:str, data:dict)->bool:
                 cur.username_pw_set(username=mqtt_conn.split('@')[0], password=mqtt_conn.split(':')[-1])
             except Exception as e:
                 status = False
-                print('Faileld to set username [%s] and password [%s] for connection (Error: %s)' % (
-                    mqtt_conn.split('@')[0], mqtt_conn.split(':')[-1], e))
+                if exception is True:
+                    print('Failed to set username [%s] and password [%s] for connection (Error: %s)' % (
+                        mqtt_conn.split('@')[0], mqtt_conn.split(':')[-1], e))
 
     if status is not False:
         try:
             cur.publish(topic=mqtt_topic, payload=__convert_data(data), qos=1, retain=False)
         except Exception as e:
             status = False
-            print('Failed to publish data against MQTT connection %s and portt %s (Error: %s)' % (
-                mqtt_conn, mqtt_port, e))
+            if exception is True:
+                print('Failed to publish data against MQTT connection %s and portt %s (Error: %s)' % (
+                    mqtt_conn, mqtt_port, e))
+
     return status
