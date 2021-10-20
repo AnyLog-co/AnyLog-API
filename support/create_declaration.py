@@ -4,30 +4,36 @@ The following configures AnyLog node policy based on the provided configuration
 import requests
 
 
-def __get_location()->str:
+def __get_location(ip:str, exception:bool=False)->str:
     """
-    Get location using https://ipinfo.io/json
-    :note:
-        the location provided is that of the IP from which the REST process is running
-    :param:
-        location:str - location information from request (default: 0.0, 0.0)
+    Get location using https://freegeoip.live/json
+    :args:
+        ip:str - IP address of node to get location of
+    :params:
+        location:str - (Latitude, Longitude)
     :return:
-        location
+
     """
     location = "0.0, 0.0"
     try:
-        r = requests.get("https://ipinfo.io/json")
-    except:
-        pass
+        r = requests.get("https://freegeoip.live/json/%s" % ip)
+    except Exception as e:
+        if exception is True:
+            print('Failed to execute request to get location by IP  (Error: %s)' % e)
     else:
-        try:
-            if int(r.status_code) == 200:
-                try:
-                    location = r.json()['loc']
-                except Exception as e:
-                    pass
-        except:
-            pass
+        if int(r.status_code) == 200:
+            try:
+                output = r.json()
+            except Exception as e:
+                if exception is True:
+                    print('Failed to convert info regarding IP as JSON (Error: %s)' % e)
+            else:
+                if output['latitude'] != '' and output['longitude'] != '':
+                    location = '%s, %s' % (output['latitude'], output['longitude'])
+                elif exception is True:
+                    print('Failed to extract latitude & longitude regarding IP %s' % ip)
+        elif exception is True:
+            print('Failed to execute request to get location by IP (Network Error: %s)' % r.status_code)
 
     return location
 
