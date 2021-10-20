@@ -1,6 +1,6 @@
-import time
+import import_packages
+import_packages.import_dirs()
 
-import __init__
 import anylog_api
 import blockchain_cmd
 import create_declaration

@@ -9,7 +9,8 @@ They do not include
     * database processes
     * authentication
 """
-import __init__
+import import_packages
+import_packages.import_dirs()
 import anylog_api
 import other_cmd
 

@@ -1,10 +1,12 @@
 """
 Link: https://github.com/AnyLog-co/documentation/blob/master/authentication.md
 """
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import get_cmd
-import errors
+import other_cmd
 
 HEADER = {
     "command": None,
@@ -27,7 +29,7 @@ def set_authentication_off(conn:anylog_api.AnyLogConnect, exception:bool=False)-
     status = True
     HEADER['command'] = "set authentication off"
     r, error = conn.post(headers=HEADER)
-    if errors.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
         status = False
     return status
 
@@ -54,7 +56,7 @@ def set_node_authentication(conn:anylog_api.AnyLogConnect, auth:tuple=None, exce
     HEADER['command'] = cmd
 
     r, error = conn.post(headers=HEADER)
-    if not errors.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
         node_id = get_cmd.get_node_id(conn=conn, exception=exception)
 
     return node_id

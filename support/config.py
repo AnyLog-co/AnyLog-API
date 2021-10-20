@@ -1,7 +1,9 @@
 import configparser
 import os 
 
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import get_cmd
 import post_cmd

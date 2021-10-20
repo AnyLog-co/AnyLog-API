@@ -1,6 +1,4 @@
-import os
 import requests
-import __init__
 
 
 class AnyLogConnect:

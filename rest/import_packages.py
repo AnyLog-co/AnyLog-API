@@ -13,5 +13,3 @@ def import_dirs():
 
     support_dir = full_path + slash_char + 'support'
     sys.path.insert(0, support_dir)
-
-

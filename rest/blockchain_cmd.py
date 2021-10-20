@@ -1,6 +1,8 @@
 import json
 
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import config
 import get_cmd
@@ -339,7 +341,6 @@ def blockchain_wait(conn:anylog_api.AnyLogConnect, policy_type:str, where_condit
     """
     status = True
     cmd = __build_blockchain_query(policy_type=policy_type, where_conditions=where_conditions)
-    print(cmd)
     wait_cmd = "blockchain wait where command='%s'" % cmd
     HEADER['command'] = wait_cmd
 
