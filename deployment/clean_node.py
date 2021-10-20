@@ -1,6 +1,6 @@
 import __init__
 import anylog_api
-import rest.blockchain_cmd as blockchain_cmd
+import blockchain_cmd
 import dbms_cmd
 import get_cmd
 import post_cmd

@@ -6,20 +6,22 @@ import blockchain_cmd
 import create_declaration
 import other_cmd
 
-def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:dict, exception:bool=False)->str:
+def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:dict, cluster_id:str=None,
+                   exception:bool=False)->str:
     """
     Code to call corresponding blockchain in order to declare policy & return node ID
     :args:
         conn:anylog_api.AnyLogConnect - connction to AnyLog
         master_node:str - master node IP & Port
         new_policy:dict - policy to deploy
+        cluster_id:str - for operator node the corresponding cluster ID
         exception:bool - whether to print exceptions
     :params:
         run:int - variable to use in while loop
         where_conditions:list - list of conditions to search by
         policy_id:str - ID of either existing or created policy
     :return:
-        node_id - if unable to extract node id || fail to POST to blockchain return None (ie fails) 
+        node_id - if unable to extract node id || fail to POST to blockchain return None (ie fails)
     """
     policy_id = None
     where_conditions = []
@@ -71,15 +73,40 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
     :return:
         policy_id - this can be used to verify policy and/or added to a consequent policy
     """
-    if policy_type.lower() in ['master', 'operator', 'publisher', 'query']:
-        new_policy = create_declaration.declare_node(config=config, location=location)
-    elif policy_type.lower() == 'cluster':
-        new_policy = create_declaration.declare_cluster(config=config)
+    new_policy = None
+    where_conditions_dict = {
+        'name': config['node_name'],
+        'company': config['company_name'],
+    }
+    if policy_type != 'cluster':
+        where_conditions_dict['ip'] = config['external_ip']
+        where_conditions_dict['local_ip'] = config['ip']
+        where_conditions_dict['port'] = int(config['anylog_server_port'])
+        where_conditions_dict['rest_port'] = int(config['anylog_rest_port'])
     else:
-        if exception is True:
-            print('Invalid policy of type: %s' % policy_type)
+        where_conditions_dict['name'] = config['cluster_name']
 
-    return declare_policy(conn=conn, master_node=master_node, new_policy=new_policy, exception=exception)
+    where_conditions = []
+    for key in where_conditions_dict:
+        where_conditions.append(other_cmd.format_string(key, where_conditions_dict[key]))
+
+    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions,
+                                               exception=exception)
+
+    if blockchain is []:
+        if policy_type.lower() in ['master', 'operator', 'publisher', 'query']:
+            new_policy = create_declaration.declare_node(config=config, location=location)
+        elif policy_type.lower() == 'cluster':
+            new_policy = create_declaration.declare_cluster(config=config)
+        else:
+            if exception is True:
+                print('Invalid policy of type: %s' % policy_type)
+
+        new_policy = declare_policy(conn=conn, master_node=master_node, new_policy=new_policy, exception=exception)
+    else:
+        new_policy = True
+
+    return new_policy
 
 
 def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str, query_params:dict, exception:bool)->bool:
@@ -97,11 +124,11 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
     """
     status = True
     run = 0
-    while_conditions = []
+    where_conditions = []
     for key in query_params:
-        while_conditions.append(other_cmd.format_string(key, query_params[key]))
+        where_conditions.append(other_cmd.format_string(key, query_params[key]))
 
-    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=while_conditions,
+    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions,
                                                exception=exception)
 
     if len(blockchain) == 1:

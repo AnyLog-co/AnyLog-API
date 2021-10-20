@@ -60,6 +60,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where_con
         blockchains
     """
     cmd = __build_blockchain_query(policy_type=policy_type, where_conditions=where_conditions, policy=None)
+
     HEADER['command'] = cmd
     blockchain = []
 

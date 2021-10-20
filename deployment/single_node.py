@@ -94,22 +94,25 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
                     if cluster_id is not None:
                         config['cluster_id'] = cluster_id
                     else:
-                        boolean = False
-                        while boolean is False:
-                            deploy_operator = input(
-                                'Failed to get cluster ID. Would you still like to set an operator (y/n)? ')
-                            deploy_operator = deploy_operator.lower()
-                            if deploy_operator not in ['y', 'n']:
-                                deploy_operator = input(
-                                    'Invalid option: %s. Would you still like to set an operator (y/n)? ')
+                        deploy_operator = None
+                        while deploy_operator not in ['y', 'n']:
+                            if deploy_operator is None:
+                                try:
+                                    deploy_operator = input('Failed to get cluster ID. Would you still like to declare an operator (y/n)? ')
+                                except EOFError:
+                                    deploy_operator = 'y'
                             else:
-                                boolean = True
+                                try:
+                                    deploy_operator = input('Invalid Option: %s.  Would you still like to declare an operator (y/n)? ' % deploy_operator)
+                                except EOFError:
+                                    deploy_operator = 'y'
+
                 if deploy_operator == 'y':
                     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'],
                                                                config=config, master_node='local',
                                                                location=location, exception=exception)
                     if node_id is None:
-                        print('Failed to add % node to blockchain' % node)
+                        print('Failed to add %s node to blockchain' % node)
                 else:
                     print("Notice: Operator node was not added to the blockchain as a corresponding cluster ID wasn't found.")
 
