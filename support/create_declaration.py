@@ -127,7 +127,7 @@ def declare_node(config:dict, location:bool=True)->dict:
     if 'location' in config:
          node[config['node_type']]['loc'] = config['location'] 
     elif location is True:
-        node[config['node_type']]['loc'] = __get_location()
+        node[config['node_type']]['loc'] = __get_location(ip = config['external_ip'])
 
     if config['node_type'] == 'operator':
         if 'cluster_id' in config:

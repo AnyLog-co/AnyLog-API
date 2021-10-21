@@ -58,6 +58,7 @@ def generic_post(conn:anylog_api.AnyLogConnect, command:str, destination:str=Non
     :return:
         status
     """
+    status = True
     header = HEADER
     header['command'] = command
     if destination is not None:
@@ -69,6 +70,7 @@ def generic_post(conn:anylog_api.AnyLogConnect, command:str, destination:str=Non
 
     if 'destination' in HEADER:
         del HEADER['destination']
+
     return status
 
 

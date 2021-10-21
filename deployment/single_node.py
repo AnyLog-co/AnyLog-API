@@ -42,8 +42,7 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
             if 'blockchain' not in dbms_list:
                 if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='blockchain', exception=exception):
                     print('Failed to start blockchain database')
-            # Create table ledger
-            dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+            # Create table ledger 
             if not dbms_cmd.get_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
                 # Create ledger if not exists
                 if not dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):

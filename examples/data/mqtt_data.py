@@ -23,7 +23,7 @@ def main():
         -t, --timeout   TIMEOUT     REST timeout period                 (default: 30)
     :params:
         anylog_conn:anylog_api.AnyLogConnect - connection to AnyLog
-        data:dict - data generated using data_generator.put_data_generator
+        da  ta:dict - data generated using data_generator.put_data_generator
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('mqtt_conn',  type=str, default='[user]@[borker]:[passwd]', help='MQTT broker connection info. if using local broker, provide just the broker IP')

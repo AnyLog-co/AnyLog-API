@@ -145,7 +145,8 @@ def __default_start_components(conn:anylog_api.AnyLogConnect, config_data:dict, 
                 print('Failed to deploy system_query against %s node' % config['node_type'])
 
     # blockchain sync
-    if not blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='master', time='1 minute', master_node=config_data['master_node'], exception=exception):
+    if not blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='master', time='30 seconds',
+                                                    master_node=config_data['master_node'], exception=exception):
         print('Failed to set blockchain sync process')
     
     # Start scheduler(s)
@@ -251,9 +252,6 @@ def deployment():
             clean_node.disconnect_dbms(conn=anylog_conn, drop_data=args.drop_data, config_data=config_data, exception=args.exception)
         if status is True and args.remove_policy is True:
             clean_node.remove_policy(conn=anylog_conn, config_data=config_data, node_types=node_types, exception=args.exception)
-
-
-
 
     process_list = get_cmd.get_processes(conn=anylog_conn, exception=args.exception)
     if process_list is not None:

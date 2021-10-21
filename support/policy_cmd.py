@@ -93,7 +93,7 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
     blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions,
                                                exception=exception)
 
-    if blockchain is []:
+    if len(blockchain) == 0:
         if policy_type.lower() in ['master', 'operator', 'publisher', 'query']:
             new_policy = create_declaration.declare_node(config=config, location=location)
         elif policy_type.lower() == 'cluster':
