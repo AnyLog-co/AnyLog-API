@@ -47,12 +47,14 @@ def format_string(key:str, value:str)->str:
     :return:
         frmt_string
     """
-    if isinstance(value , str):
+    if isinstance(value, str):
         value = value.replace('"', '').replace("'", "").lstrip().rstrip()
 
+    frmt_string = '%s="%s"' % (key, value)
+    """
     if isinstance(value, str) and (" " in value or "+" in value):
         frmt_string = '%s="%s"' % (key, value)
     else:
         frmt_string = "%s=%s" % (key, value)
-
+    """
     return frmt_string

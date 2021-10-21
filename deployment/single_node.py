@@ -1,7 +1,7 @@
 import __init__
 import anylog_api
-import blockchain_cmd
 import dbms_cmd
+import monitoring_cmd
 import policy_cmd
 import post_cmd
 
@@ -42,8 +42,7 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
             if 'blockchain' not in dbms_list:
                 if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='blockchain', exception=exception):
                     print('Failed to start blockchain database')
-            # Create table ledger
-            dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+            # Create table ledger 
             if not dbms_cmd.get_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
                 # Create ledger if not exists
                 if not dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
@@ -52,7 +51,7 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
             node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=node, config=config,
                                                    master_node='local', location=location, exception=exception)
             if node_id is None:
-                print('Failed to add % node to blockchain' % node)
+                print('Failed to add %s node to blockchain' % node)
         elif node == 'query':
             if 'system_query' not in dbms_list:
                 if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception):
@@ -94,22 +93,25 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
                     if cluster_id is not None:
                         config['cluster_id'] = cluster_id
                     else:
-                        boolean = False
-                        while boolean is False:
-                            deploy_operator = input(
-                                'Failed to get cluster ID. Would you still like to set an operator (y/n)? ')
-                            deploy_operator = deploy_operator.lower()
-                            if deploy_operator not in ['y', 'n']:
-                                deploy_operator = input(
-                                    'Invalid option: %s. Would you still like to set an operator (y/n)? ')
+                        deploy_operator = None
+                        while deploy_operator not in ['y', 'n']:
+                            if deploy_operator is None:
+                                try:
+                                    deploy_operator = input('Failed to get cluster ID. Would you still like to declare an operator (y/n)? ')
+                                except EOFError:
+                                    deploy_operator = 'y'
                             else:
-                                boolean = True
+                                try:
+                                    deploy_operator = input('Invalid Option: %s.  Would you still like to declare an operator (y/n)? ' % deploy_operator)
+                                except EOFError:
+                                    deploy_operator = 'y'
+
                 if deploy_operator == 'y':
                     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'],
                                                                config=config, master_node='local',
                                                                location=location, exception=exception)
                     if node_id is None:
-                        print('Failed to add % node to blockchain' % node)
+                        print('Failed to add %s node to blockchain' % node)
                 else:
                     print("Notice: Operator node was not added to the blockchain as a corresponding cluster ID wasn't found.")
 
@@ -130,10 +132,32 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
                         if not dbms_cmd.get_partitions(conn=conn, db_name=config['default_dbms'], table_name='*'):
                             print('Failed to declare partition for %s.%s' % (config['default_dbms'], table))
 
-                # start 'run operator' process
+                    # by default we are dropping partitions that are older than 60 days (~2 months).
+                    if not dbms_cmd.drop_partitions(conn=conn, db_name=config['default_dbms'],
+                                                    partition_name=None, table_name='*',
+                                                    keep=60, scheduled=True, exception=exception):
+                        print('Failed to set a scheduled process to drop partitions')
+
+                if not monitoring_cmd.set_monitor_streaming_data(conn=conn, db_name=config['default_dbms'],
+                                                                 table_name='*', intervals=10, frequency='1 minute',
+                                                                 value_col='value', exception=exception):
+                    print('Failed to set monitoring for streaming data')
+
+                '''
+                # Issue 256
+                """
+                If an operator is an associated with a cluster that has tables then the code doesn't allow adding new 
+                tables to be added into the cluster 
+                """
+                create_table = True
+                if 'enable_cluster' in config and config['enable_cluster'] == 'true' and 'table' in config:
+                    create_table = False
+                '''
+
+                # Start operator
                 if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,
                                              update_tsd_info=True, archive=True, distributor=True, exception=False):
-                    print('Failed to set buffering to start publisher')
+                    print('Failed to set buffering to start operator')
 
             elif node == 'publisher':
                 node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
