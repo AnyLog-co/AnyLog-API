@@ -196,7 +196,7 @@ def mqtt_data(mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception
             if exception is True:
                 print('Failed to connect client to MQTT broker %s:%s (Error: %s)' % (broker, mqtt_port, e))
 
-    if status is not False:
+    if status is True:
         if '@' in mqtt_conn and ':' in mqtt_conn:
             try:
                 cur.username_pw_set(username=mqtt_conn.split('@')[0], password=mqtt_conn.split(':')[-1])

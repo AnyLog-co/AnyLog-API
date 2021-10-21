@@ -40,7 +40,7 @@ def main():
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
     data = data_generator(db_name=args.db_name, table_name=args.table_name)
     if not mqtt_post_data(conn=anylog_conn, mqtt_conn=args.mqtt_conn, mqtt_port=args.mqtt_port,
-                          mqtt_topic=args.mqtt_topic, data=data, exception=True)
+                          mqtt_topic=args.mqtt_topic, data=data, exception=True):
         print('Failed to POST data into AnyLog via `mqtt publish`')
 
 

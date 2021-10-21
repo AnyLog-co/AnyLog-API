@@ -31,7 +31,7 @@ def main():
 
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
     data = put_data_generator()
-    if not put_data(conn=anylog_conn, dbms=args.db_name, table=args.table, data=data, mode='streaming', exception=True):
+    if not put_data(conn=anylog_conn, dbms=args.db_name, table=args.table_name, data=data, mode='streaming', exception=True):
         print('Failed to PUT data into AnyLog')
 
 
