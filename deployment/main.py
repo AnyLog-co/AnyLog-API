@@ -14,6 +14,7 @@ import single_node
 import __init__
 # REST directory
 import anylog_api
+import authentication
 import blockchain_cmd
 import dbms_cmd
 import get_cmd
@@ -228,6 +229,28 @@ def deployment():
     # get node_types & config_data
     node_types, config_data = __set_config(conn=anylog_conn, config_file=args.config_file,
                                            post_config=args.update_config, exception=args.exception)
+
+    if 'authentication' in config_data and config_data['authentication'] == 'on':
+        if 'user_name' in config_data and 'user_password' in config_data and 'user_type' in config_data:
+            # authentication.get_users(conn=anylog_conn, user_name=config_data['user_name'], exception=args.exception)
+            authentication.set_user_authentication_on(conn=anylog_conn, user_password=config_data['user_password'],
+                                                      exception=args.exception)
+            if 'auth_expiration' in config_data:
+                authentication.set_user_authenticaton(conn=anylog_conn, user_name=config_data['user_name'],
+                                                      user_password=config_data['user_password'],
+                                                      user_type=config_data['user_type'],
+                                                      expiration=config_data['auth_expiration'],
+                                                      exception=args.exception)
+            else:
+                authentication.set_user_authenticaton(conn=anylog_conn, user_name=config_data['user_name'],
+                                                      user_password=config_data['user_password'],
+                                                      user_type=config_data['user_type'],
+                                                      exception=args.exception)
+        else:
+            config_data['authentication'] = 'off'
+    if 'authentication' not in config_data or config_data['authentication'] == 'off':
+        authentication.set_authentication_off(conn=anylog_conn, exception=args.exception)
+
 
     if args.disconnect is False:
         __default_start_components(conn=anylog_conn, config_data=config_data, node_types=node_types,

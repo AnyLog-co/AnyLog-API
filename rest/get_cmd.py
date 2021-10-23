@@ -260,15 +260,16 @@ def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception
                 print('Failed to get information regarding MQTT client from: %s (Error: %s)' % (conn, e))
 
 
-def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destination='network', format:str='json', timezone:str='local',
-                  include:str=None, drop:bool=False, dest:str='stdout', file:str=None, output_table:str=None)->str:
+def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destination='network', format:str='json',
+                  timezone:str='local', stat:bool=True, include:str=None, drop:bool=False, dest:str='stdout',
+                  file:str=None, output_table:str=None)->str:
     """
     Execute Query against AnyLog
     :link:
         https://github.com/AnyLog-co/documentation/blob/master/queries.md
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
-        dbms:str - logical databasee name
+        dbms:str - logical database name
         query:str - SELECT statement to execute
         destination:str - Whether to query remote nodes ('network') or local node ('')
         format:str - The format of the result set
@@ -277,6 +278,7 @@ def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destinatio
         timezone:str - timezone used for time values in the result set
             * utc
             * local
+        stat:bool - whether to print process query statistics (default: true | option: false)
         include:str - allows to treat remote tables with a different name as the table being queried
         drop:bool - drop local output table when new query starts
         dest:str - destination of result set
