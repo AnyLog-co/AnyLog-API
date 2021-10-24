@@ -197,8 +197,17 @@ def deployment():
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description='Send REST requests to configure an AnyLog instance.')
-    parser.add_argument('rest_conn',       type=str,   default=__get_rest_conn(), help='REST connection information')
-    parser.add_argument('config_file',     type=str,   default=None, help='AnyLog INI config file')
+    parser.add_argument('rest_conn',         type=str,  default=__get_rest_conn(), help='REST connection information')
+    parser.add_argument('config_file',       type=str,  default=None, help='AnyLog INI config file')
+
+    # Docker configs
+    parser.add_argument('--docker-client',   type=str,  default='unix://var/run/docker.sock', help='Path to docker client')
+    parser.add_argument('--docker-password', type=str,  default=None, help='password for docker to download/update AnyLog')
+    parser.add_argument('--anylog',          type=bool, nargs='?', const=True, default=False, help='deploy AnyLog docker container')
+    parser.add_argument('--psql',            type=bool, nargs='?', const=True, default=False, help='deploy postgres docker container if db type is `psql` in config')
+    parser.add_argument('--grafana',         type=bool, nargs='?', const=True, default=False, help='deploy Grafana if `query` in node_type')
+    parser.add_argument('--update-anylog',   type=bool, nargs='?', const=True, default=False, help='Update AnyLog build')
+
     parser.add_argument('-a', '--auth',    type=tuple, default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     parser.add_argument('-f', '--script-file',   type=str,   default=None, help='If set run commands in file at the end of the deployment (must include path)')
