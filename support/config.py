@@ -97,7 +97,7 @@ def validate_config(config:dict)->bool:
     status = True
     params = []
     # Base required params
-    for key in ['node_type', 'node_name', 'company_name', 'master_node', 'anylog_tcp_port', 'anylog_rest_port',
+    for key in ['build', 'node_type', 'node_name', 'company_name', 'master_node', 'anylog_tcp_port', 'anylog_rest_port',
     'db_type', 'db_user', 'db_port']:
         if key not in config:
             status = False
@@ -125,8 +125,13 @@ def validate_config(config:dict)->bool:
                 if key not in config:
                     status = False
                     params.append(key)
-                    
-    if config['node_type'] not in ['master', 'operator', 'publisher', 'query']:
+
+    if ',' in config['node_type']:
+        for node in config['node_type'].split(','):
+            if node not in ['master', 'operator', 'publisher', 'query']:
+                print('Invalid node_type: %s' % config['node_type'])
+                status = False
+    elif config['node_type'] not in ['master', 'operator', 'publisher', 'query']:
         print('Invalid node_type: %s' % config['node_type'])
         status = False
     if len(params) > 0:

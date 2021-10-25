@@ -10,7 +10,7 @@ import docker
 
 
 class DeployAnyLog:
-    def __init__(self, docker_client_path:str='unix://var/run/docker.sock', exception:bool=True):
+    def __init__(self, exception:bool=True):
         """
         Connect to docker client
         :args:
@@ -21,13 +21,13 @@ class DeployAnyLog:
             self.version:str - image version to use for deployment
         """
         try:
-            self.docker_client = docker.DockerClient(docker_client_path)
+            self.docker_client = docker.DockerClient()
         except Exception as e:
             if exception is True:
-                print('Failed to set docker client against %s (Error: %s)' % (docker_client_path, e))
-            exit(1)
+                print('Failed to set docker client (Error: %s)' %  e)
 
-    def __validate_container(self, name:str, exception:bool=True):
+
+    def __validate_container(self, name:str):
         """
         Validate container was deployed
         :args:
@@ -48,7 +48,54 @@ class DeployAnyLog:
 
         return status
 
-    def pull_image(self, password:str, build:str='predevelop', exception:bool=True)->bool:
+    def __validate_volume(self, name:str)->bool:
+        """
+        Validate if volume exists, if not create volume
+        :args:
+            name:str - volume name
+        :params:
+            is_volume:bool - whether a volume already exists
+        :return:
+            is_volume
+        """
+        try:
+            is_volume =  self.docker_client.volumes.get(volume_id=name)
+        except:
+            is_volume = False
+        if not is_volume:
+            try:
+                self.docker_client.volumes.create(name=name, driver='local')
+            except:
+                is_volume = False
+            else:
+                try:
+                    is_volume = self.docker_client.volumes.get(volume_id=name)
+                except:
+                    is_volume = False
+
+        return is_volume
+
+    def docker_login(self, password:str, exception:bool=False):
+        """
+        login into docker to download AnyLog
+        :args:
+            password:str - docker login password
+            exception:bool - whether to print exception
+        :params:
+            status:bool
+        :return:
+            status
+        """
+        try:
+            self.docker_client.login(username='oshadmon', password=password)
+        except Exception as e:
+            if exception is True:
+                print("Failed to log into docker with password: '%s' (Error: %s)" % (password, e))
+            status = False
+
+        return status
+
+    def update_image(self, build:str='predevelop', exception:bool=True)->bool:
         """
         Pull image oshadmon/anylog
         :args:
@@ -61,31 +108,23 @@ class DeployAnyLog:
         """
         # login into docker
         status = True
+
         try:
-            self.docker_client.login(username='oshadmon', password=password)
+            self.docker_client.images.pull(repository='oshadmon/anylog:%s' % build)
         except Exception as e:
             if exception is True:
-                print("Failed to log into docker with password: '%s' (Error: %s)" % (password, e))
+                print('Failed to pull image oshadmon/anylog:%s (Error: %s)' % (build, e))
             status = False
-
         else:
-            # pull image
-            try:
-                self.docker_client.images.pull(repository='oshadmon/anylog:%s' % build)
-            except Exception as e:
+            if not self.check_image(exception=exception):
                 if exception is True:
-                    print('Failed to pull image oshadmon/anylog:%s (Error: %s)' % (build, e))
+                    print('Failed to pull image oshadmon/anylog:%s for an unknown reason...' % build)
                 status = False
-            else:
-                if not self.check_image(exception=exception):
-                    if exception is True:
-                        print('Failed to pull image oshadmon/anylog:%s for an unknown reason...' % build)
-                    status = False
 
         return status
 
     def deploy_anylog_container(self, node_name:str='anylog-test-node', external_ip:str=None, local_ip:str=None,
-                                server_port:int=2048, rest_port:int=2049, broker_port:int=None,
+                                server_port:int=2048, rest_port:int=2049, broker_port:int=None, authentication='off',
                                 username:str=None, password:str=None, exception:bool=True)->bool:
         """
         Deploy an AnyLog of type rest
@@ -122,7 +161,8 @@ class DeployAnyLog:
             'NODE_TYPE': 'rest',
             'NODE_NAME': node_name,
             'ANYLOG_SERVER_PORT': server_port,
-            'ANYLOG_REST_PORT': rest_port
+            'ANYLOG_REST_PORT': rest_port,
+            'authentication': authentication
         }
 
         if external_ip is not None:
@@ -137,7 +177,7 @@ class DeployAnyLog:
             if password is not None:
                 environment['PASSWORD'] = password
 
-        if not self.__validate_container(name=node_name, exception=exception):
+        if not self.__validate_container(name=node_name):
             try:
                 self.docker_client.containers.run(image='oshadmon/anylog:%s' % self.version, auto_remove=True,
                                                   network_mode='host', detach=True, stdin_open=True, tty=True,
@@ -164,7 +204,7 @@ class DeployAnyLog:
                 if exception is True:
                     print('Failed to deploy an AnyLog container (Error: %s)' % e)
             else:
-                if not self.__validate_container(name=node_name, exception=exception):
+                if not self.__validate_container(name=node_name):
                     status = False
 
         return status
@@ -187,11 +227,12 @@ class DeployAnyLog:
             status
         """
         status = True
-
-        if not self.__validate_container(name='grafana', exception=exception):
+        print('Deploying Grafana')
+        if not self.__validate_container(name='grafana'):
             try:
                 self.docker_client.containers.run(image='grafana/grafana:7.5.7', auto_remove=True, network_mode='host',
-                                                  detach=False, name='grafana', port={3000:3000},
+                                                  detach=True, stdin_open=True, tty=True, privileged=True,
+                                                  name='grafana',
                                                   environment={
                                                       'GF_INSTALL_PLUGINS': 'simpod-json-datasource,grafana-worldmap-panel'
                                                   },
@@ -205,12 +246,12 @@ class DeployAnyLog:
                 if exception is True:
                     print('Failed to deploy Grafana container (Error: %s)' % e)
             else:
-                if not self.__validate_container(name='grafana', exception=exception):
+                if not self.__validate_container(name='grafana'):
                     status = False
 
         return status
 
-    def deploy_psql_container(self, username:str, password:str, exception:bool=True)->bool:
+    def deploy_psql_container(self, conn_info:str, db_port:int=5432, exception:bool=True)->bool:
         """
         Deploy Postgres
         :sample-call:
@@ -219,10 +260,12 @@ class DeployAnyLog:
                --name anylog-psql \
                -e POSTGRES_USER=${DB_USR} \
                -e POSTGRES_PASSWORD=${DB_PASSWD} \
+               -p ${PORT}:${PORT} \
                -v pgdata:/var/lib/postgresql/data \
                --rm postgres:14.0-alpine
         :args:
-            username:str - psql user
+            conn_info:str - connection information (user@ip:passwd)
+            db_port:int - database port
             password:str psql password correlated to user
         :params:
             status:bool
@@ -230,20 +273,33 @@ class DeployAnyLog:
             status
         """
         status = True
-        if not self.__validate_container(name='anylog-psql', exception=exception):
+        print('Deploying Postgres')
+        if not self.__validate_container(name='anylog-psql'):
+            if self.__validate_volume(name='pgdata') is False:
+                volumes = {}
+            else:
+                volumes = {'pgdata': {'bind': '/var/lib/postgresql/data', 'mode': 'rw'}}
+
             try:
-                self.docker_client.containers.run(image='postgres:14.0-alpine', auto_remove=True, network_mode='host',
-                                                  detach=False, name='anylog-psql',
-                                                  environment={'POSTGRES_USER': username, 'POSTGRES_PASSWORD': password},
-                                                  volumes={'pgdata': '/var/lib/postgresql/data'})
+                self.docker_client.containers.run(image='postgres:14.0-alpine',  auto_remove=True, network_mode='host',
+                                                  detach=True, stdin_open=True, tty=True, privileged=True,
+                                                  name='anylog-psql',
+                                                  environment={
+                                                      'POSTGRES_USER': conn_info.split('@')[0],
+                                                      'POSTGRES_PASSWORD': conn_info.split(':')[-1]
+                                                  },
+                                                  volumes=volumes
+                                                  )
             except Exception as e:
                 status = False
                 if exception is True:
                     print('Failed to deploy Postgres container (Error: %s)' % e)
             else:
-                if not self.__validate_container(name='anylog-psql', exception=exception):
+                if not self.__validate_container(name='anylog-psql'):
                     status = False
 
         return status
+
+
 
 

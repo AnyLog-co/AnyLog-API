@@ -4,6 +4,7 @@ import os
 
 # deployment scripts
 import clean_node
+import docker_calls
 import file_deployment
 import master
 import operator_node
@@ -81,7 +82,11 @@ def __set_config(conn:anylog_api.AnyLogConnect, config_file:str, post_config:boo
 
     # Update config object with pre-set commands
     if config_data != {}:
-        hostname = get_cmd.get_hostname(conn=conn, exception=exception)
+        try:
+            hostname = get_cmd.get_hostname(conn=conn, exception=exception)
+        except:
+            hostname = None
+
         if hostname is not None:
             config_data['hostname'] = hostname
 
@@ -192,6 +197,7 @@ def deployment():
         -e, --exception         EXCEPTION:bool           print exception errors                                                              [default: False]
     :params:
        anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog
+       docker_conn:docker_calls.DeployAnyLog - Connection to docker
        config_data:dict - config data (from file + hostname + AnyLog)
        node_types:list - config['node_type] if value contains more than one node
     """
@@ -201,7 +207,7 @@ def deployment():
     parser.add_argument('config_file',       type=str,  default=None, help='AnyLog INI config file')
 
     # Docker configs
-    parser.add_argument('--docker-client',   type=str,  default='unix://var/run/docker.sock', help='Path to docker client')
+    # parser.add_argument('--docker-client',   type=str,  default='unix://var/run/docker.sock', help='Path to docker client')
     parser.add_argument('--docker-password', type=str,  default=None, help='password for docker to download/update AnyLog')
     parser.add_argument('--anylog',          type=bool, nargs='?', const=True, default=False, help='deploy AnyLog docker container')
     parser.add_argument('--psql',            type=bool, nargs='?', const=True, default=False, help='deploy postgres docker container if db type is `psql` in config')
@@ -230,36 +236,43 @@ def deployment():
     # Connect to AnyLog REST 
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
 
-    # Check status
-    if not get_cmd.get_status(conn=anylog_conn, exception=args.exception):
-        print('Failed to get status from %s, cannot continue' % anylog_conn.conn)
-        exit(1)
+    # Connect to Docker package
+    docker_conn = docker_calls.DeployAnyLog(exception=args.exception)
 
     # get node_types & config_data
     node_types, config_data = __set_config(conn=anylog_conn, config_file=args.config_file,
                                            post_config=args.update_config, exception=args.exception)
 
-    if 'authentication' in config_data and config_data['authentication'] == 'on':
-        if 'user_name' in config_data and 'user_password' in config_data and 'user_type' in config_data:
-            # authentication.get_users(conn=anylog_conn, user_name=config_data['user_name'], exception=args.exception)
-            authentication.set_user_authentication_on(conn=anylog_conn, user_password=config_data['user_password'],
-                                                      exception=args.exception)
-            if 'auth_expiration' in config_data:
-                authentication.set_user_authenticaton(conn=anylog_conn, user_name=config_data['user_name'],
-                                                      user_password=config_data['user_password'],
-                                                      user_type=config_data['user_type'],
-                                                      expiration=config_data['auth_expiration'],
-                                                      exception=args.exception)
-            else:
-                authentication.set_user_authenticaton(conn=anylog_conn, user_name=config_data['user_name'],
-                                                      user_password=config_data['user_password'],
-                                                      user_type=config_data['user_type'],
-                                                      exception=args.exception)
-        else:
-            config_data['authentication'] = 'off'
-    if 'authentication' not in config_data or config_data['authentication'] == 'off':
-        authentication.set_authentication_off(conn=anylog_conn, exception=args.exception)
+    print(node_types, config_data)
 
+    try:
+        if args.psql is True and config_data['db_type'] == 'psql':
+            # check if connection information is set, if not set to defaults
+            if 'db_port' not in config_data:
+                config_data['db_port'] = 5432
+            if 'db_user' not in config_data:
+                config_data['db_user'] = 'anylog@127.0.0.1:demo'
+            if not docker_conn.deploy_psql_container(conn_info=config_data['db_user'], db_port=config_data['db_port'],
+                                                     exception=args.exception):
+                print('Failed to start postgres against user: %s' % config_data['db_user'])
+    except Exception as e: # catch would occur only when `config_data['db_type']` DNE, in which case set to sqlite
+        config_data['db_type'] = 'sqlite'
+        # check if connection information is set, if not set to defaults
+        if 'db_port' not in config_data:
+            config_data['db_port'] = 5432
+        if 'db_user' not in config_data:
+            config_data['db_user'] = 'anylog@127.0.0.1:demo'
+
+    if args.grafana is True:
+        if not docker_conn.deploy_grafana_container(exception=args.exception):
+            print('Failed to deploy Grafana docker instance')
+
+    exit(1)
+
+    # Check status
+    if not get_cmd.get_status(conn=anylog_conn, exception=args.exception):
+        print('Failed to get status from %s, cannot continue' % anylog_conn.conn)
+        exit(1)
 
     if args.disconnect is False:
         __default_start_components(conn=anylog_conn, config_data=config_data, node_types=node_types,
