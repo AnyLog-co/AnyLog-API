@@ -127,8 +127,8 @@ class DeployAnyLog:
         return status
 
     def deploy_anylog_container(self, node_name:str='anylog-test-node', build:str='predevelop', external_ip:str=None, local_ip:str=None,
-                                server_port:int=2048, rest_port:int=2049, broker_port:int=None, authentication='off',
-                                username:str=None, password:str=None, exception:bool=True)->bool:
+                                server_port:int=2048, rest_port:int=2049, broker_port:int=None, authentication='off', auth_type='admin',
+                                username:str='anylog', password:str='demo', expiration:str=None, exception:bool=True)->bool:
         """
         Deploy an AnyLog of type rest
         :sample-call:
@@ -139,6 +139,11 @@ class DeployAnyLog:
                 -e ANYLOG_SERVER_PORT=${SERVER_PORT} \
                 -e ANYLOG_REST_PORT=${REST_PORT} \
                 -e ANYLOG_BROKER_PORT=${BROKER_PORT} \
+                -e AUTHENTICATION=${$AUTHENTICATION} \ 
+                -e AUTH_TYPE=${AUTH_TYPE} \
+                -e USERNAME=${USERNAME} \
+                -e PASSWORD=${PASSWORD} \
+                -e EXPIRATION=${EXPIRATION} \
                 -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
                 -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
                 -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
@@ -168,13 +173,17 @@ class DeployAnyLog:
             'NODE_NAME': node_name,
             'ANYLOG_SERVER_PORT': server_port,
             'ANYLOG_REST_PORT': rest_port,
-            'authentication': authentication
+            'AUTHENTICATION': authentication,
+            'AUTH_TYPE': auth_type, 
+            'USERNAME': username, 
+            'PASSWORD': password, 
+            'EXPIRATION': expiration
         }
         volume_paths = {
-            'al-%s-anylog' % node_name: '/app/AnyLog-Network/anylog',
-            'al-%s-blockchain' % node_name: '/app/AnyLog-Network/blockchain',
-            'al-%s-data' % node_name: '/app/AnyLog-Network/data',
-            'al-%s-local-scripts' % node_name: '/app/AnyLog-Network/local_scripts'
+            '%s-anylog' % node_name: '/app/AnyLog-Network/anylog',
+            '%s-blockchain' % node_name: '/app/AnyLog-Network/blockchain',
+            '%s-data' % node_name: '/app/AnyLog-Network/data',
+            '%s-local-scripts' % node_name: '/app/AnyLog-Network/local_scripts'
         }
 
         if external_ip is not None:
@@ -183,11 +192,6 @@ class DeployAnyLog:
             environment['IP'] = local_ip
         if broker_port is not None:
             environment['ANYLOG_BROKER_PORT'] = broker_port
-        if username is not None:
-            environment['USERNAME'] = username
-            environment['PASSWORD'] = 'anylog'
-            if password is not None:
-                environment['PASSWORD'] = password
 
         if not self.__validate_container(name=node_name):
             volumes = {}
