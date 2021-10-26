@@ -86,6 +86,7 @@ class DeployAnyLog:
         :return:
             status
         """
+        status = True
         try:
             self.docker_client.login(username='oshadmon', password=password)
         except Exception as e:
@@ -123,7 +124,7 @@ class DeployAnyLog:
 
         return status
 
-    def deploy_anylog_container(self, node_name:str='anylog-test-node', external_ip:str=None, local_ip:str=None,
+    def deploy_anylog_container(self, node_name:str='anylog-test-node', build:str='predevelop', external_ip:str=None, local_ip:str=None,
                                 server_port:int=2048, rest_port:int=2049, broker_port:int=None, authentication='off',
                                 username:str=None, password:str=None, exception:bool=True)->bool:
         """
@@ -139,7 +140,7 @@ class DeployAnyLog:
                 -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
                 -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
                 -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
-                -it --detach-keys="ctrl-d" --rm anylog:predevelop
+                -it --detach-keys="ctrl-d" --rm anylog:${BUILD}
         :args:
             node_name:str - name of the container / node
             server_port:int - TCP server port
@@ -152,17 +153,26 @@ class DeployAnyLog:
             password:str - authentication password
         :params:
             status:bool
+            volume_paths:dict - key: volume_name | value: path within AnyLog
+            volumes:dict - volumes related to AnyLog
             environment:dict - environment variables for docker based on arguments
         :return:
             status
         """
         status = True
+        print('Deploy AnyLog')
         environment = {
             'NODE_TYPE': 'rest',
             'NODE_NAME': node_name,
             'ANYLOG_SERVER_PORT': server_port,
             'ANYLOG_REST_PORT': rest_port,
             'authentication': authentication
+        }
+        volume_paths = {
+            'al-%s-anylog' % node_name: '/app/AnyLog-Network/anylog',
+            'al-%s-blockchain' % node_name: '/app/AnyLog-Network/blockchain',
+            'al-%s-data' % node_name: '/app/AnyLog-Network/data',
+            'al-%s-local-scripts' % node_name: '/app/AnyLog-Network/local_scripts'
         }
 
         if external_ip is not None:
@@ -178,27 +188,16 @@ class DeployAnyLog:
                 environment['PASSWORD'] = password
 
         if not self.__validate_container(name=node_name):
+            volumes = {}
+            for volume in volume_paths:
+                if self.__validate_volume(name=volume) is not False:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
+
             try:
-                self.docker_client.containers.run(image='oshadmon/anylog:%s' % self.version, auto_remove=True,
+                self.docker_client.containers.run(image='oshadmon/anylog:%s' % build, auto_remove=True,
                                                   network_mode='host', detach=True, stdin_open=True, tty=True,
-                                                  privileged=True, name=node_name, environment=environment, volumes={
-                                                      'al-%s-anylog' % node_name: {
-                                                          'bind': '/app/AnyLog-Network/anylog',
-                                                          'mode': 'rw'
-                                                      },
-                                                      'al-%s-blockchain' % node_name: {
-                                                          'bind': '/app/AnyLog-Network/blockchain',
-                                                          'mode': 'rw',
-                                                      },
-                                                      'al-%s-data' % node_name: {
-                                                          'bind': '/app/AnyLog-Network/data',
-                                                          'mode': 'rw',
-                                                      },
-                                                      'al-%s-local-scripts' % node_name: {
-                                                          'bind': '/app/AnyLog-Network/local_scripts',
-                                                          'mode': 'rw',
-                                                      },
-                                                  })
+                                                  privileged=True, name=node_name, environment=environment,
+                                                  volumes=volumes)
             except Exception as e:
                 status = False
                 if exception is True:
@@ -228,19 +227,23 @@ class DeployAnyLog:
         """
         status = True
         print('Deploying Grafana')
+        environment = {
+            'GF_INSTALL_PLUGINS': 'simpod-json-datasource,grafana-worldmap-panel'
+        }
+        volume_paths = {
+            'grafana-data': '/var/lib/grafana',
+            'grafana-log': '/var/log/grafana',
+            'grafana-config': '/etc/grafana'
+        }
         if not self.__validate_container(name='grafana'):
+            volumes = {}
+            for volume in volume_paths:
+                if self.__validate_volume(name=volume) is not False:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
             try:
                 self.docker_client.containers.run(image='grafana/grafana:7.5.7', auto_remove=True, network_mode='host',
                                                   detach=True, stdin_open=True, tty=True, privileged=True,
-                                                  name='grafana',
-                                                  environment={
-                                                      'GF_INSTALL_PLUGINS': 'simpod-json-datasource,grafana-worldmap-panel'
-                                                  },
-                                                  volumes={
-                                                      'grafana-data': '/var/lib/grafana',
-                                                      'grafana-log': '/var/log/grafana',
-                                                      'grafana-config': '/etc/grafana'
-                                                  })
+                                                  name='grafana', environment=environment, volumes=volumes)
             except Exception as e:
                 status = False
                 if exception is True:

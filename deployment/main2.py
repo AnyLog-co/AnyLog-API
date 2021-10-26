@@ -41,6 +41,12 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
                   exception:bool=False):
     """
     Deploy docker instances
+    :process:
+        1. Deploy Postgres
+        2. Deploy Grafana
+        3. Update AnyLog if valid
+        4. Deploy AnyLog
+    Note: On first iteration docker automatically pulls image(s) from hub
     :args:
         anylog_update:bool - whether to update the AnyLog docker image
         anylog:bool - deploy AnyLog
@@ -55,6 +61,17 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
     """
     status = True
     docker_conn = docker_calls.DeployAnyLog(exception=exception)
+
+    if psql is True and config_data['db_type'] == 'psql':
+            if not docker_conn.deploy_psql_container(conn_info=config_data['db_user'], db_port=config_data['db_port'],
+                                                     exception=exception):
+                print('Failed to deploy Postgres docker container, setting db_type to `sqlite`')
+                config_data['db_type'] = 'sqlite'
+
+    if grafana is True:
+        if not docker_conn.deploy_grafana_container(exception=exception):
+            print('Failed to deploy Grafana docker container')
+
     if anylog_update is True or anylog is True:
         status = docker_conn.docker_login(password=password, exception=exception)
         if status is False:
@@ -64,28 +81,21 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
                 print('Failed to pull AnyLog docker image')
         if anylog is True:
             status = True
-            if not docker_conn.deploy_anylog_container(node_name=config_data['node_name'],
-                                                         external_ip=config_data['exernal_ip'],
-                                                         local_ip=config_data['local_ip'],
-                                                         server_port=config_data['anylog_tcp_port'],
-                                                         rest_port=config_data['anylog_tcp_port'],
-                                                         broker_port=config_data['anylog_broker_port'],
-                                                         authentication=config_data['authentication'],
-                                                         username=config_data['username'],
-                                                         password=config_data['password'],
-                                                         exception=exception):
+            if not docker_conn.deploy_anylog_container(node_name=config_data['node_name'], build=config_data['build'],
+                                                       external_ip=config_data['external_ip'],
+                                                       local_ip=config_data['local_ip'],
+                                                       server_port=config_data['anylog_tcp_port'],
+                                                       rest_port=config_data['anylog_tcp_port'],
+                                                       broker_port=config_data['broker_port'],
+                                                       authentication=config_data['authentication'],
+                                                       username=config_data['username'],
+                                                       password=config_data['password'],
+                                                       exception=exception):
                 status = False
                 print('Failed to deploy AnyLog container')
 
-    if psql is True and config_data['db_type'] == 'psql':
-        if not docker_conn.deploy_psql_container(conn_info=config_data['db_user'], db_port=config_data['db_port'],
-                                                 exception=exception):
-            print('Failed to deploy Postgres docker container, setting db_type to `sqlite`')
-            config_data['db_type'] = 'sqlite'
-    if grafana is True:
-        if not docker_conn.deploy_grafana_container(exception=exception):
-            print('Failed to deploy Grafana docker container')
     return status
+
 
 def main():
     """
