@@ -53,7 +53,7 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
     return policy_id
 
 def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config:dict, master_node:str,
-                          location:bool=False, exception:bool=False)->str:
+                          disable_location:bool=False, exception:bool=False)->str:
     """
     Declare an AnyLog policy to blockchain
         - master
@@ -66,7 +66,7 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
         policy_type:str - type of policy to declare
         master_node:str - IP & Port of master node, set to 'local' if running against master
         config:dict - configuration from file
-        location:bool - whether to declare location in policy
+        disable_location:bool - whether to declare location in policy
         exception:bool - whether to print exceptions
     :params:
         new_policy:str - Policy to declare
@@ -95,7 +95,7 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
 
     if len(blockchain) == 0:
         if policy_type.lower() in ['master', 'operator', 'publisher', 'query']:
-            new_policy = create_declaration.declare_node(config=config, location=location)
+            new_policy = create_declaration.declare_node(config=config, disable_location=disable_location)
         elif policy_type.lower() == 'cluster':
             new_policy = create_declaration.declare_cluster(config=config)
         else:

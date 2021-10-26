@@ -4,14 +4,14 @@ import dbms_cmd
 import policy_cmd
 
 
-def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def master_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:bool=True, exception:bool=False):
     """
     Deploy a master node instance via REST 
     :definition: 
         A "notary" system between other nodes in the network via either a public or private blockchain
     :args:
        anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
-       location:bool -whetther or not to have location in policy
+       disable_location:bool -whether or not to have location in policy
        config:dict - config data (from file + hostname + AnyLog) 
        exception:bool - whether or not to print exception to screen 
     :params: 
@@ -33,6 +33,6 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, 
             print('Failed to create table blockchain.ledger') 
 
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                             master_node='local', location=location, exception=exception)
+                                             master_node='local', disable_location=disable_location, exception=exception)
     if node_id is None:
         print('Failed to add %s node to blockchain' % config['node_type'])

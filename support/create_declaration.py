@@ -84,12 +84,12 @@ def declare_cluster(config:dict)->dict:
     return cluster
 
 
-def declare_node(config:dict, location:bool=True)->dict: 
+def declare_node(config:dict, disable_location:bool=False)->dict:
     """
     Declare generic node based on config
     :args: 
         config:dict - config info
-        location:bool - whether or to add location to policy if not in config
+        location:bool - whether or to disbale (ie not add) location information when declaring policy
     :params: 
         node:dict - dict object for generic node
     :return: 
@@ -124,10 +124,10 @@ def declare_node(config:dict, location:bool=True)->dict:
     if 'hostname' in config:
          node[config['node_type']]['hostname'] = config['hostname']
 
-    if 'location' in config:
-         node[config['node_type']]['loc'] = config['location'] 
-    elif location is True:
-        node[config['node_type']]['loc'] = __get_location(ip = config['external_ip'])
+    if disable_location is False:
+        node[config['node_type']]['loc'] = __get_location(ip=config['external_ip'])
+        if 'location' in config:
+             node[config['node_type']]['loc'] = config['location']
 
     if config['node_type'] == 'operator':
         if 'cluster_id' in config:

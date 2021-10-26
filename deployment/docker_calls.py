@@ -5,9 +5,9 @@
     - GitHub: https://github.com/docker/docker-py
     - docs: https://docker-py.readthedocs.io/en/stable/client.html
 """
-try: 
+try:
     import docker
-except: 
+except:
     pass
 
 
@@ -139,7 +139,7 @@ class DeployAnyLog:
                 -e ANYLOG_SERVER_PORT=${SERVER_PORT} \
                 -e ANYLOG_REST_PORT=${REST_PORT} \
                 -e ANYLOG_BROKER_PORT=${BROKER_PORT} \
-                -e AUTHENTICATION=${$AUTHENTICATION} \ 
+                -e AUTHENTICATION=${$AUTHENTICATION} \
                 -e AUTH_TYPE=${AUTH_TYPE} \
                 -e USERNAME=${USERNAME} \
                 -e PASSWORD=${PASSWORD} \
@@ -174,9 +174,9 @@ class DeployAnyLog:
             'ANYLOG_SERVER_PORT': server_port,
             'ANYLOG_REST_PORT': rest_port,
             'AUTHENTICATION': authentication,
-            'AUTH_TYPE': auth_type, 
-            'USERNAME': username, 
-            'PASSWORD': password, 
+            'AUTH_TYPE': auth_type,
+            'USERNAME': username,
+            'PASSWORD': password,
             'EXPIRATION': expiration
         }
         volume_paths = {
@@ -308,6 +308,24 @@ class DeployAnyLog:
                     status = False
 
         return status
+
+    def stop_docker_container(self, container_name:str, exception:bool=True)->bool:
+        """
+        Stop docker container based on name
+        :args:
+            container_name:str - container name
+            exception:bool - whether to print exception
+        :params:
+            status:bool
+        :return:
+            status
+        """
+        status = True
+        try:
+            container = self.client.containers.get(name=container_name)
+        except:
+            container = None
+        print(container)
 
 
 

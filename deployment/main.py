@@ -243,8 +243,6 @@ def deployment():
     node_types, config_data = __set_config(conn=anylog_conn, config_file=args.config_file,
                                            post_config=args.update_config, exception=args.exception)
 
-    print(node_types, config_data)
-
     try:
         if args.psql is True and config_data['db_type'] == 'psql':
             # check if connection information is set, if not set to defaults
