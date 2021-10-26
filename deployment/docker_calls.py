@@ -5,8 +5,10 @@
     - GitHub: https://github.com/docker/docker-py
     - docs: https://docker-py.readthedocs.io/en/stable/client.html
 """
-
-import docker
+try: 
+    import docker
+except: 
+    pass
 
 
 class DeployAnyLog:

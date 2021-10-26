@@ -31,6 +31,7 @@ $HOME/AnyLog-API
 * [Python3](https://www.python.org/downloads/)
   * argparse
   * configparser
+  * docker -  if interested in deploying docker from within API (`pip3 install docker`)
   * json
   * os
   * requests

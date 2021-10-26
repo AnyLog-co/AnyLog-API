@@ -1,4 +1,5 @@
 import argparse
+from importlib.util import find_spec
 import os
 
 import __init__
@@ -120,9 +121,13 @@ def main():
     config_data = inital_config(config_file=args.config_file)
 
     # deploy docker packages
-    if not deploy_docker(config_data=config_data, password=args.docker_password, anylog_update=args.update_anylog,
-                         anylog=args.anylog, psql=args.psql, grafana=args.grafana, exception=args.exception):
-        print('Failed to deploy AnyLog, cannot continue...')
+    if find_spec('docker'): 
+        if not deploy_docker(config_data=config_data, password=args.docker_password, anylog_update=args.update_anylog,
+                             anylog=args.anylog, psql=args.psql, grafana=args.grafana, exception=args.exception):
+            print('Failed to deploy AnyLog, cannot continue...')
+    else:
+        print('Unable to deploy docker packages. Missing `docker` module.')
+        exit(1)
 
 
 if __name__ == '__main__':
