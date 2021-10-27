@@ -5,7 +5,6 @@ import time
 import __init__
 import anylog_api
 import policy_cmd
-import errors
 
 POLICIES = {
     'manufacturer': { # Manufacturer of device

@@ -6,7 +6,6 @@ import time
 
 import __init__
 import anylog_api
-import blockchain_cmd
 import clean_node
 import config
 import dbms_cmd
@@ -239,9 +238,6 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
         elif deployment_file is not None:
             print("File: '%s' does not exist" % full_path)
 
-
-    blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='dbms', time="30 seconds",
-                                             master_node=config_data['master_node'], exception=exception)
 
     # Start an AnyLog process for a specific node_type
     if config_data['node_type'] == 'master':

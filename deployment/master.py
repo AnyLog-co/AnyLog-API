@@ -1,5 +1,6 @@
 import __init__
 import anylog_api
+import blockchain_cmd
 import dbms_cmd
 import policy_cmd
 
@@ -24,13 +25,16 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:boo
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
     if 'blockchain' not in dbms_list:
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='blockchain', exception=exception):
-            print('Failed to start blockchain database') 
+            print('Failed to start blockchain database')
 
     # Create table ledger
     if not dbms_cmd.get_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
         # Create ledger if not exists 
         if not dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
-            print('Failed to create table blockchain.ledger') 
+            print('Failed to create table blockchain.ledger')
+
+    blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='dbms', time="30 seconds",
+                                             master_node=config['master_node'], exception=exception)
 
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
                                              master_node='local', disable_location=disable_location, exception=exception)
