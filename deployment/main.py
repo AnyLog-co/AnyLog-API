@@ -321,6 +321,8 @@ def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:di
         if not docker_conn.stop_docker_container(container_name='grafana'):
             print('Failed to stop Grafana container')
 
+    time.sleep(30)
+
     if remove_volume is True:
         if not docker_conn.remove_volume(container_name=config_data['node_name'], exception=exception):
             print('Failed to remove AnyLog related volumes')
