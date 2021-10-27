@@ -5,12 +5,15 @@ import socket
 
 import __init__
 import anylog_api
+import blockchain_cmd
 import clean_node
 import config
+import dbms_cmd
 import docker_calls
 import get_cmd
 import master
 import operator_node
+import post_cmd
 import publisher
 import query
 import single_node
@@ -44,15 +47,18 @@ def __get_rest_conn()->str:
     return ip_addr
 
 
-def initial_config(config_file:str)->dict:
+def initial_config(config_file:str, exception:bool=False)->(dict,list):
     """
     Extract information from config_file
     :args:
         config_file:str - path to configuration file
+        exception:bool - whether to print exceptions
     :params:
         config_data:dict - content from config_file
+        node_types:list - list of node types from config_data
     :return:
-        config_data - if incomplete configs program stops
+        config_data & node_types - if incomplete configs program stops
+
     """
     config_file = os.path.expandvars(os.path.expanduser(config_file))
     if not os.path.isfile(config_file):
@@ -66,13 +72,33 @@ def initial_config(config_file:str)->dict:
         print('Missing one or more required config parameters...')
         exit(1)
 
-    for param in ['external_ip', 'local_ip', 'broker_port', 'username', 'password']:
+    for param in ['external_ip', 'local_ip', 'broker_port', 'username', 'password', 'auth_type']:
         if param not in config_data:
             config_data[param] = None
     if 'authentication' not in config_data:
         config_data['authentication'] = 'off'
 
-    return config_data
+    node_types = config_data['node_type'].split(',')
+    if len(node_types) == 1:
+        config_data['node_type'] = node_types[0]
+    else:
+        config_data['node_type'] = 'single_node'
+
+    # validate node types
+    for node in node_types:
+        if node not in ['master', 'publisher', 'operator', 'query']:
+            if exception is True:
+                print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query'." % node))
+            if len(node_types) == 1:
+                print("Cannot continue due to an invalid node type '%s'..." % node)
+                exit(1)
+            else:
+                node_types.remove(node)
+                if exception is True:
+                    print("Removing node type '%s' from config list" % node)
+
+
+    return config_data, node_types
 
 
 def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anylog:bool=False, psql:bool=False,
@@ -137,7 +163,7 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
 
 
 def update_config(conn:anylog_api.AnyLogConnect, config_data:dict, update_config:bool=False,
-                  exception:bool=False)->(dict, list):
+                  exception:bool=False)->dict:
     """
     Update the config_data object to contain information from within AnyLog dictionary.
     If update_config is set to True, update the AnyLog dictionary
@@ -159,35 +185,23 @@ def update_config(conn:anylog_api.AnyLogConnect, config_data:dict, update_config
     if dict_config != {}:
         config_data = {**dict_config, **config_data}
 
-    node_types = config_data['node_type'].split(',')
-    if len(node_types) == 1:
-        config_data['node_type'] = node_types[0]
-    else:
-        config_data['node_type'] = 'single_node'
-    # validate node types
-    for node in node_types:
-        if node not in ['master', 'publisher', 'operator', 'query']:
-            if exception is True:
-                print(("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query'." % node))
-            if len(node_types) == 1:
-                print("Cannot continue due to an invalid node type '%s'..." % node)
-                exit(1)
-            else:
-                node_types.remove(node)
-                if exception is True:
-                    print("Removing node type '%s' from config list" % node)
-
     if update_config is True:
         if not config.post_config(conn=conn, config=config_data, exception=exception):
             print('Failed to update configs into AnyLog dictionary')
 
-    return config_data, node_types
+    return config_data
 
 
 def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:list, disable_location:bool=False,
-                  exception:bool=False)->bool:
+                  deployment_file:str=None, exception:bool=False)->bool:
     """
     Deploy AnyLog instance based on configs
+    :process:
+        1. connect to system_query database
+        2. Start scheduler 1
+        3. if set deploy AnyLog script file
+        4. run blockchain sync every 30 seconds
+        5. start any AnyLog instance based on node_type
     :args:
         conn:anylog_api.AnyLogConnect - REST connection to AnyLog
         config_data:dict - config data from config_file
@@ -198,6 +212,31 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
         status:bool - used to print whether we deployed AnyLog or not
     """
     status = True
+
+    # configure system_query to run against SQLite if node type doesn't contain query node
+    dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
+    if config_data['node_type'] != 'query' and 'query' not in node_types:
+        if 'system_query' not in dbms_list:
+            if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
+                print('Failed to deploy system_query against %s node' % config['node_type'])
+
+    for schedule in [0, 1]:
+        if get_cmd.get_scheduler(conn=conn, scheduler_name=schedule, exception=exception) == 'not declared':
+            if not post_cmd.start_exitings_scheduler(conn=conn, scheduler_id=schedule, exception=exception):
+                print('Failed to start scheduler %s' % schedule)
+
+    # execute deployment file
+    if deployment_file is not None:
+        full_path = os.path.expandvars(os.path.expanduser(deployment_file))
+        if os.path.isfile(full_path) and deployment_file is not None:
+            file_deployment.deploy_file(conn=conn, deployment_file=full_path)
+        elif deployment_file is not None:
+            print("File: '%s' does not exist" % full_path)
+
+
+    blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='dbms', time="30 seconds",
+                                             master_node=config_data['master_node'], exception=exception)
+
     # Start an AnyLog process for a specific node_type
     if config_data['node_type'] == 'master':
         status = master.master_init(conn=conn, config=config_data, disable_location=disable_location,
@@ -227,6 +266,7 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
         else:
             print('Unable to get process list as such it is unclear whether a node of type %s was deployed against %s...' % (
                 config['node_type'], conn.conn))
+
 
 
 def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:dict, anylog:bool=False, psql:bool=False,
@@ -357,7 +397,7 @@ def main():
         args.disconnect_anylog = True
 
     # Initial config
-    config_data = initial_config(config_file=args.config_file)
+    config_data, node_types = initial_config(config_file=args.config_file)
 
     if args.anylog is True or args.update_anylog is True or args.psql is True or args.grafana is True:
         if find_spec('docker'):
@@ -370,10 +410,6 @@ def main():
         else:
             print('Unable to deploy docker packages. Missing `docker` module.')
             exit(1)
-    elif args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
-        clean_process(conn=conn, config_data=config_data, node_types=node_types, anylog=args.disconnect_anylog, psql=args.disconnect_psql,
-                      grafana=args.disconnect_grafana, remove_policy=args.remove_policy, remove_data=args.remove_data,
-                      remove_volume=args.remove_volume, exception=args.exception)
 
     # Connect to AnyLog REST
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=(), timeout=args.timeout)
@@ -388,13 +424,16 @@ def main():
         # exit(1)
 
     # Update configs & validate node_type(s)
-    config_data, node_types = update_config(conn=anylog_conn, config_data=config_data, update_config=args.update_config,
-                                            exception=args.exception)
+    config_data = update_config(conn=anylog_conn, config_data=config_data, update_config=args.update_config,
+                                exception=args.exception)
 
     if args.disconnect_anylog is False and args.disconnect_psql is False and args.disconnect_grafana is False:
         deploy_anylog(conn=anylog_conn, config_data=config_data, node_types=node_types,
                       disable_location=args.disable_location, exception=args.exception)
-
+    elif args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
+        clean_process(conn=anylog_conn, config_data=config_data, node_types=node_types, anylog=args.disconnect_anylog, psql=args.disconnect_psql,
+                      grafana=args.disconnect_grafana, remove_policy=args.remove_policy, remove_data=args.remove_data,
+                      remove_volume=args.remove_volume, exception=args.exception)
 
 
 
