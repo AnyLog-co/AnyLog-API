@@ -376,6 +376,7 @@ def main():
 
     # Docker configs
     parser.add_argument('--docker-password', type=str,  default=None, help='password for docker to download/update AnyLog')
+    parser.add_argument('--docker-only',     type=bool, nargs='?',    const=True, default=False, help='If set, code will not continue once docker instances are up')
     parser.add_argument('--anylog',          type=bool, nargs='?',    const=True, default=False, help='deploy AnyLog docker container')
     parser.add_argument('--psql',            type=bool, nargs='?',    const=True, default=False, help='deploy postgres docker container if db type is `psql` in config')
     parser.add_argument('--grafana',         type=bool, nargs='?',    const=True, default=False, help='deploy Grafana if `query` in node_type')
@@ -413,6 +414,8 @@ def main():
                 exit(1)
         else:
             print('Unable to deploy docker packages. Missing `docker` module.')
+            exit(1)
+        if args.docker_only is True:
             exit(1)
 
     # Connect to AnyLog REST
