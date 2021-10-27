@@ -9,7 +9,6 @@ import get_cmd
 import post_cmd
 
 
-
 def read_config(config_file:str)->dict: 
     """
     Read INI configuration & store in dict 
