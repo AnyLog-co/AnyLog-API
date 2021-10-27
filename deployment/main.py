@@ -2,6 +2,7 @@ import argparse
 from importlib.util import find_spec
 import os
 import socket
+import time
 
 import __init__
 import anylog_api
@@ -72,7 +73,7 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
         print('Missing one or more required config parameters...')
         exit(1)
 
-    for param in ['external_ip', 'local_ip', 'broker_port', 'username', 'password', 'auth_type']:
+    for param in ['external_ip', 'ip', 'broker_port', 'username', 'password', 'auth_type']:
         if param not in config_data:
             config_data[param] = None
     if 'authentication' not in config_data:
@@ -148,7 +149,7 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
             status = True
             if not docker_conn.deploy_anylog_container(node_name=config_data['node_name'], build=config_data['build'],
                                                        external_ip=config_data['external_ip'],
-                                                       local_ip=config_data['local_ip'],
+                                                       ip=config_data['ip'],
                                                        server_port=config_data['anylog_tcp_port'],
                                                        rest_port=config_data['anylog_rest_port'],
                                                        broker_port=config_data['anylog_broker_port'],
@@ -159,6 +160,7 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
                 status = False
                 print('Failed to deploy AnyLog container')
 
+    time.sleep(30)
     return status, config_data
 
 
@@ -183,6 +185,10 @@ def update_config(conn:anylog_api.AnyLogConnect, config_data:dict, update_config
     # If dictionary value differs from config_data value, then config_data gets kept
     dict_config = config.import_config(conn=conn, exception=exception)
     if dict_config != {}:
+        if config_data['external_ip'] is None:
+            config_data['external_ip'] = dict_config['external_ip']
+        if config_data['ip'] is None:
+            config_data['ip'] = dict_config['ip']
         config_data = {**dict_config, **config_data}
 
     if update_config is True:
