@@ -147,9 +147,14 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
                 print('Failed to pull AnyLog docker image')
         if anylog is True:
             status = True
+            external_ip = None
+            if 'external_ip' in config_data:
+                external_ip = config_data['external_ip']
+            ip = None
+            if 'ip' in config_data:
+                ip = config_data['ip']
             if not docker_conn.deploy_anylog_container(node_name=config_data['node_name'], build=config_data['build'],
-                                                       external_ip=config_data['external_ip'],
-                                                       ip=config_data['ip'],
+                                                       external_ip=external_ip, ip=ip,
                                                        server_port=config_data['anylog_tcp_port'],
                                                        rest_port=config_data['anylog_rest_port'],
                                                        broker_port=config_data['anylog_broker_port'],
