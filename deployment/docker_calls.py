@@ -322,11 +322,17 @@ class DeployAnyLog:
         """
         status = True
         try:
-            container = self.client.containers.get(name=container_name)
-        except:
+            container = self.docker_client.containers.get(container_id=container_name)
+        except Exception as e:
             container = None
-        print(container)
 
-
+        if container is not None:
+            try:
+                container.stop()
+            except Exception as e:
+                status = False
+                if exception is True:
+                    print('Failed to stop container named: %s (Error: %s)' % (container_name, e))
+        return status
 
 

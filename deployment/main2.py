@@ -231,33 +231,64 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
 def clean_node(node_name:str, anylog:bool=False, psql:bool=False, grafana:bool=False, exception:bool=False):
     """
     Process to clean AnyLog and disconnect docker instances
+    :process:
+
     :args:
         node_name:str - AnyLog node name
         anylog:bool - whether to disconnect AnyLog docker container
         psql:bool - whether to disconnect PSQL docker container
         grafana:bool - whether to disconnect Grafana docker container
-    :params:
-        status:bool
     """
-    status = True
     docker_conn = docker_calls.DeployAnyLog(exception=exception)
     if anylog is True:
-        docker_conn.stop_docker_container(container_name=node_name)
+        if not docker_conn.stop_docker_container(container_name=node_name):
+            print('Failed to stop AnyLog container')
     if psql is True:
-        docker_conn.stop_docker_container(container_name='anylog-psql')
+        if not docker_conn.stop_docker_container(container_name='anylog-psql'):
+            print('Failed to stop Postgres container')
     if grafana is True:
-        docker_conn.stop_docker_container(container_name='grafana')
-
+        if not docker_conn.stop_docker_container(container_name='grafana'):
+            print('Failed to stop Grafana container')
 
 
 def main():
     """
     The following is intended to help users to easily deploy AnyLog via REST
     :process:
+        # Deployment process
         0. Read config file into config_data
         1. If set, deploy docker containers for Postgres, Grafana and AnyLog
-        2. Validate connection
-        3. Update config_data with values from dictionary & update dictionary if set
+        2. Connect to AnyLog API & validate connection
+
+        At this point 2 things can happen:
+        Option 1) if set, update clean docker configs
+            1. calls clean_node
+        Option 2) if set, deploy AnyLog instance
+            1. Update config_data with information from AnyLog dictionary
+            2. Deploy a type of AnyLog node type via REST based on configurations
+    :positional arguments:
+        rest_conn             REST connection information
+        config_file           AnyLog INI config file
+    :optional arguments:
+        -h, --help                              show this help message and exit
+        # Docker deployment process
+        --docker-password       DOCKER_PASSWORD     password for docker to download/update AnyLog                       (default: None)
+        --anylog                ANYLOG              deploy AnyLog docker container                                      (default: False)
+        --psql                  PSQL                deploy postgres docker container if db type is `psql` in config     (default: False)
+        --grafana               GRAFANA             deploy Grafana if `query` in node_type                              (default: False)
+        --update-anylog         UPDATE_ANYLOG       Update AnyLog build                                                 (default: False)
+        # Discocnnect docker container(s)
+        --disconnect-anylog     DISCONNECT_ANYLOG   stop AnyLog docker instance     (default: False)
+        --disconnect-psql       DISCONNECT_PSQL     stop Postgres docker instance   (default: False)
+        --disconnect-grafana    DISCONNECT_GRAFANA  stop Grafana docker instance    (default: False)
+        --remove-policy         REMOVE_POLICY       remove policy from ledger that's not of type 'cluster' or 'table' correlated to the node (default: False)
+        --remove-data           REMOVE_DATA         remove data from database in the correlated attached node (default: False)
+        --remove-volumes        REMOVE_VOLUMES      remove AnyLog volumes correlated to the attached node (default: False)
+        # Other parameters
+        -t,  --timeout              TIMEOUT             REST timeout period (default: 30)
+        -c,  --update-config        UPDATE_CONFIG       Update information from config_file into AnyLog dictionary (default: False)
+        -dl, --disable-location     DISABLE_LOCATION     Whether to disable location when adding a new node policy to the ledger (default: False)
+        -e,  --exception            EXCEPTION            print exception errors (default: False)
     :params:
         anylog_conn:anylog_api.AnyLogConnect - connection to AnyLog API
         config_data:dict - data from config_file
@@ -277,7 +308,9 @@ def main():
     parser.add_argument('--disconnect-anylog',  type=bool, nargs='?', const=True, default=False, help="stop AnyLog docker instance")
     parser.add_argument('--disconnect-psql',    type=bool, nargs='?', const=True, default=False, help="stop Postgres docker instance")
     parser.add_argument('--disconnect-grafana', type=bool, nargs='?', const=True, default=False, help="stop Grafana docker instance")
-
+    parser.add_argument('--remove-policy',      type=bool, nargs='?', const=True, default=False, help="remove policy from ledger that's not of type 'cluster' or 'table' correlated to the node")
+    parser.add_argument('--remove-data',        type=bool, nargs='?', const=True, default=False, help="remove data from database in the correlated attached node")
+    parser.add_argument('--remove-volumes',     type=bool, nargs='?', const=True, default=False, help="remove AnyLog volumes correlated to the attached node")
 
     # Other
     parser.add_argument('-t',  '--timeout',          type=int,  default=30, help='REST timeout period')
@@ -290,28 +323,35 @@ def main():
     config_data = inital_config(config_file=args.config_file)
 
     # deploy docker packages
-    if find_spec('docker'): 
-        status, config_data = deploy_docker(config_data=config_data, password=args.docker_password,
-                                            anylog_update=args.update_anylog, anylog=args.anylog, psql=args.psql,
-                                            grafana=args.grafana, exception=args.exception)
-        if not status:
-            print('Failed to deploy AnyLog, cannot continue...')
+    if args.anylog is True or args.update_anylog is True or args.psql is True or args.grafana is True:
+        if find_spec('docker'):
+            status, config_data = deploy_docker(config_data=config_data, password=args.docker_password,
+                                                anylog_update=args.update_anylog, anylog=args.anylog, psql=args.psql,
+                                                grafana=args.grafana, exception=args.exception)
+            if not status:
+                print('Failed to deploy AnyLog, cannot continue...')
+                exit(1)
+        else:
+            print('Unable to deploy docker packages. Missing `docker` module.')
             exit(1)
-    else:
-        print('Unable to deploy docker packages. Missing `docker` module.')
-        exit(1)
 
     # Connect to AnyLog REST
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=(), timeout=args.timeout)
     if config_data['authentication'] == 'on':
-        anylog_conn = anylog_conn.AnyLogConnect(conn=args.rest_conn,
-                                                auth=(config_data['username'], config_data['password']),
-                                                timeout=args.timeout)
+        anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn,
+                                               auth=(config_data['username'], config_data['password']),
+                                               timeout=args.timeout)
+
+    # clean node if configured
+    if args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
+        clean_node(node_name=config_data['node_name'], anylog=args.disconnect_anylog, psql=args.disconnect_psql,
+                   grafana=args.disconnect_grafana, exception=args.exception)
+        exit(1)
 
     # Validate connection
     if not get_cmd.get_status(conn=anylog_conn, exception=args.exception):
         print('Failed to get status from %s, cannot continue' % anylog_conn.conn)
-        exit(1)
+        # exit(1)
 
     # Update configs & validate node_type(s)
     config_data, node_types = update_config(conn=anylog_conn, config_data=config_data, update_config=args.update_config,
@@ -320,9 +360,6 @@ def main():
     if args.disconnect_anylog is False and args.disconnect_psql is False and args.disconnect_grafana is False:
         deploy_anylog(conn=anylog_conn, config_data=config_data, node_types=node_types,
                       disable_location=args.diable_location, exception=args.exception)
-    else:
-        clean_node(node_name=config_data['node_name'], anylog=args.disconnect_anylog, psql=args.disconnect_psql,
-                   grafana=args.disconnect_grafana, exception=args.exception)
 
 
 
