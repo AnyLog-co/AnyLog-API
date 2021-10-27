@@ -318,7 +318,7 @@ def main():
         --disconnect-grafana    DISCONNECT_GRAFANA  stop Grafana docker instance    (default: False)
         --remove-policy         REMOVE_POLICY       remove policy from ledger that's not of type 'cluster' or 'table' correlated to the node (default: False)
         --remove-data           REMOVE_DATA         remove data from database in the correlated attached node (default: False)
-        --remove-volumes        REMOVE_VOLUMES      remove AnyLog volumes correlated to the attached node (default: False)
+        --remove-volume         REMOVE_VOLUME       remove AnyLog volumes correlated to the attached node (default: False)
         # Other parameters
         -t,  --timeout              TIMEOUT             REST timeout period (default: 30)
         -c,  --update-config        UPDATE_CONFIG       Update information from config_file into AnyLog dictionary (default: False)
@@ -345,7 +345,7 @@ def main():
     parser.add_argument('--disconnect-grafana', type=bool, nargs='?', const=True, default=False, help="stop Grafana docker instance")
     parser.add_argument('--remove-policy',      type=bool, nargs='?', const=True, default=False, help="remove policy from ledger that's not of type 'cluster' or 'table' correlated to the node")
     parser.add_argument('--remove-data',        type=bool, nargs='?', const=True, default=False, help="remove data from database in the correlated attached node")
-    parser.add_argument('--remove-volumes',     type=bool, nargs='?', const=True, default=False, help="remove AnyLog volumes correlated to the attached node")
+    parser.add_argument('--remove-volume',      type=bool, nargs='?', const=True, default=False, help="remove AnyLog volumes correlated to the attached node")
 
     # Other
     parser.add_argument('-t',  '--timeout',          type=int,  default=30, help='REST timeout period')
@@ -395,7 +395,7 @@ def main():
 
     if args.disconnect_anylog is False and args.disconnect_psql is False and args.disconnect_grafana is False:
         deploy_anylog(conn=anylog_conn, config_data=config_data, node_types=node_types,
-                      disable_location=args.diable_location, exception=args.exception)
+                      disable_location=args.disable_location, exception=args.exception)
 
 
 

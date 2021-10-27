@@ -5,7 +5,7 @@ import monitoring_cmd
 import policy_cmd
 import post_cmd
 
-def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list, location:bool=True, exception:bool=False):
+def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list, disable_location:bool=False, exception:bool=False):
     """
     Deploy multiple types of AnyLog instances on a single (docker) container
     :deployment: 
@@ -49,7 +49,7 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
                     print('Failed to create table blockchain.ledger')
 
             node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=node, config=config,
-                                                   master_node='local', location=location, exception=exception)
+                                                   master_node='local', disable_location=disable_location, exception=exception)
             if node_id is None:
                 print('Failed to add %s node to blockchain' % node)
         elif node == 'query':
