@@ -92,7 +92,8 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
                 deploy_operator = 'y'
                 if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
                     cluster_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type='cluster', config=config,
-                                                                  master_node='local', location=location,
+                                                                  master_node='local',
+                                                                  disable_location=disable_location,
                                                                   exception=exception)
                     if cluster_id is not None:
                         config['cluster_id'] = cluster_id
@@ -113,7 +114,7 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
                 if deploy_operator == 'y':
                     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'],
                                                                config=config, master_node='local',
-                                                               location=location, exception=exception)
+                                                               disable_location=disable_location, exception=exception)
                     if node_id is None:
                         print('Failed to add %s node to blockchain' % node)
                 else:
@@ -165,7 +166,7 @@ def single_node_init(conn:anylog_api.AnyLogConnect, config:dict, node_types:list
 
             elif node == 'publisher':
                 node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                                           master_node='local', location=location,
+                                                           master_node='local', disable_location=disable_location,
                                                            exception=exception)
                 if node_id is None:
                     print('Failed to add % node to blockchain' % node)
