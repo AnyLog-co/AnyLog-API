@@ -305,14 +305,14 @@ def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:di
         if remove_policy is True:
             status = clean_node.remove_policy(conn=conn, config_data=config_data, node_types=node_types, exception=exception)
             if status is False:
-                print('Failed to remove policy/policies correlated to %s' % config_data['name'])
+                print('Failed to remove policy/policies correlated to %s' % config_data['node_name'])
         status = clean_node.disconnect_dbms(conn=conn, drop_data=remove_data, config_data=config_data,
                                             exception=exception)
         if status is False and remove_data is True:
-            print('Failed Dropped database(s) correlated to node %s' %  config_data['name'])
+            print('Failed Dropped database(s) correlated to node %s' %  config_data['node_name'])
 
     if anylog is True:
-        if not docker_conn.stop_docker_container(container_name=node_name):
+        if not docker_conn.stop_docker_container(container_name=config_data['node_name']):
             print('Failed to stop AnyLog container')
     if psql is True:
         if not docker_conn.stop_docker_container(container_name='anylog-psql'):
@@ -322,7 +322,7 @@ def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:di
             print('Failed to stop Grafana container')
 
     if remove_volume is True:
-        if not docker_conn.remove_volume(container_name=config_data['name'], exception=exception):
+        if not docker_conn.remove_volume(container_name=config_data['node_name'], exception=exception):
             print('Failed to remove AnyLog related volumes')
 
 
