@@ -5,6 +5,7 @@ import socket
 
 import __init__
 import anylog_api
+import clean_node
 import config
 import docker_calls
 import get_cmd
@@ -43,7 +44,7 @@ def __get_rest_conn()->str:
     return ip_addr
 
 
-def inital_config(config_file:str)->dict:
+def initial_config(config_file:str)->dict:
     """
     Extract information from config_file
     :args:
@@ -136,7 +137,7 @@ def deploy_docker(config_data:dict, password:str, anylog_update:bool=False, anyl
 
 
 def update_config(conn:anylog_api.AnyLogConnect, config_data:dict, update_config:bool=False,
-                  exception:bool=False)->dict:
+                  exception:bool=False)->(dict, list):
     """
     Update the config_data object to contain information from within AnyLog dictionary.
     If update_config is set to True, update the AnyLog dictionary
@@ -150,6 +151,7 @@ def update_config(conn:anylog_api.AnyLogConnect, config_data:dict, update_config
         node_types:list - list of types of nodes to deploy
     :return:
         config_data - updated config_data with dict_config
+        node_types
     """
     config_data['hostname'] = get_cmd.get_hostname(conn=conn, exception=exception)
 
@@ -228,18 +230,42 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
             print('Unable to get process list as such it is unclear whether a node of type %s was deployed against %s...' % (
                 config['node_type'], conn.conn))
 
-def clean_node(node_name:str, anylog:bool=False, psql:bool=False, grafana:bool=False, exception:bool=False):
+
+def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:dict, anylog:bool=False, psql:bool=False,
+                  grafana:bool=False, remove_policy:bool, remove_data:bool, remove_volume:bool, exception:bool=False):
     """
     Process to clean AnyLog and disconnect docker instances
     :process:
-
+        1. stop processes
+        2. if set remove policy
+        3. disconnect datbase(s) and if set remove them
+        4. disconnect container
+        5. if remove_data is set, remove data volume
+        6. if remove
     :args:
-        node_name:str - AnyLog node name
+        conn:anylog_api.AnyLogConnect - REST connection to AnyLog
+        config_data:dict - node configuration
+        node_types:list - list of node types from config_data
         anylog:bool - whether to disconnect AnyLog docker container
         psql:bool - whether to disconnect PSQL docker container
         grafana:bool - whether to disconnect Grafana docker container
+        remove_policy:dict - whether to remove policy from blockchain
+        remove_data:dict - whether to remove data from database
+        remove_volume:bool - whether to remove AnyLog volume
+    :params:
+        docker_conn:docker_calls.DeployAnyLog - connection to docker
     """
     docker_conn = docker_calls.DeployAnyLog(exception=exception)
+    if clean_node.disconnect_node(conn=conn, exception=exception) is True:
+        if remove_policy is True:
+            status = clean_node.remove_policy(conn=conn, config_data=config_data, node_types=node_types, exception=exception)
+            if status is False:
+                print('Failed to remove policy/policies correlated to %s' % config_data['name'])
+        status = clean_node.disconnect_dbms(conn=conn, drop_data=remove_data, config_data=config_data,
+                                            exception=exception)
+        if status is False and remove_data is True:
+            print('Failed Dropped database(s) correlated to node %s' %  config_data['name'])
+
     if anylog is True:
         if not docker_conn.stop_docker_container(container_name=node_name):
             print('Failed to stop AnyLog container')
@@ -249,6 +275,14 @@ def clean_node(node_name:str, anylog:bool=False, psql:bool=False, grafana:bool=F
     if grafana is True:
         if not docker_conn.stop_docker_container(container_name='grafana'):
             print('Failed to stop Grafana container')
+
+    if remove_volume is True:
+        if not docker_conn.remove_volume(container_name=config_data['name'], exception=exception):
+            print('Failed to remove AnyLog related volumes')
+
+
+
+
 
 
 def main():
@@ -319,10 +353,13 @@ def main():
     parser.add_argument('-e',  '--exception',        type=bool, nargs='?',  const=True, default=False, help='print exception errors')
     args = parser.parse_args()
 
-    # Initial config
-    config_data = inital_config(config_file=args.config_file)
+    # If user asks to remove one or more components then disconnect_anylog is enabled
+    if args.remove_policy is True or args.remove_data is True or args.remove_volume:
+        args.disconnect_anylog = True
 
-    # deploy docker packages
+    # Initial config
+    config_data = initial_config(config_file=args.config_file)
+
     if args.anylog is True or args.update_anylog is True or args.psql is True or args.grafana is True:
         if find_spec('docker'):
             status, config_data = deploy_docker(config_data=config_data, password=args.docker_password,
@@ -334,6 +371,10 @@ def main():
         else:
             print('Unable to deploy docker packages. Missing `docker` module.')
             exit(1)
+    elif args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
+        clean_node(node_name=config_data['node_name'], anylog=args.disconnect_anylog, psql=args.disconnect_psql,
+                   grafana=args.disconnect_grafana, remove_policy=args.remove_policy, remove_data=args.remove_data,
+                   remove_volume=args.remove_volume, exception=args.exception)
 
     # Connect to AnyLog REST
     anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=(), timeout=args.timeout)
@@ -342,10 +383,8 @@ def main():
                                                auth=(config_data['username'], config_data['password']),
                                                timeout=args.timeout)
 
-    # clean node if configured
-    if args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
-        clean_node(node_name=config_data['node_name'], anylog=args.disconnect_anylog, psql=args.disconnect_psql,
-                   grafana=args.disconnect_grafana, exception=args.exception)
+
+    if
         exit(1)
 
     # Validate connection

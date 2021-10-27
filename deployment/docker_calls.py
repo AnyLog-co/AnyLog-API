@@ -324,6 +324,7 @@ class DeployAnyLog:
         try:
             container = self.docker_client.containers.get(container_id=container_name)
         except Exception as e:
+            status = False
             container = None
 
         if container is not None:
@@ -333,6 +334,34 @@ class DeployAnyLog:
                 status = False
                 if exception is True:
                     print('Failed to stop container named: %s (Error: %s)' % (container_name, e))
+
         return status
 
+    def remove_volume(self, container_name:str, exception:bool)->bool:
+        """
+        Remove volumes based on container_name
+        :args:
+            container_name:str - container name
+            exception:bool - whether to print exceptions
+        :params:
+            status:bool
+        :return:
+            if able remove volume(s) from container return True, else False
+        """
+        status = True
+        try:
+            container = self.docker_client.containers.get(container_id=container_name)
+        except Exception as e:
+            status = False
+            container = None
+
+        if container is not None:
+            try:
+                container.volumes.remove()
+            except Exception as e:
+                status = False
+                if exception is True:
+                    print('Failed to remove volumes correlated to node %s (Error: %s)' % (container_name, e))
+
+        return status
 
