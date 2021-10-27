@@ -148,10 +148,8 @@ def update_config(conn:anylog_api.AnyLogConnect, config_data:dict, update_config
         exception:bool - whether to print exceptions
     :params:
         dict_config:dict - configuration from AnyLog dictionary
-        node_types:list - list of types of nodes to deploy
     :return:
         config_data - updated config_data with dict_config
-        node_types
     """
     config_data['hostname'] = get_cmd.get_hostname(conn=conn, exception=exception)
 
@@ -373,7 +371,7 @@ def main():
             print('Unable to deploy docker packages. Missing `docker` module.')
             exit(1)
     elif args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
-        clean_process(config_data=config_data, anylog=args.disconnect_anylog, psql=args.disconnect_psql,
+        clean_process(conn=conn, config_data=config_data, node_types=node_types, anylog=args.disconnect_anylog, psql=args.disconnect_psql,
                       grafana=args.disconnect_grafana, remove_policy=args.remove_policy, remove_data=args.remove_data,
                       remove_volume=args.remove_volume, exception=args.exception)
 
