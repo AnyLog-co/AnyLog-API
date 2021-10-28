@@ -25,11 +25,11 @@ def main():
     parser.add_argument('rest_conn',  type=str, default='127.0.0.1:2049',  help='REST connection information')
     parser.add_argument('db_name',    type=str, default='sample_database', help='logical database to send data into')
     parser.add_argument('table_name', type=str, default='sample_table',    help='table within logical database to store data in')
-    parser.add_argument('-a', '--auth',    type=tuple, default=None, help='REST authentication information')
+    parser.add_argument('-a', '--auth',    type=str, default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     args = parser.parse_args()
 
-    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
+    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=tuple(args.auth.split(',')), timeout=args.timeout)
     data = put_data_generator()
     if not put_data(conn=anylog_conn, dbms=args.db_name, table=args.table_name, data=data, mode='streaming', exception=True):
         print('Failed to PUT data into AnyLog')
