@@ -28,7 +28,7 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to set docker client (Error: %s)' %  e)
 
-    def docker_login(self, password:str, exception:bool=False)->bool:
+    def __docker_login(self, password:str, exception:bool=False)->bool:
         """
         login into docker to download AnyLog
         :args:
@@ -50,7 +50,7 @@ class DeployAnyLog:
         return status
 
     # Image support functions - update, validate, remove
-    def update_image(self, image_name:str, exception:bool=True)->docker.models.images.Image:
+    def __update_image(self, image_name:str, exception:bool=True)->docker.models.images.Image:
         """
         Pull image oshadmon/anylog
         :args:
@@ -68,13 +68,13 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to pull image %s (Error: %s)' % (image_name, e))
         else:
-            image = self.validate_image(image_name=image_name)
+            image = self.__validate_image(image_name=image_name)
             if image is None and exception is True:
                 print('Failed to pull image for an unknown reason...' % image_name)
 
         return image
 
-    def validate_image(self, image_name:str)->docker.models.images.Image:
+    def __validate_image(self, image_name:str)->docker.models.images.Image:
         """
         Check if Image exists
         :args:
@@ -91,7 +91,7 @@ class DeployAnyLog:
 
         return image
 
-    def remove_image(self, image_name:str, exception:bool=True)->bool:
+    def __remove_image(self, image_name:str, exception:bool=True)->bool:
         """
         Remove image from docker
         :args:
@@ -112,16 +112,15 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to remove image %s (Error: %s)' % (image_name, e))
         else:
-            if validate_image(image_name=image_name) is not None:
+            if self.__validate_image(image_name=image_name) is not None:
                 status = False
                 if exception is True:
                     print('Failed to remove image: %s' % image_name)
 
-
         return status
 
     # Volume support functions - create, validate, remove
-    def create_volume(self, volume_name:str, exception:bool=True)->docker.models.containers.Container:
+    def __create_volume(self, volume_name:str, exception:bool=True)->docker.models.containers.Container:
         """
         Create volume (if not exists)
         :args:
@@ -139,13 +138,13 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to create volume %s (Error: %s)' % (volume_name, e))
         else:
-            volume = self.validate_volume(volume_name=volume_name)
+            volume = self.__validate_volume(volume_name=volume_name)
             if volume is None and exception is True:
                 print('Failed to create volume for %s' % volume_name)
 
         return volume
 
-    def validate_volume(self, volume_name:str)->docker.models.containers.Container:
+    def __validate_volume(self, volume_name:str)->docker.models.containers.Container:
         """
         Validate if volume exists
         :args:
@@ -162,7 +161,7 @@ class DeployAnyLog:
 
         return volume
 
-    def remove_volume(self, volume:docker.models.volumes.Volume, exception:bool=True)->bool:
+    def __remove_volume(self, volume:docker.models.volumes.Volume, exception:bool=True)->bool:
         """
         Remove volume
         :args:
@@ -182,16 +181,15 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to remove volume for container %s (Error: %s)' % (container.name, e))
         else:
-            if self.validate_volume(volume_name=volume) is not None:
+            if self.__validate_volume(volume_name=volume) is not None:
                 status = False
                 if exception is True:
                     print('Failed to remove volume for container %s' % container.name)
 
         return status
 
-
     # Container support functions - run, validate, stop
-    def run_container(self, image:str, container_name:str, environment:dict={}, volumes:dict={},
+    def __run_container(self, image:str, container_name:str, environment:dict={}, volumes:dict={},
                       exception:bool=False)->docker.models.containers.Container:
         """
         Deploy docker container based on params
@@ -222,13 +220,13 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to deploy docker container %s against image %s (Error: %s)' % (container_name, image, e))
         else:
-            container = self.validate_volume(container_name=container_name)
+            container = self.___validate_container(container_name=container_name)
             if container is None and exception is True:
                 print('Failed to validate docker container %s' % container_name)
 
         return container
 
-    def validate_container(self, container_name:str)->docker.models.containers.Container:
+    def ___validate_container(self, container_name:str)->docker.models.containers.Container:
         """
         Validate container was deployed
         :args:
@@ -246,7 +244,7 @@ class DeployAnyLog:
 
         return container
 
-    def stop_container(self, container:docker.models.containers.Container, exception:bool=False)->bool:
+    def __stop_container(self, container:docker.models.containers.Container, exception:bool=False)->bool:
         """
         Stop container based on name
         :args:
@@ -266,7 +264,7 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to remove container %s (Error: %s)' % (container.name, e))
         else:
-            if self.validate_container(container_name=container.name) is not None:
+            if self.___validate_container(container_name=container.name) is not None:
                 status = False
                 if exception is True:
                     print('Failed to remove container %s' % container.name)
@@ -308,7 +306,7 @@ class DeployAnyLog:
 
         environment = {
             'NODE_TYPE': 'rest',
-            'NODE_NAME': node_name,
+            'NODE_NAME': container_name,
             'ANYLOG_SERVER_PORT': server_port,
             'ANYLOG_REST_PORT': rest_port,
             'AUTHENTICATION': authentication,
@@ -334,24 +332,24 @@ class DeployAnyLog:
 
         # Prepare volumes
         for volume in volume_paths:
-            if self.validate_volume(volume_name=volume) is None:
-                if self.create_volume(volume_name=volume, exception=exception) is not None:
-                    volumes[volume] = {'bind': volume_paths[volume_name], 'mode': 'rw'}
+            if self.__validate_volume(volume_name=volume) is None:
+                if self.__create_volume(volume_name=volume, exception=exception) is not None:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
             else:
-                volumes[volume] = {'bind': volume_paths[volume_name], 'mode': 'rw'}
+                volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
 
         # login
-        if update_image is True or self.validate_image(image_name='oshadmon/anylog:%s' % build) is None:
-            status = self.docker_login(password=docker_password, exception=exception)
+        if update_image is True or self.__validate_image(image_name='oshadmon/anylog:%s' % build) is None:
+            status = self.__docker_login(password=docker_password, exception=exception)
 
         # Update image
         if status is True and update_image is True:
-            status = self.update_image(build='oshadmon/anylog:%s' % build, exception=exception)
+            status = self.__update_image(build='oshadmon/anylog:%s' % build, exception=exception)
 
         # deploy AnyLcg container
         if status is True:
-            if self.validate_container(container_name=container_name) is None:
-                if not self.run_container(image='oshadmon/anylog:%s' % build, container_name=container_name,
+            if self.___validate_container(container_name=container_name) is None:
+                if not self.__run_container(image='oshadmon/anylog:%s' % build, container_name=container_name,
                                           environment=environment, volumes=volumes, exception=exception):
                     status = False
 
@@ -377,22 +375,22 @@ class DeployAnyLog:
             'grafana-log': '/var/log/grafana',
             'grafana-config': '/etc/grafana'
         }
-
+        volumes = {}
         for volume in volume_paths:
-            if self.validate_volume(volume_name=volume) is None:
-                if self.create_volume(volume_name=volume, exception=exception) is not None:
-                    volumes[volume] = {'bind': volume_paths[volume_name], 'mode': 'rw'}
+            if self.__validate_volume(volume_name=volume) is None:
+                if self.__create_volume(volume_name=volume, exception=exception) is not None:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
             else:
-                volumes[volume] = {'bind': volume_paths[volume_name], 'mode': 'rw'}
+                volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
 
-        if self.validate_container(container_name='grafana') is None:
-            if not self.run_container(image='grafana/grafana:7.5.7', container_name='grafana', environment=environment,
+        if self.___validate_container(container_name='grafana') is None:
+            if not self.__run_container(image='grafana/grafana:7.5.7', container_name='grafana', environment=environment,
                                       volumes=volumes, exception=exception):
                 status = False
 
         return status
 
-    def deploy_psql_container(self, conn_info:str, exception:bool=True)->bool:
+    def deploy_postgres_container(self, conn_info:str, exception:bool=True)->bool:
         """
         Deploy Postgres
         :args:
@@ -412,23 +410,25 @@ class DeployAnyLog:
         }
 
         volume_paths = {'pgdata': '/var/lib/postgresql/data'}
+        volumes = {}
 
         for volume in volume_paths:
-            if self.validate_volume(volume_name=volume) is None:
-                if self.create_volume(volume_name=volume, exception=exception) is not None:
-                    volumes[volume] = {'bind': volume_paths[volume_name], 'mode': 'rw'}
+            if self.__validate_volume(volume_name=volume) is None:
+                if self.__create_volume(volume_name=volume, exception=exception) is not None:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
             else:
-                volumes[volume] = {'bind': volume_paths[volume_name], 'mode': 'rw'}
+                volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
 
-        if self.validate_container(container_name='postgres-db') is None:
-            if not self.run_container(image='postgres:14.0-alpine', container_name='postgres-db',
+        if self.___validate_container(container_name='postgres-db') is None:
+            if not self.__run_container(image='postgres:14.0-alpine', container_name='postgres-db',
                                       environment=environment, volumes=volumes, exception=exception):
                 status = False
 
         return status
 
-    def stop_anylog_container(self, container_name:str, remove_volume:bool=False, remove_image:bool=False,
-                              build:str='predevelop', exception:bool=False)->bool:
+    # Stop containers
+    def stop_anylog_container(self, container_name:str='anylog-test-node', remove_volume:bool=False,
+                              remove_image:bool=False, build:str='predevelop', exception:bool=False)->bool:
         """
         Stop & clean AnyLog container
         :args:
@@ -444,22 +444,23 @@ class DeployAnyLog:
         """
         status = True
 
-        if self.validate_container(container_name=container_name) is not None:
-            status = self.stop_container(container=container_name)
+        container = self.___validate_container(container_name=container_name)
+        if container is not None:
+            status = self.__stop_container(container=container)
 
         if status is True:
             if remove_volume is True:
                 volume_status = []
                 for volume_name in ['%s-anylog' % container_name, '%s-blockchain' % container_name,
                                     '%s-data' % container_name, '%s-local-scripts' % container_name]:
-                    volume = self.validate_volume(volume_name=volume_name)
+                    volume = self.__validate_volume(volume_name=volume_name)
                     if volume is not None:
-                        volume_status.append(self.remove_volume(volume=volume, exception=exception))
+                        volume_status.append(self.__remove_volume(volume=volume, exception=exception))
                 if False in volume_status:
                   status = False
             if remove_image is True:
-                image = self.validate_image(image_name='oshadmon/anylog:%s' % build)
-                if image is not None and self.remove_image(image_name='oshadmon/anylog:%s' % build,
+                image = self.__validate_image(image_name='oshadmon/anylog:%s' % build)
+                if image is not None and self.__remove_image(image_name='oshadmon/anylog:%s' % build,
                                                            exception=exception) is False:
                     status = False
         return status
@@ -468,79 +469,66 @@ class DeployAnyLog:
         """
         Stop & clean Grafana container
         :args:
-            remove_volume:bool - whether to remove Grafana related volumes
-            remove_image:bool - whether to removee Grafana imae
-            exception:bool - whethher to print exceptions
+            remove_volume:bool - whether to remove correlated volume
+            remove_image:bool - whether to remove correleated image
+            exception:bool - whether to print exceptions
         :params:
             status:bool
-            container_name:str - name of the Grafana container
         :return:
             status
         """
         status = True
-        container_name = 'grafana'
 
-        if self.validate_container(container_name=container_name) is not None:
-            status = self.stop_container(container=container_name)
+        container = self.___validate_container(container_name='grafana')
+        if container is not None:
+            status = self.__stop_container(container=container)
 
         if status is True:
             if remove_volume is True:
                 volume_status = []
-                for volume_name in ['grafana-data', 'grafana-log', 'grafana-config']:
-                    volume = self.validate_volume(volume_name=volume_name)
+                for volume_name in ['grafana-config', 'grafana-data', 'grafana-log']:
+                    volume = self.__validate_volume(volume_name=volume_name)
                     if volume is not None:
-                        volume_status.append(self.remove_volume(volume=volume, exception=exception))
+                        volume_status.append(self.__remove_volume(volume=volume, exception=exception))
                 if False in volume_status:
                   status = False
             if remove_image is True:
-                image = self.validate_image(image_name='grafana/grafana:7.5.7' % build)
-                if image is not None and self.remove_image(image_name='grafana/grafana:7.5.7',
+                image = self.__validate_image(image_name='grafana/grafana:7.5.7')
+                if image is not None and self.__remove_image(image_name='grafana/grafana:7.5.7',
                                                            exception=exception) is False:
                     status = False
         return status
 
-
     def stop_postgres_container(self, remove_volume:bool=False, remove_image:bool=False, exception:bool=False)->bool:
         """
-        Stop & clean Grafana container
+        Stop & clean Postgres container
         :args:
-            remove_volume:bool - whether to remove Grafana related volumes
-            remove_image:bool - whether to removee Grafana imae
-            exception:bool - whethher to print exceptions
+            remove_volume:bool - whether to remove correlated volume
+            remove_image:bool - whether to remove correleated image
+            exception:bool - whether to print exceptions
         :params:
             status:bool
-            container_name:str - name of the Grafana container
         :return:
             status
         """
         status = True
-        container_name = 'postgres-db'
 
-        if self.validate_container(container_name=container_name) is not None:
-            status = self.stop_container(container=container_name)
+        container = self.___validate_container(container_name='postgres-db')
+        if container is not None:
+            status = self.__stop_container(container=container)
 
         if status is True:
             if remove_volume is True:
                 volume_status = []
                 for volume_name in ['pgdata']:
-                    volume = self.validate_volume(volume_name=volume_name)
+                    volume = self.__validate_volume(volume_name=volume_name)
                     if volume is not None:
-                        volume_status.append(self.remove_volume(volume=volume, exception=exception))
+                        volume_status.append(self.__remove_volume(volume=volume, exception=exception))
                 if False in volume_status:
                   status = False
             if remove_image is True:
-                image = self.validate_image(image_name='grafana/grafana:7.5.7' % build)
-                if image is not None and self.remove_image(image_name='grafana/grafana:7.5.7',
-                                                           exception=exception) is False:
+                image = self.__validate_image(image_name='postgres:14.0-alpine')
+                if image is not None and self.__remove_image(image_name='postgres:14.0-alpine',
+                                                             exception=exception) is False:
                     status = False
         return status
-
-
-
-
-
-
-
-if __name__ == '__main__':
-    da = DeployAnyLog()
-    da.validate_image(image_name='postgres:14.0-alpine')
