@@ -28,56 +28,7 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to set docker client (Error: %s)' %  e)
 
-
-    def __validate_container(self, name:str):
-        """
-        Validate container was deployed
-        :args:
-            name:str - container name
-            exception:bool - whether to print exception
-        :params:
-            status:bool
-        :return:
-            if found return True, else False
-        """
-        status = True
-
-        try:
-            if not isinstance(self.docker_client.containers.get(container_id=name), docker.models.containers.Container):
-                status = False
-        except Exception as e:
-            status = False
-
-        return status
-
-    def __validate_volume(self, name:str)->bool:
-        """
-        Validate if volume exists, if not create volume
-        :args:
-            name:str - volume name
-        :params:
-            is_volume:bool - whether a volume already exists
-        :return:
-            is_volume
-        """
-        try:
-            is_volume =  self.docker_client.volumes.get(volume_id=name)
-        except:
-            is_volume = False
-        if not is_volume:
-            try:
-                self.docker_client.volumes.create(name=name, driver='local')
-            except:
-                is_volume = False
-            else:
-                try:
-                    is_volume = self.docker_client.volumes.get(volume_id=name)
-                except:
-                    is_volume = False
-
-        return is_volume
-
-    def docker_login(self, password:str, exception:bool=False):
+    def __docker_login(self, password:str, exception:bool=False)->bool:
         """
         login into docker to download AnyLog
         :args:
@@ -98,63 +49,248 @@ class DeployAnyLog:
 
         return status
 
-    def update_image(self, build:str='predevelop', exception:bool=True)->bool:
+    # Image support functions - update, validate, remove
+    def __update_image(self, image_name:str, exception:bool=True)->docker.models.images.Image:
         """
         Pull image oshadmon/anylog
         :args:
-            passwd:str - login docker password
-            build:str - version to build
+            image_name:str image with build
+
         :params:
             status:bool
         :return:
             if fails return False, else True
         """
-        # login into docker
+        try:
+            image = self.docker_client.images.pull(repository=image_name)
+        except Exception as e:
+            image = None
+            if exception is True:
+                print('Failed to pull image %s (Error: %s)' % (image_name, e))
+        else:
+            image = self.__validate_image(image_name=image_name)
+            if image is None and exception is True:
+                print('Failed to pull image for an unknown reason...' % image_name)
+
+        return image
+
+    def __validate_image(self, image_name:str)->docker.models.images.Image:
+        """
+        Check if Image exists
+        :args:
+            image_name:str - image name (with build)
+        :params:
+            image
+        :return:
+            return image object, if fails return None
+        """
+        try:
+            image = self.docker_client.images.get(name=image_name)
+        except Exception as e:
+            image = None
+
+        return image
+
+    def __remove_image(self, image_name:str, exception:bool=True)->bool:
+        """
+        Remove image from docker
+        :args:
+            image_name:str - image name with version
+            exception:bool - whether or not to print exceptions
+        :params:
+            image_obj:docker.models.images.Image - Image object
+            status:bool
+        :return:
+            status
+        """
         status = True
 
         try:
-            self.docker_client.images.pull(repository='oshadmon/anylog:%s' % build)
+            self.docker_client.images.remove(image=image_name)
         except Exception as e:
-            if exception is True:
-                print('Failed to pull image oshadmon/anylog:%s (Error: %s)' % (build, e))
             status = False
+            if exception is True:
+                print('Failed to remove image %s (Error: %s)' % (image_name, e))
         else:
-            if not self.check_image(exception=exception):
-                if exception is True:
-                    print('Failed to pull image oshadmon/anylog:%s for an unknown reason...' % build)
+            if self.__validate_image(image_name=image_name) is not None:
                 status = False
+                if exception is True:
+                    print('Failed to remove image: %s' % image_name)
 
         return status
 
-    def deploy_anylog_container(self, node_name:str='anylog-test-node', build:str='predevelop', external_ip:str=None, local_ip:str=None,
-                                server_port:int=2048, rest_port:int=2049, broker_port:int=None, authentication='off', auth_type='admin',
-                                username:str='anylog', password:str='demo', expiration:str=None, exception:bool=True)->bool:
+    # Volume support functions - create, validate, remove
+    def __create_volume(self, volume_name:str, exception:bool=True)->docker.models.containers.Container:
+        """
+        Create volume (if not exists)
+        :args:
+            volume_name:str - volume name
+            exception:bool - whether to print exception
+        :params:
+            volume:docker.models.containers.Container - volume object
+        :return:
+            volume
+        """
+        try:
+            volume = self.docker_client.volumes.create(name=volume_name, driver='local')
+        except Exception as e:
+            volume = None
+            if exception is True:
+                print('Failed to create volume %s (Error: %s)' % (volume_name, e))
+        else:
+            volume = self.__validate_volume(volume_name=volume_name)
+            if volume is None and exception is True:
+                print('Failed to create volume for %s' % volume_name)
+
+        return volume
+
+    def __validate_volume(self, volume_name:str)->docker.models.containers.Container:
+        """
+        Validate if volume exists
+        :args:
+            volume_name:str - volume name
+        :params:
+            volume:docker.models.volumes.Volume - volume object
+        :return:
+            volume if fails return None
+        """
+        try:
+            volume = self.docker_client.volumes.get(volume_id=volume_name)
+        except Exception as e:
+            volume = None
+
+        return volume
+
+    def __remove_volume(self, volume:docker.models.volumes.Volume, exception:bool=True)->bool:
+        """
+        Remove volume
+        :args:
+            volume:docker.models.volumes.Volume - volume object
+            exception:bool - whether to print exception
+        :params:
+            status:bool - whether to print exceptions
+        :return:
+            status
+        """
+        status = True
+
+        try:
+            volume.remove()
+        except Exception as e:
+            status = False
+            if exception is True:
+                print('Failed to remove volume for container %s (Error: %s)' % (container.name, e))
+        else:
+            if self.__validate_volume(volume_name=volume) is not None:
+                status = False
+                if exception is True:
+                    print('Failed to remove volume for container %s' % container.name)
+
+        return status
+
+    # Container support functions - run, validate, stop
+    def __run_container(self, image:str, container_name:str, environment:dict={}, volumes:dict={},
+                      exception:bool=False)->docker.models.containers.Container:
+        """
+        Deploy docker container based on params
+        :docker-call:
+            docker run --name ${CONTAINER_NAME}
+                -e ${ENV_KEY}=${ENV_VALUE}
+                ...
+                -v ${VOLUME_KEY}:${DIRECTORY_PATH}
+                ...
+                --host network --rm ${IMAGE}
+        :args:
+            image:str - image name with build
+            container_name:str - container name
+            environment:dict - environment params
+            volumes:dict - volume params
+            exception:bool - whether or not to print exceptions
+        :params:
+            container:docker.models.containers.Container - docker container object
+        :return:
+            status
+        """
+        try:
+            container = self.docker_client.containers.run(image=image, auto_remove=True, network_mode='host', detach=True,
+                                              stdin_open=True, tty=True, privileged=True, name=container_name,
+                                              environment=environment, volumes=volumes)
+        except Exception as e:
+            container = None
+            if exception is True:
+                print('Failed to deploy docker container %s against image %s (Error: %s)' % (container_name, image, e))
+        else:
+            container = self.___validate_container(container_name=container_name)
+            if container is None and exception is True:
+                print('Failed to validate docker container %s' % container_name)
+
+        return container
+
+    def ___validate_container(self, container_name:str)->docker.models.containers.Container:
+        """
+        Validate container was deployed
+        :args:
+            container_name:str - container name
+            exception:bool - whether to print exception
+        :params:
+            container:docker.models.containers.Container - container object
+        :return:
+            container object, else None
+        """
+        try:
+            container = self.docker_client.containers.get(container_id=container_name)
+        except Exception as e:
+            container = None
+
+        return container
+
+    def __stop_container(self, container:docker.models.containers.Container, exception:bool=False)->bool:
+        """
+        Stop container based on name
+        :args:
+            container:docker.models.containers.Container - container object
+            exception:bool - whether to print exception
+        :params:
+            status:bool
+        :return:
+            status
+        """
+        status = True
+
+        try:
+            container.stop()
+        except Exception as e:
+            status = False
+            if exception is True:
+                print('Failed to remove container %s (Error: %s)' % (container.name, e))
+        else:
+            if self.___validate_container(container_name=container.name) is not None:
+                status = False
+                if exception is True:
+                    print('Failed to remove container %s' % container.name)
+
+        return status
+
+    # Deploy containers
+    def deploy_anylog_container(self, docker_password:str, update_image:bool=False, container_name:str='anylog-test-node',
+                                build:str='predevelop', external_ip:str=None, local_ip:str=None,
+                                server_port:int=2048, rest_port:int=2049, broker_port:int=None,
+                                authentication:str='off', auth_type:str='admin', username:str='anylog',
+                                password:str='demo', expiration:str=None, exception:bool=True)->bool:
         """
         Deploy an AnyLog of type rest
-        :sample-call:
-            docker run \
-                --network host \
-                --name ${NODE_NAME} \
-                -e NODE_TYPE=rest \
-                -e ANYLOG_SERVER_PORT=${SERVER_PORT} \
-                -e ANYLOG_REST_PORT=${REST_PORT} \
-                -e ANYLOG_BROKER_PORT=${BROKER_PORT} \
-                -e AUTHENTICATION=${$AUTHENTICATION} \
-                -e AUTH_TYPE=${AUTH_TYPE} \
-                -e USERNAME=${USERNAME} \
-                -e PASSWORD=${PASSWORD} \
-                -e EXPIRATION=${EXPIRATION} \
-                -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
-                -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
-                -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
-                -it --detach-keys="ctrl-d" --rm anylog:${BUILD}
         :args:
-            node_name:str - name of the container / node
+            docker_password:str - docker password to download AnyLog container
+            update_image:bool - whether to update the image (if exists)
+            container_name:str - name of the container
+            build:str - version of AnyLog image to download
             server_port:int - TCP server port
             rest_port:int - REST server port
-        :optional args:
-            external_ip:str / local_ip:str - IPs are configured by default. However if the node is in a closed network
-                or has multiple IPs, the user may want to use something different than the defaults.
+            authentication:str - whether to enable authentication
+            exception:bool - whether or not to print exceptions
+            # Optional configs
+            external_ip:str - IP address that's different than the default external IP
+            local_ip:str - IPs address that's different  than the default loccal IP
             broker_port:int - MQTT message broker port
             username:str - authentication username
             password:str - authentication password
@@ -167,10 +303,10 @@ class DeployAnyLog:
             status
         """
         status = True
-        print('Deploy AnyLog')
+
         environment = {
             'NODE_TYPE': 'rest',
-            'NODE_NAME': node_name,
+            'NODE_NAME': container_name,
             'ANYLOG_SERVER_PORT': server_port,
             'ANYLOG_REST_PORT': rest_port,
             'AUTHENTICATION': authentication,
@@ -179,13 +315,6 @@ class DeployAnyLog:
             'PASSWORD': password,
             'EXPIRATION': expiration
         }
-        volume_paths = {
-            '%s-anylog' % node_name: '/app/AnyLog-Network/anylog',
-            '%s-blockchain' % node_name: '/app/AnyLog-Network/blockchain',
-            '%s-data' % node_name: '/app/AnyLog-Network/data',
-            '%s-local-scripts' % node_name: '/app/AnyLog-Network/local_scripts'
-        }
-
         if external_ip is not None:
             environment['EXTERNAL_IP'] = external_ip
         if local_ip is not None:
@@ -193,23 +322,35 @@ class DeployAnyLog:
         if broker_port is not None:
             environment['ANYLOG_BROKER_PORT'] = broker_port
 
-        if not self.__validate_container(name=node_name):
-            volumes = {}
-            for volume in volume_paths:
-                if self.__validate_volume(name=volume) is not False:
-                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
+        volume_paths = {
+            '%s-anylog' % container_name: '/app/AnyLog-Network/anylog',
+            '%s-blockchain' % container_name: '/app/AnyLog-Network/blockchain',
+            '%s-data' % container_name: '/app/AnyLog-Network/data',
+            '%s-local-scripts' % container_name: '/app/AnyLog-Network/local_scripts'
+        }
+        volumes = {}
 
-            try:
-                self.docker_client.containers.run(image='oshadmon/anylog:%s' % build, auto_remove=True,
-                                                  network_mode='host', detach=True, stdin_open=True, tty=True,
-                                                  privileged=True, name=node_name, environment=environment,
-                                                  volumes=volumes)
-            except Exception as e:
-                status = False
-                if exception is True:
-                    print('Failed to deploy an AnyLog container (Error: %s)' % e)
+        # Prepare volumes
+        for volume in volume_paths:
+            if self.__validate_volume(volume_name=volume) is None:
+                if self.__create_volume(volume_name=volume, exception=exception) is not None:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
             else:
-                if not self.__validate_container(name=node_name):
+                volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
+
+        # login
+        if update_image is True or self.__validate_image(image_name='oshadmon/anylog:%s' % build) is None:
+            status = self.__docker_login(password=docker_password, exception=exception)
+
+        # Update image
+        if status is True and update_image is True:
+            status = self.__update_image(build='oshadmon/anylog:%s' % build, exception=exception)
+
+        # deploy AnyLcg container
+        if status is True:
+            if self.___validate_container(container_name=container_name) is None:
+                if not self.__run_container(image='oshadmon/anylog:%s' % build, container_name=container_name,
+                                          environment=environment, volumes=volumes, exception=exception):
                     status = False
 
         return status
@@ -217,13 +358,6 @@ class DeployAnyLog:
     def deploy_grafana_container(self, exception:bool=True)->bool:
         """
         Deploy a Grafana v 7.5.7 as a docker container
-        :sample-call:
-            docker run -d -p 3000:3000 --name=grafana \
-                -v grafana-data:/var/lib/grafana \
-                -v grafana-log:/var/log/grafana \
-                -v grafana-config:/etc/grafana \
-                -e "GF_INSTALL_PLUGINS=simpod-json-datasource,grafana-worldmap-panel" \
-                --rm grafana/grafana:7.5.7
         :args:
             exception:bool - whether to print exceptions or not
         :params:
@@ -232,7 +366,7 @@ class DeployAnyLog:
             status
         """
         status = True
-        print('Deploying Grafana')
+
         environment = {
             'GF_INSTALL_PLUGINS': 'simpod-json-datasource,grafana-worldmap-panel'
         }
@@ -241,37 +375,24 @@ class DeployAnyLog:
             'grafana-log': '/var/log/grafana',
             'grafana-config': '/etc/grafana'
         }
-        if not self.__validate_container(name='grafana'):
-            volumes = {}
-            for volume in volume_paths:
-                if self.__validate_volume(name=volume) is not False:
+        volumes = {}
+        for volume in volume_paths:
+            if self.__validate_volume(volume_name=volume) is None:
+                if self.__create_volume(volume_name=volume, exception=exception) is not None:
                     volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
-            try:
-                self.docker_client.containers.run(image='grafana/grafana:7.5.7', auto_remove=True, network_mode='host',
-                                                  detach=True, stdin_open=True, tty=True, privileged=True,
-                                                  name='grafana', environment=environment, volumes=volumes)
-            except Exception as e:
-                status = False
-                if exception is True:
-                    print('Failed to deploy Grafana container (Error: %s)' % e)
             else:
-                if not self.__validate_container(name='grafana'):
-                    status = False
+                volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
+
+        if self.___validate_container(container_name='grafana') is None:
+            if not self.__run_container(image='grafana/grafana:7.5.7', container_name='grafana', environment=environment,
+                                      volumes=volumes, exception=exception):
+                status = False
 
         return status
 
-    def deploy_psql_container(self, conn_info:str, db_port:int=5432, exception:bool=True)->bool:
+    def deploy_postgres_container(self, conn_info:str, exception:bool=True)->bool:
         """
         Deploy Postgres
-        :sample-call:
-            docker run \
-               --network host \
-               --name anylog-psql \
-               -e POSTGRES_USER=${DB_USR} \
-               -e POSTGRES_PASSWORD=${DB_PASSWD} \
-               -p ${PORT}:${PORT} \
-               -v pgdata:/var/lib/postgresql/data \
-               --rm postgres:14.0-alpine
         :args:
             conn_info:str - connection information (user@ip:passwd)
             db_port:int - database port
@@ -282,86 +403,132 @@ class DeployAnyLog:
             status
         """
         status = True
-        print('Deploying Postgres')
-        if not self.__validate_container(name='anylog-psql'):
-            if self.__validate_volume(name='pgdata') is False:
-                volumes = {}
-            else:
-                volumes = {'pgdata': {'bind': '/var/lib/postgresql/data', 'mode': 'rw'}}
 
-            try:
-                self.docker_client.containers.run(image='postgres:14.0-alpine',  auto_remove=True, network_mode='host',
-                                                  detach=True, stdin_open=True, tty=True, privileged=True,
-                                                  name='anylog-psql',
-                                                  environment={
-                                                      'POSTGRES_USER': conn_info.split('@')[0],
-                                                      'POSTGRES_PASSWORD': conn_info.split(':')[-1]
-                                                  },
-                                                  volumes=volumes
-                                                  )
-            except Exception as e:
-                status = False
-                if exception is True:
-                    print('Failed to deploy Postgres container (Error: %s)' % e)
+        environment = {
+            'POSTGRES_USER': conn_info.split('@')[0],
+            'POSTGRES_PASSWORD': conn_info.split(':')[-1]
+        }
+
+        volume_paths = {'pgdata': '/var/lib/postgresql/data'}
+        volumes = {}
+
+        for volume in volume_paths:
+            if self.__validate_volume(volume_name=volume) is None:
+                if self.__create_volume(volume_name=volume, exception=exception) is not None:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
             else:
-                if not self.__validate_container(name='anylog-psql'):
-                    status = False
+                volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
+
+        if self.___validate_container(container_name='postgres-db') is None:
+            if not self.__run_container(image='postgres:14.0-alpine', container_name='postgres-db',
+                                      environment=environment, volumes=volumes, exception=exception):
+                status = False
 
         return status
 
-    def stop_docker_container(self, container_name:str, exception:bool=True)->bool:
+    # Stop containers
+    def stop_anylog_container(self, container_name:str='anylog-test-node', remove_volume:bool=False,
+                              remove_image:bool=False, build:str='predevelop', exception:bool=False)->bool:
         """
-        Stop docker container based on name
+        Stop & clean AnyLog container
         :args:
             container_name:str - container name
-            exception:bool - whether to print exception
+            remove_volume:bool - whether to remove correlated volume
+            remove_image:bool - whether to remove correleated image
+            build:str - AnyLog version to remove
+            exception:bool - whether to print exceptions
         :params:
             status:bool
         :return:
             status
         """
         status = True
-        try:
-            container = self.docker_client.containers.get(container_id=container_name)
-        except Exception as e:
-            status = False
-            container = None
 
+        container = self.___validate_container(container_name=container_name)
         if container is not None:
-            try:
-                container.stop()
-            except Exception as e:
-                status = False
-                if exception is True:
-                    print('Failed to stop container named: %s (Error: %s)' % (container_name, e))
+            status = self.__stop_container(container=container)
 
+        if status is True:
+            if remove_volume is True:
+                volume_status = []
+                for volume_name in ['%s-anylog' % container_name, '%s-blockchain' % container_name,
+                                    '%s-data' % container_name, '%s-local-scripts' % container_name]:
+                    volume = self.__validate_volume(volume_name=volume_name)
+                    if volume is not None:
+                        volume_status.append(self.__remove_volume(volume=volume, exception=exception))
+                if False in volume_status:
+                  status = False
+            if remove_image is True:
+                image = self.__validate_image(image_name='oshadmon/anylog:%s' % build)
+                if image is not None and self.__remove_image(image_name='oshadmon/anylog:%s' % build,
+                                                           exception=exception) is False:
+                    status = False
         return status
 
-    def remove_volume(self, container_name:str, exception:bool)->bool:
+    def stop_grafana_container(self, remove_volume:bool=False, remove_image:bool=False, exception:bool=False)->bool:
         """
-        Remove volumes based on container_name
+        Stop & clean Grafana container
         :args:
-            container_name:str - container name
+            remove_volume:bool - whether to remove correlated volume
+            remove_image:bool - whether to remove correleated image
             exception:bool - whether to print exceptions
         :params:
             status:bool
         :return:
-            if able remove volume(s) from container return True, else False
+            status
         """
         status = True
-        try:
-            container = self.docker_client.containers.get(container_id=container_name)
-        except Exception as e:
-            status = False
-            container = None
 
+        container = self.___validate_container(container_name='grafana')
         if container is not None:
-            try:
-                container.volumes.remove()
-            except Exception as e:
-                status = False
-                if exception is True:
-                    print('Failed to remove volumes correlated to node %s (Error: %s)' % (container_name, e))
+            status = self.__stop_container(container=container)
 
+        if status is True:
+            if remove_volume is True:
+                volume_status = []
+                for volume_name in ['grafana-config', 'grafana-data', 'grafana-log']:
+                    volume = self.__validate_volume(volume_name=volume_name)
+                    if volume is not None:
+                        volume_status.append(self.__remove_volume(volume=volume, exception=exception))
+                if False in volume_status:
+                  status = False
+            if remove_image is True:
+                image = self.__validate_image(image_name='grafana/grafana:7.5.7')
+                if image is not None and self.__remove_image(image_name='grafana/grafana:7.5.7',
+                                                           exception=exception) is False:
+                    status = False
         return status
 
+    def stop_postgres_container(self, remove_volume:bool=False, remove_image:bool=False, exception:bool=False)->bool:
+        """
+        Stop & clean Postgres container
+        :args:
+            remove_volume:bool - whether to remove correlated volume
+            remove_image:bool - whether to remove correleated image
+            exception:bool - whether to print exceptions
+        :params:
+            status:bool
+        :return:
+            status
+        """
+        status = True
+
+        container = self.___validate_container(container_name='postgres-db')
+        if container is not None:
+            status = self.__stop_container(container=container)
+
+        if status is True:
+            if remove_volume is True:
+                volume_status = []
+                for volume_name in ['pgdata']:
+                    volume = self.__validate_volume(volume_name=volume_name)
+                    if volume is not None:
+                        volume_status.append(self.__remove_volume(volume=volume, exception=exception))
+                if False in volume_status:
+                  status = False
+            if remove_image is True:
+                image = self.__validate_image(image_name='postgres:14.0-alpine')
+                if image is not None and self.__remove_image(image_name='postgres:14.0-alpine',
+                                                             exception=exception) is False:
+                    status = False
+        return status
