@@ -344,13 +344,14 @@ class DeployAnyLog:
 
         # Update image
         if status is True and update_image is True:
-            status = self.__update_image(build='oshadmon/anylog:%s' % build, exception=exception)
+            status = self.__update_image(image_name='oshadmon/anylog:%s' % build, exception=exception)
 
         # deploy AnyLcg container
         if status is True:
             if self.___validate_container(container_name=container_name) is None:
                 if not self.__run_container(image='oshadmon/anylog:%s' % build, container_name=container_name,
                                           environment=environment, volumes=volumes, exception=exception):
+                    print('Fails') 
                     status = False
 
         return status

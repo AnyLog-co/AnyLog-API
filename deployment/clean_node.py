@@ -71,7 +71,7 @@ def disconnect_dbms(conn:anylog_api.AnyLogConnect, drop_data:bool=False, config_
 
     if 'psql' in list(database_list.values()) and drop_data is True and config_data != {}:
         psql_status = True
-        if not dbms_cmd.connect_dbms(conn=conn, config_data=config_data, db_name='postgres', exception=exception):
+        if not dbms_cmd.connect_dbms(conn=conn, config=config_data, db_name='postgres', exception=exception):
             print("Failed to connect to Postgres Database, as such won't be able to drop databases using PSQL")
             psql_status = False
 
@@ -119,7 +119,7 @@ def remove_policy(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
         'company': config_data['company_name'],
         'ip': config_data['external_ip'],
         'local_ip': config_data['ip'],
-        'port': int(config_data['anylog_server_port']),
+        'port': int(config_data['anylog_tcp_port']),
         'rest_port': int(config_data['anylog_rest_port'])
     }
 
@@ -148,7 +148,7 @@ def remove_policy(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
         if drop_db == 'yes':
             if dbms_cmd.disconnect_dbms(conn=conn, db_name='blockchain', exception=exception):
                 database_list = dbms_cmd.get_dbms_type(conn=conn, exception=exception)
-                if 'psql' in list(database_list.values()) and dbms_cmd.connect_dbms(conn=conn, config_data=config_data, db_name='postgres', exception=exception):
+                if 'psql' in list(database_list.values()) and dbms_cmd.connect_dbms(conn=conn, config=config_data, db_name='postgres', exception=exception):
                     status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='psql', exception=exception)
                 else:
                     status = dbms_cmd.drop_dbms(conn=conn, db_name='blockchain', db_type='sqlite', exception=exception)
