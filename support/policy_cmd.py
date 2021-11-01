@@ -47,7 +47,7 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
         if policy_id is not None:
             # sync & wait until blockchain is updated process
             blockchain_cmd.blockchain_sync(conn=conn, exception=exception)
-            blockchain_cmd.blockchain_wait(conn=conn, policy_type=policy_type, where_conditions=while_conditions,
+            blockchain_cmd.blockchain_wait(conn=conn, policy_type=policy_type, where_conditions=where_conditions,
                                            exception=exception)
 
     return policy_id
@@ -74,6 +74,7 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
         policy_id - this can be used to verify policy and/or added to a consequent policy
     """
     new_policy = None
+    print(policy_type) 
     where_conditions_dict = {
         'name': config['node_name'],
         'company': config['company_name'],
@@ -90,9 +91,8 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
     for key in where_conditions_dict:
         where_conditions.append(other_cmd.format_string(key, where_conditions_dict[key]))
 
-    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions,
+    blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions_dict,
                                                exception=exception)
-
     if len(blockchain) == 0:
         if policy_type.lower() in ['master', 'operator', 'publisher', 'query']:
             new_policy = create_declaration.declare_node(config=config, disable_location=disable_location)

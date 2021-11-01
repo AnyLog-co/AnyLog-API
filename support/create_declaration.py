@@ -142,5 +142,6 @@ def declare_node(config:dict, disable_location:bool=False)->dict:
                     node[config['node_type']]['table'] = table
                     nodes.append(node)
                 node = nodes
+    print(node) 
     return node
 

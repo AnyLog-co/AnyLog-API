@@ -34,12 +34,18 @@ def __build_blockchain_query(policy_type:str="*", where_conditions:list=None, po
             if key != 'id' and key != 'date':
                 where_conditions.append(other_cmd.format_string(key, policy[policy_type][key]))
 
-    if where_conditions is not None:
-        cmd += " where"
-        for value in where_conditions:
-           cmd += " " + value
-           if value != where_conditions[-1]:
-               cmd += " and"
+    if where_conditions is not None: 
+        cmd += " where " 
+        if isinstance(where_conditions, list): 
+            for condition in where_conditions: 
+                cmd += condition + " "
+                if condition != where_conditions[-1]:
+                    cmd += " and "
+        elif isinstance(where_conditions, dict): 
+            for key in where_conditions:
+                cmd += '%s="%s"' % (key, where_conditions[key])         
+                if key != list(where_conditions)[-1]: 
+                    cmd += " and "
 
     return cmd
 
@@ -62,7 +68,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where_con
         blockchains
     """
     cmd = __build_blockchain_query(policy_type=policy_type, where_conditions=where_conditions, policy=None)
-
+    print(cmd) 
     HEADER['command'] = cmd
     blockchain = []
 

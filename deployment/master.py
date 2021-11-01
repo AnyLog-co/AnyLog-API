@@ -38,5 +38,6 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:boo
 
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
                                              master_node='local', disable_location=disable_location, exception=exception)
+    print(node_id) 
     if node_id is None:
         print('Failed to add %s node to blockchain' % config['node_type'])

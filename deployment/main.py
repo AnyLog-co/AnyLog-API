@@ -236,25 +236,25 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
         elif deployment_file is not None:
             print("File: '%s' does not exist" % full_path)
 
-
     # Start an AnyLog process for a specific node_type
-    if config_data['node_type'] == 'master':
-        status = master.master_init(conn=conn, config=config_data, disable_location=disable_location,
-                                    exception=exception)
-    elif config_data['node_type'] == 'operator':
-        status = operator_node.operator_init(conn=conn, config=config_data, disable_location=disable_location,
-                                             exception=exception)
-    elif config_data['node_type'] == 'publisher':
-        status = publisher.publisher_init(conn=conn, config=config_data, disable_location=disable_location,
-                                          exception=exception)
-    elif config_data['node_type'] == 'query':
-        status = query.query_init(conn=conn, config=config_data, disable_location=disable_location,
-                                  exception=exception)
-    elif config_data['node_type'] == 'single_node':  # a situation where config contains more than one node_type
-        status = single_node.single_node_init(conn=conn, config=config_data, node_types=node_types,
-                                              disable_location=disable_location, exception=exception)
-    else:
-        status = False
+    for node in sorted(node_types): 
+        config_data['node_type'] = node
+        if node == 'master' and status is True:
+            status = master.master_init(conn=conn, config=config_data, disable_location=disable_location,
+                                        exception=exception)
+        elif node == 'operator' and status is True:
+            status = operator_node.operator_init(conn=conn, config=config_data, disable_location=disable_location,
+                                                 exception=exception)
+        elif node == 'publisher' and status is True:
+            status = publisher.publisher_init(conn=conn, config=config_data, disable_location=disable_location,
+                                              exception=exception)
+        elif node == 'query' and status is True:
+            status = query.query_init(conn=conn, config=config_data, disable_location=disable_location,
+                                      exception=exception)
+        else:
+            print('Unsupported node type: %s' % node) 
+            if len(node_types) == 1: 
+                status = False 
 
     if status is False:
         print('Failed to configure %s to act as a %s node type' % (conn.conn, config_data['node_type']))
