@@ -4,13 +4,21 @@ The following is intended as a tool to easily deploy AnyLog via REST.
 
 ## Steps
 0. Clone AnyLog-API & Install Docker 
-   * Clone AnyLog-API: ```git clone https://github.com/AnyLog-co/AnyLog-API```
-   * Install Docker: ```cd $HOME/AnyLog-API ; bash $HOME/AnyLog-API/shell_scripts/install_docker.sh```
-1. Create an INI config file based on [config.ini](config/config.ini)
-2. Deploy AnyLog with PSQL and Grafana: ```cd $HOME/AnyLog-API ; python3 $HOME/AnyLog-API/deployment/main.py ${NODE_IP}:${NODE_PORT} ${CONFIG_FILE} --docker-password docker4AnyLog! --anylog --psql --grafana```
+   * Clone AnyLog-API: 
+```git clone https://github.com/AnyLog-co/AnyLog-API```
+   * Install Docker: 
+```cd $HOME/AnyLog-API ; bash $HOME/AnyLog-API/shell_scripts/install_docker.sh```
 
-To access AnyLog Interface: ```docker attach --detach-keys="ctrl-d" ${NODE_NAME}``` 
-To access AnyLog via REST: ```curl -X GET ${NODE_IP}:${NODE_PORT} -H "command: get status" -H "User-Agent: AnyLog/1.23"``` 
+1. Create an INI config file based on [config.ini](config/config.ini)
+
+2. Deploy AnyLog with PSQL and Grafana: 
+```cd $HOME/AnyLog-API ; python3 $HOME/AnyLog-API/deployment/main.py ${NODE_IP}:${NODE_PORT} ${CONFIG_FILE} --docker-password docker4AnyLog! --anylog --psql --grafana```
+
+To access AnyLog Interface: 
+```docker attach --detach-keys="ctrl-d" ${NODE_NAME}``` 
+
+To access AnyLog via REST: 
+```curl -X GET ${NODE_IP}:${NODE_PORT} -H "command: get status" -H "User-Agent: AnyLog/1.23"``` 
  
 
 ## Builds
