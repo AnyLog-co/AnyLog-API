@@ -42,14 +42,14 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
         if blockchain_cmd.post_policy(conn=conn, policy=new_policy, master_node=master_node, exception=exception):
             policy_id = None
 
-        """
+
         # There's a bug with `blockchain wait` via rest, as such cannot validate blockchain has been updated until issue is fixed   
         if policy_id is not None:
             # sync & wait until blockchain is updated process
             blockchain_cmd.blockchain_sync(conn=conn, exception=exception)
             blockchain_cmd.blockchain_wait(conn=conn, policy_type=policy_type, where_conditions=while_conditions,
                                            exception=exception)
-        """
+
     return policy_id
 
 def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config:dict, master_node:str,

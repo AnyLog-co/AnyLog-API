@@ -146,7 +146,7 @@ def declare_generic_policy(conn:anylog_api.AnyLogConnect, master_node:str, polic
                                        exception=exception)
             if status is False:
                 node_id = False
-            time.sleep(60)
+            #time.sleep(60)
 
     # Extract ID
     if blockchain_cmd.pull_json(conn=conn, master_node=config['master_node'], exception=exception) and extract_id is True and node_id is None:
