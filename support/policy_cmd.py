@@ -1,3 +1,4 @@
+import datetime 
 import import_packages
 import_packages.import_dirs()
 
@@ -74,7 +75,6 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
         policy_id - this can be used to verify policy and/or added to a consequent policy
     """
     new_policy = None
-    print(policy_type) 
     where_conditions_dict = {
         'name': config['node_name'],
         'company': config['company_name'],
@@ -90,7 +90,7 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
     where_conditions = []
     for key in where_conditions_dict:
         where_conditions.append(other_cmd.format_string(key, where_conditions_dict[key]))
-
+   
     blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions_dict,
                                                exception=exception)
     if len(blockchain) == 0:
@@ -101,11 +101,10 @@ def declare_anylog_policy(conn:anylog_api.AnyLogConnect, policy_type:str, config
         else:
             if exception is True:
                 print('Invalid policy of type: %s' % policy_type)
-
         new_policy = declare_policy(conn=conn, master_node=master_node, new_policy=new_policy, exception=exception)
+        
     else:
         new_policy = True
-
     return new_policy
 
 

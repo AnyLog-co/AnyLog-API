@@ -1,3 +1,4 @@
+import datetime 
 import __init__
 import anylog_api
 import blockchain_cmd
@@ -41,3 +42,4 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:boo
 
     if node_id is None:
         print('Failed to add %s node to blockchain' % config['node_type'])
+
