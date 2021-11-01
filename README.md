@@ -5,20 +5,30 @@ The following is intended as a tool to easily deploy AnyLog via REST.
 ## Steps
 0. Clone AnyLog-API & Install Docker 
    * Clone AnyLog-API: 
-```git clone https://github.com/AnyLog-co/AnyLog-API```
+```buildoutcfg
+git clone https://github.com/AnyLog-co/AnyLog-API
+```
    * Install Docker: 
-```cd $HOME/AnyLog-API ; bash $HOME/AnyLog-API/shell_scripts/install_docker.sh```
+```buildoutcfg
+cd $HOME/AnyLog-API ; bash $HOME/AnyLog-API/shell_scripts/install_docker.sh
+```
 
 1. Create an INI config file based on [config.ini](config/config.ini)
 
 2. Deploy AnyLog with PSQL and Grafana: 
-```cd $HOME/AnyLog-API ; python3 $HOME/AnyLog-API/deployment/main.py ${NODE_IP}:${NODE_PORT} ${CONFIG_FILE} --docker-password docker4AnyLog! --anylog --psql --grafana```
+```buildoutcfg
+cd $HOME/AnyLog-API ; python3 $HOME/AnyLog-API/deployment/main.py ${NODE_IP}:${NODE_PORT} ${CONFIG_FILE} --docker-password docker4AnyLog! --anylog --psql --grafana
+```
 
 To access AnyLog Interface: 
-```docker attach --detach-keys="ctrl-d" ${NODE_NAME}``` 
+```buildoutcfg
+docker attach --detach-keys="ctrl-d" ${NODE_NAME}
+``` 
 
 To access AnyLog via REST: 
-```curl -X GET ${NODE_IP}:${NODE_PORT} -H "command: get status" -H "User-Agent: AnyLog/1.23"``` 
+```buildoutcfg
+curl -X GET ${NODE_IP}:${NODE_PORT} -H "command: get status" -H "User-Agent: AnyLog/1.23"
+``` 
  
 
 ## Builds
@@ -49,8 +59,8 @@ To access AnyLog via REST:
   * [docker](https://pypi.org/project/docker/) -  Python tool to deploy & clean docker images, volumes and containers (Optional) 
   * [geocoder](https://pypi.org/project/geocoder/) - Python tool to get location (Optional) 
  
-**Note**: All Python packages used tend to be standard, thus do not require an installment. However, in case of an issue, 
-installment can be done via [pip3](https://www.activestate.com/resources/quick-reads/how-to-install-and-use-pip3/#:~:text=1%20Open%20the%20Control%20Panel%20and%20navigate%20to,and%20add%20the%20directory%20where%20pip3%20is%20installed%2C)  
+**Note**: With the exception of optional packages, all required Python packages used tend to be standard. However, in case of an issue, installment can be done via [pip3](https://www.activestate.com/resources/quick-reads/how-to-install-and-use-pip3/#:~:text=1%20Open%20the%20Control%20Panel%20and%20navigate%20to,and%20add%20the%20directory%20where%20pip3%20is%20installed%2C)  
+
 ```buildoutcfg
 pip3 install ${PACKAGE_NAME}
 ```
