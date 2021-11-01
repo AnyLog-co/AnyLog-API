@@ -6,6 +6,7 @@ import time
 
 import __init__
 import anylog_api
+import blockchain_cmd
 import clean_node
 import config
 import dbms_cmd
@@ -83,6 +84,14 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
         config_data['node_type'] = node_types[0]
     else:
         config_data['node_type'] = 'single_node'
+        if 'publisher' in node_types and 'operator' in node_types:
+            node = input("A 'solo deployment' can only have either operator or publisher process on a given container. Would you like operator or publisher? ")
+            while node.lower() not in ['operator', 'publisher']:
+                node = input('Invalid option: %s. Would you like to run an operator or publisher process? ')
+            if node == 'publisher':
+                node_types.remove('operator')
+            else:
+                node_types.remove('publisher')
 
     # validate node types
     for node in node_types:
@@ -223,10 +232,14 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
             if not dbms_cmd.connect_dbms(conn=conn, config={}, db_name='system_query', exception=exception):
                 print('Failed to deploy system_query against %s node' % config['node_type'])
 
+    # run scheduler process 1 (and 0)  
     for schedule in [0, 1]:
         if get_cmd.get_scheduler(conn=conn, scheduler_name=schedule, exception=exception) == 'not declared':
             if not post_cmd.start_exitings_scheduler(conn=conn, scheduler_id=schedule, exception=exception):
                 print('Failed to start scheduler %s' % schedule)
+
+    # run blockchain sync  
+    blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='master', time="30 seconds", master_node=config_data['master_node'], exception=exception)
 
     # execute deployment file
     if deployment_file is not None:
@@ -237,21 +250,22 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
             print("File: '%s' does not exist" % full_path)
 
     # Start an AnyLog process for a specific node_type
+    if 'master' in node_types: 
+        config_data['node_type'] = 'master'
+        status = master.master_init(conn=conn, config=config_data, disable_location=disable_location, exception=exception)
+
     for node in sorted(node_types): 
         config_data['node_type'] = node
-        if node == 'master' and status is True:
-            status = master.master_init(conn=conn, config=config_data, disable_location=disable_location,
-                                        exception=exception)
-        elif node == 'operator' and status is True:
+        if node == 'operator':
             status = operator_node.operator_init(conn=conn, config=config_data, disable_location=disable_location,
                                                  exception=exception)
-        elif node == 'publisher' and status is True:
+        elif node == 'publisher':
             status = publisher.publisher_init(conn=conn, config=config_data, disable_location=disable_location,
                                               exception=exception)
-        elif node == 'query' and status is True:
+        elif node == 'query':
             status = query.query_init(conn=conn, config=config_data, disable_location=disable_location,
                                       exception=exception)
-        else:
+        elif node != 'master':
             print('Unsupported node type: %s' % node) 
             if len(node_types) == 1: 
                 status = False 

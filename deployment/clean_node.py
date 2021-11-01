@@ -135,7 +135,7 @@ def remove_policy(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
         if False in statuses:
             status = False
     else:
-        status = policy_cmd.drop_policy(conn=conn, master_node=config_data['master_node'], policy_type=config['node_type'], query_params=where_conditions, exception=exception)
+        status = policy_cmd.drop_policy(conn=conn, master_node=config_data['master_node'], policy_type=config_data['node_type'], query_params=where_conditions, exception=exception)
 
     if config_data['node_type'] == 'master' or 'master' in node_types and status is True:
         drop_db = None

@@ -1,10 +1,11 @@
 import __init__
 import anylog_api
+import blockchain_cmd
 import dbms_cmd
 import policy_cmd
 import post_cmd
 
-def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:bool=True, exception:bool=False): 
     """
     Deploy a query or publisher node instance via REST 
     :definition: 
@@ -12,7 +13,7 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
     :args:
        anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
        config:dict - config data (from file + hostname + AnyLog) 
-       location:bool -whetther or not to have location in policy
+       disable_location:bool -whetther or not to have disable_location in policy
        exception:bool - whether or not to print exception to screen 
     :params: 
         status:bool 
@@ -32,9 +33,10 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=Tru
         if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             print('Failed to create table almgm.tsd_info')
 
+
     # declare Publisher
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                               master_node=config['master_node'], location=location, exception=exception)
+                                               master_node=config['master_node'], disable_location=disable_location, exception=exception)
     if node_id is None:
         print('Failed to add % node to blockchain' % config['node_typp'])
 

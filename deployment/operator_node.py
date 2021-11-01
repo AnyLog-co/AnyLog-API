@@ -7,7 +7,7 @@ import post_cmd
 
 
 
-def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False):
+def operator_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:bool=True, exception:bool=False):
     """
     Deploy a query or publisher node instance via REST
     :definition:
@@ -15,7 +15,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
     :args:
        anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog
        config:dict - config data (from file + hostname + AnyLog)
-       location:bool -whetther or not to have location in policy
+       disable_location:bool -whetther or not to have disable_location in policy
        exception:bool - whether or not to print exception to screen
     :params:
         status:bool
@@ -44,7 +44,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
     deploy_operator = 'y'
     if 'enable_cluster' in config and config['enable_cluster'].lower() == 'true':
         cluster_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type='cluster', config=config,
-                                                      master_node=config['master_node'], location=location,
+                                                      master_node=config['master_node'], disable_location=disable_location,
                                                       exception=exception)
         if cluster_id is not None:
             config['cluster_id'] = cluster_id
@@ -59,7 +59,7 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True
                     boolean = True
     if deploy_operator == 'y':
         node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                                      master_node=config['master_node'], location=location,
+                                                      master_node=config['master_node'], disable_location=disable_location,
                                                       exception=exception)
         if node_id is None:
             print('Failed to add % node to blockchain' % config['node_typp'])

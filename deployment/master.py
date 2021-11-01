@@ -34,9 +34,6 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:boo
         if not dbms_cmd.create_table(conn=conn, db_name='blockchain', table_name='ledger', exception=exception):
             print('Failed to create table blockchain.ledger')
 
-    blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='dbms', time="30 seconds",
-                                             master_node=config['master_node'], exception=exception)
-
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
                                              master_node='local', disable_location=disable_location, exception=exception)
 
