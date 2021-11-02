@@ -362,7 +362,7 @@ def main():
         config_data:dict - data from config_file
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Send REST requests to configure an AnyLog instance.')
-    parser.add_argument('rest_conn',   type=str, default=__get_rest_conn(),                         help='REST connection information')
+    parser.add_argument('rest_conn',   type=str, default='127.0.0.1:2049',                          help='REST connection information')
     parser.add_argument('config_file', type=str, default='$HOME/AnyLog-API/config/single-node.ini', help='AnyLog INI config file')
 
     # Docker configs
