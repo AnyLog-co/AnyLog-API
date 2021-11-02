@@ -1,7 +1,6 @@
 import argparse
 import datetime
 import os
-import socket
 import time
 
 import __init__
@@ -18,34 +17,6 @@ import post_cmd
 import publisher
 import query
 import single_node
-
-
-def __get_rest_conn()->str:
-    """
-    Get IP address of node
-    :params:
-        ip_addr:str - IP address
-    :return:
-        ip_addr
-    """
-    ip_addr = '127.0.0.1'
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            try:
-                sock.connect(("8.8.8.8", 80))
-            except:
-                pass
-            else:
-                try:
-                    ip_addr = sock.getsockname()[0]
-                except:
-                    pass
-    except:
-        pass
-    else:
-        ip_addr = '%s:2049' % ip_addr
-
-    return ip_addr
 
 
 def initial_config(config_file:str, exception:bool=False)->(dict,list):
@@ -317,42 +288,35 @@ def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:di
     :params:
         docker_conn:docker_calls.DeployAnyLog - connection to docker
     """
-    docker_conn = docker_calls.DeployAnyLog(exception=exception)
-    if rm_policy is True:
-        if not clean_node.remove_policy(conn=conn, config_data=config_data, node_types=node_types, exception=exception):
-            if len(node_types) == 1:
-                print('Failed to remove policy correlated to %s' % config_data['node_name'])
-            elif len(node_types) > 1:
-                print('Failed to remove policies correlated to %s' % config_data['node_name'])
-            else:
-                print('No policies needed to be removed')
-    
-    status = clean_node.disconnect_dbms(conn=conn, drop_data=rm_data, config_data=config_data, exception=exception)
-    if status is False and rm_data is True: 
-        print('Failed to disconnect database(s) and/or remove database(s)')
-    if status is False: 
-        print('Failed to discconect database(s)') 
-
-    if not clean_node.disconnect_node(conn=conn, exception=exception):
-        print('Failed to disconnect certain processes running on %s' % config_data['node_name'])
-
     status = True
-    if anylog is True:
-        if not docker_conn.stop_anylog_container(container_name=config_data['node_name'], build=config_data['build'],
-                                                 remove_volume=anylog_rm_volume, remove_image=anylog_rm_image,
-                                                 exception=exception):
-            print('Failed to stop or remove content related to AnyLog container %s' % config_data['node_name'])
-            status = False
+    docker_conn = docker_calls.DeployAnyLog(exception=exception)
 
-    if status is True:
-        if psql is True:
-            if not docker_conn.stop_postgres_container(remove_volume=psql_rm_volume, remove_image=psql_rm_image,
-                                                       exception=exception):
-                print('Failed to stop or remote content related to Postgres container')
-        if grafana is True:
-            if not docker_conn.stop_grafana_container(remove_volume=grafana_rm_volume, remove_image=grafana_rm_image,
-                                                        exception=exception):
-                print('Failed to stop or remove content related to Grafana container')
+    if anylog is True and docker_conn.validate_container(container_name=config_data['node_name']) is not None:
+        # disconnect processes in running node running
+        clean_node.disconnect_node(conn=conn, exception=exception)
+
+        # remove policy if set
+        clean_node.remove_policy(conn=conn, config_datac=config_data, node_types=node_types, exception=exception)
+
+        # disconnect from database & remove data if set
+        clean_node.disconnect_dbms(conn=conn, drop_data=rm_data, config_data=config_data, exception=exception)
+
+        # stop AnyLog container
+        if not docker_conn.stop_anylog_container(container_name=config_data['node_name'], build=config_data['build'],
+                                                   remove_volume=anylog_rm_volume, remove_image=anylog_rm_image,
+                                                   exception=exception):
+            print('Failed to stop and/or remove AnyLog')
+
+    if psql is True:
+        if not docker_conn.stop_postgres_container(remove_volume=psql_rm_volume, remove_image=psql_rm_image,
+                                                   exception=exception):
+            print('Failed to stop and/or remove Postgres')
+
+    if grafana is True:
+        if not docker_conn.stop_grafana_container(remove_volume=grafana_rm_volume, remove_image=grafana_rm_image,
+                                                  exception=exception):
+            print('Failed to stop and/or remove Grafana')
+
 
 
 def main():
@@ -442,8 +406,6 @@ def main():
 
     if args.full_clean is True:
         args.disconnect_anylog = True
-        args.rm_policy = True
-        args.rm_data = True
         args.anylog_rm_volume = True
         args.anylog_rm_image = True
     elif args.rm_policy is True or args.rm_data is True or args.anylog_rm_volume is True or args.anylog_rm_image is True:
@@ -481,16 +443,16 @@ def main():
                 error += ' Unable to start node of type: %s' % config_data['node_type']
             print(error)
     elif args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
-        args.docker_only = True
         clean_process(conn=anylog_conn, config_data=config_data, node_types=node_types, anylog=args.disconnect_anylog,
                       rm_policy=args.rm_policy, rm_data=args.rm_data, anylog_rm_volume=args.anylog_rm_volume,
                       anylog_rm_image=args.anylog_rm_image, psql=args.disconnect_psql,
                       psql_rm_volume=args.psql_rm_volume, psql_rm_image=args.psql_rm_image,
                       grafana=args.disconnect_grafana, grafana_rm_volume=args.grafana_rm_volume,
                       grafana_rm_image=args.grafana_rm_image, exception=args.exception)
+        exit(1)
 
     # validate node is accessible
-    if args.anylog is True or args.docker_only is False:
+    if args.anylog is True:
         if not get_cmd.get_status(conn=anylog_conn, exception=args.exception):
             print('Failed to get status from %s, cannot continue' % anylog_conn.conn)
             exit(1)

@@ -220,13 +220,13 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to deploy docker container %s against image %s (Error: %s)' % (container_name, image, e))
         else:
-            container = self.___validate_container(container_name=container_name)
+            container = self._validate_container(container_name=container_name)
             if container is None and exception is True:
                 print('Failed to validate docker container %s' % container_name)
 
         return container
 
-    def ___validate_container(self, container_name:str)->docker.models.containers.Container:
+    def _validate_container(self, container_name:str)->docker.models.containers.Container:
         """
         Validate container was deployed
         :args:
@@ -264,7 +264,7 @@ class DeployAnyLog:
             if exception is True:
                 print('Failed to remove container %s (Error: %s)' % (container.name, e))
         else:
-            if self.___validate_container(container_name=container.name) is not None:
+            if self._validate_container(container_name=container.name) is not None:
                 status = False
                 if exception is True:
                     print('Failed to remove container %s' % container.name)
@@ -348,7 +348,7 @@ class DeployAnyLog:
 
         # deploy AnyLcg container
         if status is True:
-            if self.___validate_container(container_name=container_name) is None:
+            if self._validate_container(container_name=container_name) is None:
                 if not self.__run_container(image='oshadmon/anylog:%s' % build, container_name=container_name,
                                           environment=environment, volumes=volumes, exception=exception):
                     print('Fails') 
@@ -384,7 +384,7 @@ class DeployAnyLog:
             else:
                 volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
 
-        if self.___validate_container(container_name='grafana') is None:
+        if self._validate_container(container_name='grafana') is None:
             if not self.__run_container(image='grafana/grafana:7.5.7', container_name='grafana', environment=environment,
                                       volumes=volumes, exception=exception):
                 status = False
@@ -420,7 +420,7 @@ class DeployAnyLog:
             else:
                 volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
 
-        if self.___validate_container(container_name='postgres-db') is None:
+        if self._validate_container(container_name='postgres-db') is None:
             if not self.__run_container(image='postgres:14.0-alpine', container_name='postgres-db',
                                       environment=environment, volumes=volumes, exception=exception):
                 status = False
@@ -445,7 +445,7 @@ class DeployAnyLog:
         """
         status = True
 
-        container = self.___validate_container(container_name=container_name)
+        container = self._validate_container(container_name=container_name)
         if container is not None:
             status = self.__stop_container(container=container)
 
@@ -480,7 +480,7 @@ class DeployAnyLog:
         """
         status = True
 
-        container = self.___validate_container(container_name='grafana')
+        container = self._validate_container(container_name='grafana')
         if container is not None:
             status = self.__stop_container(container=container)
 
@@ -514,7 +514,7 @@ class DeployAnyLog:
         """
         status = True
 
-        container = self.___validate_container(container_name='postgres-db')
+        container = self._validate_container(container_name='postgres-db')
         if container is not None:
             status = self.__stop_container(container=container)
 
