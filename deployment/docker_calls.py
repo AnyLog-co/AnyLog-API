@@ -12,21 +12,21 @@ except:
 
 
 class DeployAnyLog:
-    def __init__(self, exception:bool=True):
+    def __init__(self, timezone:str='utc', exception:bool=True):
         """
         Connect to docker client
         :args:
             docker_client_path:str - path to docker socket
         :params:
-            self.docker_client:docker.client.DockerClient - connection to docker
-            self.password:str - docker password credentials to download AnyLog
-            self.version:str - image version to use for deployment
+            self.timezone:str - container(s) timezone 
         """
         try:
             self.docker_client = docker.DockerClient()
         except Exception as e:
             if exception is True:
                 print('Failed to set docker client (Error: %s)' %  e)
+        else:
+            self.timezone = timezone
 
     def __docker_login(self, password:str, exception:bool=False)->bool:
         """
@@ -273,7 +273,7 @@ class DeployAnyLog:
 
     # Deploy containers
     def deploy_anylog_container(self, docker_password:str, update_image:bool=False, container_name:str='anylog-test-node',
-                                build:str='predevelop', external_ip:str=None, local_ip:str=None,
+                                timezone='UTC', build:str='predevelop', external_ip:str=None, local_ip:str=None,
                                 server_port:int=2048, rest_port:int=2049, broker_port:int=None,
                                 authentication:str='off', auth_type:str='admin', username:str='anylog',
                                 password:str='demo', expiration:str=None, exception:bool=True)->bool:
@@ -313,7 +313,8 @@ class DeployAnyLog:
             'AUTH_TYPE': auth_type,
             'USERNAME': username,
             'PASSWORD': password,
-            'EXPIRATION': expiration
+            'EXPIRATION': expiration,
+            'TIMEZONE': 'UTC' 
         }
         if external_ip is not None:
             environment['EXTERNAL_IP'] = external_ip
@@ -328,7 +329,10 @@ class DeployAnyLog:
             '%s-data' % container_name: '/app/AnyLog-Network/data',
             '%s-local-scripts' % container_name: '/app/AnyLog-Network/local_scripts'
         }
-        volumes = {}
+
+        volumes = {} 
+        if self.timezone == 'local':
+            volumes = {'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
 
         # Prepare volumes
         for volume in volume_paths:
@@ -376,7 +380,11 @@ class DeployAnyLog:
             'grafana-log': '/var/log/grafana',
             'grafana-config': '/etc/grafana'
         }
-        volumes = {}
+        
+        volumes = {} 
+        if self.timezone == 'local':
+            volumes = {'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
+
         for volume in volume_paths:
             if self.__validate_volume(volume_name=volume) is None:
                 if self.__create_volume(volume_name=volume, exception=exception) is not None:
@@ -411,7 +419,11 @@ class DeployAnyLog:
         }
 
         volume_paths = {'pgdata': '/var/lib/postgresql/data'}
-        volumes = {}
+
+        volumes = {} 
+        if self.timezone == 'local':
+            volumes = {'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
+
 
         for volume in volume_paths:
             if self.__validate_volume(volume_name=volume) is None:

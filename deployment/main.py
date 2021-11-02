@@ -10,6 +10,7 @@ import clean_node
 import config
 import dbms_cmd
 import docker_calls
+import file_deployment
 import get_cmd
 import master
 import operator_node
@@ -80,7 +81,7 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
     return config_data, node_types
 
 
-def deploy_docker(config_data:dict, password:str, update_anylog:bool=False, anylog:bool=False, psql:bool=False,
+def deploy_docker(config_data:dict, timezone:str, password:str, update_anylog:bool=False, anylog:bool=False, psql:bool=False,
                   grafana:bool=False, exception:bool=False)->(bool, dict):
     """
     Deploy docker instances
@@ -92,6 +93,7 @@ def deploy_docker(config_data:dict, password:str, update_anylog:bool=False, anyl
     Note: On first iteration docker automatically pulls image(s) from hub
     :args:
         update_anylog:bool - whether to update the AnyLog docker image
+        timezone:str - whether to set container(s) timezone to local or UTC
         anylog:bool - deploy AnyLog
         psql:bool - deploy postgres image version 14.0-alpine
         grafana:bool - deploy grafana image version 7.5.7
@@ -104,7 +106,7 @@ def deploy_docker(config_data:dict, password:str, update_anylog:bool=False, anyl
         2. since the config_data can change (when PSQL fails to start), the "updated' config file
     """
     status = True
-    docker_conn = docker_calls.DeployAnyLog(exception=exception)
+    docker_conn = docker_calls.DeployAnyLog(timezone=timezone, exception=exception)
 
     if psql is True and config_data['db_type'] == 'psql':
         if not docker_conn.deploy_postgres_container(conn_info=config_data['db_user'], exception=exception):
@@ -353,10 +355,11 @@ def main():
         --remove-data           REMOVE_DATA         remove data from database in the correlated attached node (default: False)
         --remove-volume         REMOVE_VOLUME       remove AnyLog volumes correlated to the attached node (default: False)
         # Other parameters
+        -tz, --timezone             TIMEZONE            whether to set timezone of docker container(s) as local or utc (default: utc | options: local, utc) 
         -t,  --timeout              TIMEOUT             REST timeout period (default: 30)
         -c,  --update-config        UPDATE_CONFIG       Update information from config_file into AnyLog dictionary (default: False)
-        -dl, --disable-location     DISABLE_LOCATION     Whether to disable location when adding a new node policy to the ledger (default: False)
-        -e,  --exception            EXCEPTION            print exception errors (default: False)
+        -dl, --disable-location     DISABLE_LOCATION    Whether to disable location when adding a new node policy to the ledger (default: False)
+        -e,  --exception            EXCEPTION           print exception errors (default: False)
     :params:
         anylog_conn:anylog_api.AnyLogConnect - connection to AnyLog API
         config_data:dict - data from config_file
@@ -389,11 +392,12 @@ def main():
     parser.add_argument('--grafana-rm-image',   type=bool, nargs='?', const=True, default=False, help="remove Grafana image")
 
     # Other
-    parser.add_argument('-t',  '--timeout',          type=int,  default=30,   help='REST timeout period')
-    parser.add_argument('-c',  '--upload-config',    type=bool, nargs='?',    const=True, default=False, help='Update information from config_file into AnyLog dictionary')
-    parser.add_argument('-dl', '--disable-location', type=bool, nargs='?',    const=True, default=False, help='Whether to disable location when adding a new node policy to the ledger')
-    parser.add_argument('-df', '--deployment-file',  type=str,  default=None, help='An AnyLog file user would like to deploy in addition to the configurations') 
-    parser.add_argument('-e',  '--exception',        type=bool, nargs='?',    const=True, default=False, help='print exception errors')
+    parser.add_argument('-tz', '--timezone',         type=str,  default='utc', choices=['local', 'utc'],  help='whether to set timezone of docker container(s) as local or utc') 
+    parser.add_argument('-t',  '--timeout',          type=int,  default=30,    help='REST timeout period')
+    parser.add_argument('-c',  '--upload-config',    type=bool, nargs='?',     const=True, default=False, help='Update information from config_file into AnyLog dictionary')
+    parser.add_argument('-dl', '--disable-location', type=bool, nargs='?',     const=True, default=False, help='Whether to disable location when adding a new node policy to the ledger')
+    parser.add_argument('-df', '--deployment-file',  type=str,  default=None,  help='An AnyLog file user would like to deploy in addition to the configurations') 
+    parser.add_argument('-e',  '--exception',        type=bool, nargs='?',     const=True, default=False, help='print exception errors')
     args = parser.parse_args()
 
     if args.full_deployment is True:
@@ -435,7 +439,7 @@ def main():
 
     # connect or disconnect to nodes:
     if args.anylog is True or args.psql is True or args.grafana is True:
-        if not deploy_docker(config_data=config_data, password=args.docker_password, update_anylog=args.update_anylog, anylog=args.anylog,
+        if not deploy_docker(config_data=config_data, timezone=args.timezone, password=args.docker_password, update_anylog=args.update_anylog, anylog=args.anylog,
                       psql=args.psql, grafana=args.grafana, exception=args.exception):
             error = 'Failed to deploy AnyLog docker container.'
             if args.docker_only is False:
