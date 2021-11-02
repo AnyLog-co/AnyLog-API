@@ -1,8 +1,10 @@
 #!/bin/bash
 <<COMMENT
-The following is intended to as an example of deploying an AnyLog instance of type REST node.
-An AnyLog instance of type REST consists of a TCP & REST port as well as MQTT broker if provided.
-The code doesn't
+The following is intended to as a tool of deploying an AnyLog instance of type REST node using an INI configuration file.
+Once deployed the AnyLog instance has the following:
+  - TCP / REST ports
+  - Broker port if set
+  - REST Authentication if set
 COMMENT
 
 if [ $# -eq 2 ]
@@ -17,7 +19,7 @@ fi
 if [[ -f "${CONFIG_FILE}" ]]
 then
   BUILD=$(awk -F "=" '/build_type/ {print $2}' ${CONFIG_FILE})
-  if [[ ! ${BUILD} ]] ; then BUILD=develop ; fi
+  if [[ ! ${BUILD} ]] ; then BUILD=predevelop ; fi
 
   NODE_NAME=$(awk -F "=" '/node_name/ {print $2}' ${CONFIG_FILE})
   if [[ ! ${NODE_NAME} ]] ; then NODE_NAME=new_node ; fi
@@ -46,7 +48,7 @@ then
 
 else
   echo "Using default parameters..."
-  BUILD=develop
+  BUILD=predevelop
   NODE_NAME=new-node
   ANYLOG_SERVER_PORT=2048
   ANYLOG_REST_PORT=2049

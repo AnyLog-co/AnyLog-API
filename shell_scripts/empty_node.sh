@@ -1,4 +1,6 @@
-# Deploy an AnyLog instance with nothing running on it
+<<COMMENT
+The following deploys AnyLog with nothing running on it
+COMMENT
 
 if [ $# -eq 1 ]
 then
@@ -10,13 +12,10 @@ fi
 
 NODE_NAME=empty-anylog-node 
 
-echo ${BUILD} 
-echo ${NODE_NAME} 
-
 docker run --network host --name ${NODE_NAME} \
     -e NODE_TYPE=none \
     -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
-    -it --detach-keys="ctrl-d" --rm oshadmon/anylog:${BUILD}
+    -d -it --detach-keys="ctrl-d" --rm oshadmon/anylog:${BUILD}
 

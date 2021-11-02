@@ -23,15 +23,16 @@ def disconnect_node(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
         if all succeed return True, else return False
     """
     statuses = []
-    process_list = get_cmd.get_processes(conn=conn, exception=exception).split('\n')
-    for line in process_list:
-        if line.rstrip().lstrip().split(' ')[0] in ['Operator', 'Publisher', 'Consumer', 'MQTT'] and 'Running' in line:
-            process = line.lstrip().rstrip().split(' ')[0].lower()
-            status = post_cmd.stop_process(conn=conn, process_name=process, exception=exception)
-            statuses.append(status)
-        if 'Blockchain Sync' in line and 'Running' in line:
-            status = post_cmd.stop_process(conn=conn, process_name='synchronizer', exception=exception)
-            statuses.append(status)
+    process_list = get_cmd.get_processes(conn=conn, exception=exception)
+    if process_list is not None:
+        for line in process_list.split('\n'):
+            if line.rstrip().lstrip().split(' ')[0] in ['Operator', 'Publisher', 'Consumer', 'MQTT'] and 'Running' in line:
+                process = line.lstrip().rstrip().split(' ')[0].lower()
+                status = post_cmd.stop_process(conn=conn, process_name=process, exception=exception)
+                statuses.append(status)
+            if 'Blockchain Sync' in line and 'Running' in line:
+                status = post_cmd.stop_process(conn=conn, process_name='synchronizer', exception=exception)
+                statuses.append(status)
 
     status = post_cmd.stop_process(conn=conn, process_name='scheduler 1', exception=exception)
     statuses.append(status)

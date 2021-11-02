@@ -67,7 +67,7 @@ pip3 install ${PACKAGE_NAME}
 
 
 3. Deploy Postgres, Grafana and AnyLog containers, as well as configuring AnyLog via REST with an MQTT client file included. 
-a full list of options available for `main.py` can be found [here](Anylog_API_Options.md).     
+A full list of options available for `main.py` can be found [here](Anylog_API_Options.md).     
 ```buildoutcfg
 python3 $HOME/AnyLog-API/deployment/main.py ${REST_IP}:${REST_PORT} $HOME/AnyLog-API/config/new_config.ini -e \ 
     --anylog \  

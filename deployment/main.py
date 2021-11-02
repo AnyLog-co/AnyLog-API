@@ -34,7 +34,7 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
     """
     config_file = os.path.expandvars(os.path.expanduser(config_file))
     if not os.path.isfile(config_file):
-        print('Failed to locate config file: %s, cannot continue...' % args.config_file)
+        print('Failed to locate config file: %s, cannot continue...' % config_file)
         exit(1)
     config_data = config.read_config(config_file)
     if config_data == {}:
