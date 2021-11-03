@@ -41,10 +41,6 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:
     if node_id is None:
         print('Failed to add % node to blockchain' % config['node_typp'])
 
-    if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
-        if not post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
-            print('Failed to start MQTT client')
-
     if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
         print('Failed to set data streaming to immediate')
 

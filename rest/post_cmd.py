@@ -223,7 +223,7 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
 
 def set_immediate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     """
-    Set threshold to immidiate
+    Set threshold to immediate
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         exception:bool - whether or not to print error to screen 

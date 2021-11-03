@@ -224,7 +224,8 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
             print("File: '%s' does not exist" % full_path)
 
     # Enable MQTT 
-    if 'mqtt_enable' in config_data and config_data['mqtt_enable'] == 'true': 
+    if 'mqtt_enable' in config_data and config_data['mqtt_enable'] == 'true' 'operator' in node_types or \
+            'publisher' in node_types:
         if not post_cmd.run_mqtt(conn=conn, config=config_data, exception=exception):
             print('Failed to initiate MQTT client') 
 
@@ -243,12 +244,16 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
             status = publisher.publisher_init(conn=conn, config=config_data, disable_location=disable_location,
                                               exception=exception)
         elif node == 'query':
-            status = query.query_init(conn=conn, config=config_data, disable_location=disable_location,
-                                      exception=exception)
+            # if there's more than one node_types, then there's no need to declare query policy in blockchain
+            declare_blockchain = True
+            if len(node_types) > 1:
+                declare_blockchain = False
+            query.query_init(conn=conn, config=config_data, disable_location=disable_location,
+                             declare_blockchain=declare_blockchain, exception=exception)
         elif node != 'master':
             print('Unsupported node type: %s' % node) 
             if len(node_types) == 1: 
-                status = False 
+                status = False
 
     if status is False:
         print('Failed to configure %s to act as a %s node type' % (conn.conn, config_data['node_type']))

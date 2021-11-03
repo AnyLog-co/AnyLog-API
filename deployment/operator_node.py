@@ -87,11 +87,6 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:b
                                         keep=60, scheduled=True, exception=exception):
             print('Failed to set a scheduled process to drop partitions')
 
-    # MQTT
-    if 'enable_mqtt' in config and config['enable_mqtt'] == 'true':
-        if not post_cmd.run_mqtt(conn=conn, config=config, exception=exception):
-            print('Failed to start MQTT client')
-
     if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
         print('Failed to set data streaming to immediate')
 
@@ -113,5 +108,5 @@ def operator_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:b
 
     # Start operator
     if not post_cmd.run_operator(conn=conn, master_node=config['master_node'], create_table=True,
-                                      update_tsd_info=True, archive=True, distributor=True, exception=False):
+                                      update_tsd_info=True, archive=True, distributor=True, exception=exception):
         print('Failed to set buffering to start publisher')
