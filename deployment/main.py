@@ -296,9 +296,11 @@ def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:di
     if anylog is True and docker_conn.validate_container(container_name=config_data['node_name']) is not None:
         # disconnect processes in running node running
         clean_node.disconnect_node(conn=conn, exception=exception)
+        time.sleep(10) 
 
         # remove policy if set
-        clean_node.remove_policy(conn=conn, config_datac=config_data, node_types=node_types, exception=exception)
+        if rm_policy is True: 
+            clean_node.remove_policy(conn=conn, config_data=config_data, node_types=node_types, exception=exception)
 
         # disconnect from database & remove data if set
         clean_node.disconnect_dbms(conn=conn, drop_data=rm_data, config_data=config_data, exception=exception)
@@ -446,7 +448,13 @@ def main():
                 args.docker_only = True
                 error += ' Unable to start node of type: %s' % config_data['node_type']
             print(error)
+            exit(1) 
+        else: 
+            config_data = update_config(conn=anylog_conn, config_data=config_data, upload_config=args.upload_config,
+                                        exception=args.exception)
     elif args.disconnect_anylog is True or args.disconnect_psql is True or args.disconnect_grafana is True:
+        config_data = update_config(conn=anylog_conn, config_data=config_data, upload_config=args.upload_config,
+                                    exception=args.exception)
         clean_process(conn=anylog_conn, config_data=config_data, node_types=node_types, anylog=args.disconnect_anylog,
                       rm_policy=args.rm_policy, rm_data=args.rm_data, anylog_rm_volume=args.anylog_rm_volume,
                       anylog_rm_image=args.anylog_rm_image, psql=args.disconnect_psql,
@@ -463,9 +471,6 @@ def main():
 
     #  Update config_data & deploy AnyLog
     if args.docker_only is False:
-        config_data = update_config(conn=anylog_conn, config_data=config_data, upload_config=args.upload_config,
-                                    exception=args.exception)
-
         deploy_anylog(conn=anylog_conn, config_data=config_data, node_types=node_types,
                       disable_location=args.disable_location, deployment_file=args.deployment_file,
                       exception=args.exception)

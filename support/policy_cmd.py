@@ -129,10 +129,9 @@ def drop_policy(conn:anylog_api.AnyLogConnect, master_node:str, policy_type:str,
 
     blockchain = blockchain_cmd.blockchain_get(conn=conn, policy_type=policy_type, where_conditions=where_conditions,
                                                exception=exception)
-
     if len(blockchain) == 1:
         status = blockchain_cmd.drop_policy(conn=conn, policy=blockchain, master_node=master_node, exception=exception)
-    elif exception is True:
+    elif len(blockchain) != 1 and exception is True:
         print('Failed to drop policy because `blockchain get` returned %s policies. Please update your query_params' % len(blockchain))
         
     return status
