@@ -20,8 +20,8 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:boo
     :params: 
         status:bool 
         new_system:bool - variable to check whether we are dealing with a new setup or not
-        blockchain:dict - conetent from blockchain
-        new_policy:dict - decleration of policy
+        blockchain:dict - content from blockchain
+        new_policy:dict - declaration of policy
     """
     # Create system_query & blockchain
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
@@ -36,7 +36,8 @@ def master_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:boo
             print('Failed to create table blockchain.ledger')
 
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                             master_node='local', disable_location=disable_location, exception=exception)
+                                               master_node='local', disable_location=disable_location,
+                                               exception=exception)
 
     if node_id is None:
         print('Failed to add %s node to blockchain' % config['node_type'])

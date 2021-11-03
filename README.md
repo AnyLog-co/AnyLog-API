@@ -34,7 +34,7 @@ $HOME/AnyLog-API
 Except for optional packages, all required Python packages used tend to be standard. However, in case of an 
 issue, installment can be done via [pip3](https://www.activestate.com/resources/quick-reads/how-to-install-and-use-pip3/#:~:text=1%20Open%20the%20Control%20Panel%20and%20navigate%20to,and%20add%20the%20directory%20where%20pip3%20is%20installed%2C)  
 
-```buildoutcfg
+```bash
 pip3 install ${PACKAGE_NAME}
 ```
 
@@ -68,7 +68,7 @@ pip3 install ${PACKAGE_NAME}
 
 3. Deploy Postgres, Grafana and AnyLog containers, as well as configuring AnyLog via REST with an MQTT client file included. 
 A full list of options available for `main.py` can be found [here](Anylog_API_Options.md).     
-```buildoutcfg
+```bash
 python3 $HOME/AnyLog-API/deployment/main.py ${REST_IP}:${REST_PORT} $HOME/AnyLog-API/config/new_config.ini -e \ 
     --anylog \  
     --psql \  
@@ -81,7 +81,7 @@ python3 $HOME/AnyLog-API/deployment/main.py ${REST_IP}:${REST_PORT} $HOME/AnyLog
 **Detach from Docker**: `CTRL+d`
 
 4. Stop AnyLog, Postgres and Grafana but don't clean anything
-```buildoutcfg
+```bash
 python3 $HOME/AnyLog-API/deployment/main.py ${REST_IP}:${REST_PORT} $HOME/AnyLog-API/config/new_config.ini -e \
     --disconnect-anylog \
     --disconnect-psql \ 

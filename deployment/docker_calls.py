@@ -1,5 +1,4 @@
 """
-1. The following is not currently used, but may be added in the futrue
 2. Should change to docker via Python
     - PyPi - https://pypi.org/project/docker/
     - GitHub: https://github.com/docker/docker-py
@@ -7,7 +6,7 @@
 """
 try:
     import docker
-except:
+except Exception:
     pass
 
 
@@ -61,10 +60,10 @@ class DeployAnyLog:
         :return:
             if fails return False, else True
         """
+        image = None
         try:
             image = self.docker_client.images.pull(repository=image_name)
         except Exception as e:
-            image = None
             if exception is True:
                 print('Failed to pull image %s (Error: %s)' % (image_name, e))
         else:
@@ -86,7 +85,7 @@ class DeployAnyLog:
         """
         try:
             image = self.docker_client.images.get(name=image_name)
-        except Exception as e:
+        except Exception:
             image = None
 
         return image
@@ -131,10 +130,10 @@ class DeployAnyLog:
         :return:
             volume
         """
+        volume = None
         try:
             volume = self.docker_client.volumes.create(name=volume_name, driver='local')
         except Exception as e:
-            volume = None
             if exception is True:
                 print('Failed to create volume %s (Error: %s)' % (volume_name, e))
         else:
@@ -154,10 +153,11 @@ class DeployAnyLog:
         :return:
             volume if fails return None
         """
+        volume = None
         try:
             volume = self.docker_client.volumes.get(volume_id=volume_name)
-        except Exception as e:
-            volume = None
+        except Exception:
+            pass
 
         return volume
 
@@ -211,12 +211,13 @@ class DeployAnyLog:
         :return:
             status
         """
+        container = None
         try:
-            container = self.docker_client.containers.run(image=image, auto_remove=True, network_mode='host', detach=True,
-                                              stdin_open=True, tty=True, privileged=True, name=container_name,
-                                              environment=environment, volumes=volumes)
+            container = self.docker_client.containers.run(image=image, auto_remove=True, network_mode='host',
+                                                          detach=True, stdin_open=True, tty=True, privileged=True,
+                                                          name=container_name, environment=environment,
+                                                          volumes=volumes)
         except Exception as e:
-            container = None
             if exception is True:
                 print('Failed to deploy docker container %s against image %s (Error: %s)' % (container_name, image, e))
         else:
@@ -237,10 +238,11 @@ class DeployAnyLog:
         :return:
             container object, else None
         """
+        container = None
         try:
             container = self.docker_client.containers.get(container_id=container_name)
-        except Exception as e:
-            container = None
+        except Exception:
+            pass
 
         return container
 
@@ -272,11 +274,12 @@ class DeployAnyLog:
         return status
 
     # Deploy containers
-    def deploy_anylog_container(self, docker_password:str, update_image:bool=False, container_name:str='anylog-test-node',
-                                timezone='UTC', build:str='predevelop', external_ip:str=None, local_ip:str=None,
-                                server_port:int=2048, rest_port:int=2049, broker_port:int=None,
-                                authentication:str='off', auth_type:str='admin', username:str='anylog',
-                                password:str='demo', expiration:str=None, exception:bool=True)->bool:
+    def deploy_anylog_container(self, docker_password:str, update_image:bool=False,
+                                container_name:str='anylog-test-node', build:str='predevelop',
+                                external_ip:str=None, local_ip:str=None, server_port:int=2048, rest_port:int=2049,
+                                broker_port:int=None, authentication:str='off', auth_type:str='admin',
+                                username:str='anylog', password:str='demo', expiration:str=None,
+                                exception:bool=True)->bool:
         """
         Deploy an AnyLog of type rest
         :args:
@@ -290,7 +293,7 @@ class DeployAnyLog:
             exception:bool - whether or not to print exceptions
             # Optional configs
             external_ip:str - IP address that's different than the default external IP
-            local_ip:str - IPs address that's different  than the default loccal IP
+            local_ip:str - IPs address that's different  than the default local IP
             broker_port:int - MQTT message broker port
             username:str - authentication username
             password:str - authentication password
@@ -314,7 +317,6 @@ class DeployAnyLog:
             'USERNAME': username,
             'PASSWORD': password,
             'EXPIRATION': expiration,
-            'TIMEZONE': 'UTC' 
         }
         if external_ip is not None:
             environment['EXTERNAL_IP'] = external_ip
@@ -393,8 +395,8 @@ class DeployAnyLog:
                 volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
 
         if self.validate_container(container_name='grafana') is None:
-            if not self.__run_container(image='grafana/grafana:7.5.7', container_name='grafana', environment=environment,
-                                      volumes=volumes, exception=exception):
+            if not self.__run_container(image='grafana/grafana:7.5.7', container_name='grafana',
+                                        environment=environment, volumes=volumes, exception=exception):
                 status = False
 
         return status
@@ -424,7 +426,6 @@ class DeployAnyLog:
         if self.timezone == 'local':
             volumes = {'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
 
-
         for volume in volume_paths:
             if self.__validate_volume(volume_name=volume) is None:
                 if self.__create_volume(volume_name=volume, exception=exception) is not None:
@@ -447,7 +448,7 @@ class DeployAnyLog:
         :args:
             container_name:str - container name
             remove_volume:bool - whether to remove correlated volume
-            remove_image:bool - whether to remove correleated image
+            remove_image:bool - whether to remove correlated image
             build:str - AnyLog version to remove
             exception:bool - whether to print exceptions
         :params:
@@ -483,7 +484,7 @@ class DeployAnyLog:
         Stop & clean Grafana container
         :args:
             remove_volume:bool - whether to remove correlated volume
-            remove_image:bool - whether to remove correleated image
+            remove_image:bool - whether to remove correlated image
             exception:bool - whether to print exceptions
         :params:
             status:bool
@@ -517,7 +518,7 @@ class DeployAnyLog:
         Stop & clean Postgres container
         :args:
             remove_volume:bool - whether to remove correlated volume
-            remove_image:bool - whether to remove correleated image
+            remove_image:bool - whether to remove correlated image
             exception:bool - whether to print exceptions
         :params:
             status:bool
@@ -538,7 +539,7 @@ class DeployAnyLog:
                     if volume is not None:
                         volume_status.append(self.__remove_volume(volume=volume, exception=exception))
                 if False in volume_status:
-                  status = False
+                    status = False
             if remove_image is True:
                 image = self.__validate_image(image_name='postgres:14.0-alpine')
                 if image is not None and self.__remove_image(image_name='postgres:14.0-alpine',

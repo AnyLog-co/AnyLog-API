@@ -260,76 +260,63 @@ def get_mqtt_client(conn:anylog_api.AnyLogConnect, client_id:int=None, exception
                 print('Failed to get information regarding MQTT client from: %s (Error: %s)' % (conn, e))
 
 
-def execute_query(conn:anylog_api.AnyLogConnect, dbms:str, query:str, destination='network', format:str='json',
-                  timezone:str='local', stat:bool=True, include:str=None, drop:bool=False, dest:str='stdout',
-                  file:str=None, output_table:str=None)->str:
+def execute_query_print(conn:anylog_api.AnyLogConnect, dbms:str, query:str, format:str='json', stat:bool=True,
+                        timezone:str='utc', include:str=None, exception:bool=False)->str:
     """
-    Execute Query against AnyLog
-    :link:
+    Execute query & return the results
+    :url:
         https://github.com/AnyLog-co/documentation/blob/master/queries.md
     :args:
-        conn:anylog_api.AnyLogConnect - connection to AnyLog
+        conn:anylog_api.AnyLocConnect - connection to AnyLog API
         dbms:str - logical database name
-        query:str - SELECT statement to execute
-        destination:str - Whether to query remote nodes ('network') or local node ('')
-        format:str - The format of the result set
-            * table
-            * json
-        timezone:str - timezone used for time values in the result set
-            * utc
-            * local
-        stat:bool - whether to print process query statistics (default: true | option: false)
-        include:str - allows to treat remote tables with a different name as the table being queried
-        drop:bool - drop local output table when new query starts
-        dest:str - destination of result set
-            * stdout
-            * file
-            * dbms - requires to query sql system_query "SELECT * from output_table"...
-        file:str - file name for the output data
-        output_table:str - table name for the output data
-    :params:
-        HEADER:dict - header information
-        cmd:str - Query to execute
-    :return:
-        results from query
-    :notes:
-        code may move to dbms section
+        query:str - SELECT query to execute
+        format:str - The format of the result set	(options: json, table)
+        stat:bool - whether or not to print the statistics
+        timezone:str - used for time values in the result set	local (options: utc, local)
+        include:list - comma separated list of tables to query against
+        exception:bool - whether or not to print exceptions
+    :param:
+        output = True
     """
+    output = None
     header = HEADER
-    cmd = 'sql %s "%s"' % (dbms, query)
+    header['destination'] = 'network'
 
-    """
-    validate destination type
-        if destination is of type file and file is not None - write results to file
-        if destination is of type dbms and table is not None - write to new table 
-        else: print to screen (stdout) 
-    """
-    if dest in ['stdout', 'file', 'dbms']:
-        if dest == 'file' and file is not None:
-            cmd = cmd.replace(dbms, dbms + 'dest=%s and file=%s and' % (dest, file))
-        elif dest == 'dbms' and output_table is not None:
-            cmd = cmd.replace(dbms, dbms + ' dest=%s and table=%s and drop=%s and ' % (dest, output_table, drop))
 
+    cmd = 'sql %s format=%s and stat=%s and timezone=%s' % (dbms, format, stat, timezone)
+
+    if format not in ['json', 'table']:
+        cmd.replace(format, 'json')
+    if not isinstance(stat, bool):
+        stat = True
+        cmd.replace(stat, True)
+    if timezone is not ['utc', 'local']:
+        cmd.replace(timezone, 'utc')
     if include is not None:
-        cmd = cmd.replace(dbms, dbms + ' include=(%s) and extend=(@table_name as table) and ' % include)
-
-    if timezone in ['utc', 'local']:
-        cmd = cmd.replace(dbms, dbms + ' timezone=%s and ' % timezone)
-
-    if format in ['table', 'json']:
-        cmd = cmd.replace(dbms, dbms + 'format=%s and ' % format)
-
-    if 'and "' in cmd:
-        cmd = cmd.replace('and "', '"')
-
-    header['command'] = cmd
-    if destination == 'network':
-        header['destination'] = 'network'
+        if isinstance(include, str):
+            cmd += ' and include=%s and extend=(@table_name as table)' % tuple(include.split(','))
+        elif isinstance(include, list):
+            cmd += ' and include=%s and extend=(@table_name as table)' % tuple(include)
+        elif isinstance(include, tuple):
+            cmd += ' and include=%s and extend=(@table_name as table)' % include
+    header['command'] = cmd + ' "%s"' % query
 
     r, error = conn.get(headers=header)
-    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error, exception=exception):
-        try:
-            return r.json()
-        except Exception as e:
-            return r.text
+    if not other_cmd.print_error(conn=conn.conn, request_type="get", command=cmd, r=r, error=error,
+                                 exception=exception):
+        if stat is False:
+            try:
+                output = r.json()
+            except Exception as e:
+                stat = True
+
+        if stat is True:
+            try:
+                output = r.text
+            except Exception as e:
+                if exception is True:
+                    print("Failed to extract data for query '%s' (Error: %s)" % (cmd, e))
+
+    return output
+
 

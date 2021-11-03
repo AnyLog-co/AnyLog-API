@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 def import_dirs():
     slash_char = '/'
     if sys.platform.startswith('win'):

@@ -34,7 +34,7 @@ def main():
         -a AUTH, --auth         AUTH      REST authentication information (default: None)
         -t TIMEOUT, --timeout   TIMEOUT   REST timeout period (default: 30)
     :params:
-        polic}y:dict - new policy to be added into blockchain
+        policy:dict - new policy to be added into blockchain
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('rest_conn',       type=str,   default='127.0.0.1:2049', help='REST connection information')
@@ -59,7 +59,8 @@ def main():
         policy['panel']['name'] = 'Panel %s' % str(int(list(LOCATIONS).index(location)) + 1)
         policy['panel']['city'] = location
         policy['panel']['loc'] = LOCATIONS[location]
-        policy_id = policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node, new_policy=policy, exception=True)
+        policy_id = policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node, new_policy=policy,
+                                              exception=True)
 
         if policy_id is not None:
             print('Policy for %s added to blockchain' % policy['panel']['city'])

@@ -20,7 +20,6 @@ def deploy_file(conn:anylog_api.AnyLogConnect, deployment_file:str, exception:bo
         r:bool, error:str - error output against AnyLog command
     """
     deployment_file = os.path.expandvars(os.path.expanduser(deployment_file))
-    errors = {}
     status = True
     deployment_file = os.path.expanduser(os.path.expandvars(deployment_file))
     if os.path.isfile(deployment_file):

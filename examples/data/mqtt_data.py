@@ -21,11 +21,13 @@ def main():
         da  ta:dict - data generated using data_generator.put_data_generator
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('mqtt_conn',  type=str, default='[user]@[borker]:[passwd]', help='MQTT broker connection info. if using local broker, provide just the broker IP')
+    parser.add_argument('mqtt_conn',  type=str, default='[user]@[broker]:[passwd]',
+                        help='MQTT broker connection info. if using local broker, provide just the broker IP')
     parser.add_argument('mqtt_port',  type=int, default=2050, help='MQTT connection port')
     parser.add_argument('mqtt_topic', type=str, default='mqtt-rest',       help='MQTT topic for REST')
     parser.add_argument('db_name',    type=str, default='sample_database', help='logical database to send data into')
-    parser.add_argument('table_name', type=str, default='sample_table',    help='table within logical database to store data in')
+    parser.add_argument('table_name', type=str, default='sample_table',
+                        help='table within logical database to store data in')
     args = parser.parse_args()
 
     data = data_generator(db_name=args.db_name, table_name=args.table_name)

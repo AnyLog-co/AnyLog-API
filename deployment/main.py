@@ -58,7 +58,8 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
     else:
         config_data['node_type'] = 'single_node'
         if 'publisher' in node_types and 'operator' in node_types:
-            node = input("A 'solo deployment' can only have either operator or publisher process on a given container. Would you like operator or publisher? ")
+            node = input("A 'solo deployment' can only have either operator or publisher process on a given container. "
+                         +"Would you like operator or publisher? ")
             while node.lower() not in ['operator', 'publisher']:
                 node = input('Invalid option: %s. Would you like to run an operator or publisher process? ')
             if node == 'publisher':
@@ -70,7 +71,8 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
     for node in node_types:
         if node not in ['master', 'publisher', 'operator', 'query']:
             if exception is True:
-                print("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query'." % node)
+                print("Node type %s isn't supported - supported node types: 'master', 'operator', 'publisher','query'."
+                      % node)
             if len(node_types) == 1:
                 print("Cannot continue due to an invalid node type '%s'..." % node)
                 exit(1)
@@ -82,8 +84,8 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
     return config_data, node_types
 
 
-def deploy_docker(config_data:dict, timezone:str, password:str, update_anylog:bool=False, anylog:bool=False, psql:bool=False,
-                  grafana:bool=False, exception:bool=False)->(bool, dict):
+def deploy_docker(config_data:dict, timezone:str, password:str, update_anylog:bool=False, anylog:bool=False,
+                  psql:bool=False, grafana:bool=False, exception:bool=False)->(bool, dict):
     """
     Deploy docker instances
     :process:
@@ -213,7 +215,8 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
                 print('Failed to start scheduler %s' % schedule)
 
     # run blockchain sync  
-    blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='master', time="30 seconds", master_node=config_data['master_node'], exception=exception)
+    blockchain_cmd.blockchain_sync_scheduler(conn=conn, source='master', time="30 seconds",
+                                             master_node=config_data['master_node'], exception=exception)
 
     # execute deployment file
     if deployment_file is not None:
@@ -227,13 +230,13 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
     if 'mqtt_enable' in config_data and config_data['mqtt_enable'] == 'true' 'operator' in node_types or \
             'publisher' in node_types:
         if not post_cmd.run_mqtt(conn=conn, config=config_data, exception=exception):
-            print('Failed to initiate MQTT client') 
-
+            print('Failed to initiate MQTT client')
 
     # Start an AnyLog process for a specific node_type
     if 'master' in node_types: 
         config_data['node_type'] = 'master'
-        status = master.master_init(conn=conn, config=config_data, disable_location=disable_location, exception=exception)
+        status = master.master_init(conn=conn, config=config_data, disable_location=disable_location,
+                                    exception=exception)
 
     for node in sorted(node_types): 
         config_data['node_type'] = node
@@ -263,8 +266,8 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
             print('A node of type %s was deployed against %s' % (config_data['node_type'], conn.conn))
             print(process_list)
         else:
-            print('Unable to get process list as such it is unclear whether a node of type %s was deployed against %s...' % (
-                config['node_type'], conn.conn))
+            print('Unable to get process list as such it is unclear whether a node of type %s was deployed against %s.'
+                  % (config['node_type'], conn.conn))
 
 
 def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:dict,
@@ -302,7 +305,6 @@ def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:di
     :params:
         docker_conn:docker_calls.DeployAnyLog - connection to docker
     """
-    status = True
     docker_conn = docker_calls.DeployAnyLog(exception=exception)
 
     if anylog is True and docker_conn.validate_container(container_name=config_data['node_name']) is not None:
@@ -334,7 +336,6 @@ def clean_process(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:di
             print('Failed to stop and/or remove Grafana')
 
 
-
 def main():
     """
     The following is intended to help users to easily deploy AnyLog via REST
@@ -356,62 +357,100 @@ def main():
     :optional arguments:
         -h, --help                              show this help message and exit
         # Docker deployment process
-        --docker-password       DOCKER_PASSWORD     password for docker to download/update AnyLog                       (default: None)
-        --anylog                ANYLOG              deploy AnyLog docker container                                      (default: False)
-        --psql                  PSQL                deploy postgres docker container if db type is `psql` in config     (default: False)
-        --grafana               GRAFANA             deploy Grafana if `query` in node_type                              (default: False)
-        --update-anylog         UPDATE_ANYLOG       Update AnyLog build                                                 (default: False)
-        # Discocnnect docker container(s)
+        --docker-password       DOCKER_PASSWORD     password for docker to download/update AnyLog
+            (default: None)
+        --anylog                ANYLOG              deploy AnyLog docker container
+            (default: False)
+        --psql                  PSQL                deploy postgres docker container if db type is `psql` in config
+            (default: False)
+        --grafana               GRAFANA             deploy Grafana if `query` in node_type
+            (default: False)
+        --update-anylog         UPDATE_ANYLOG       Update AnyLog build
+            (default: False)
+        # Disconnect docker container(s)
         --disconnect-anylog     DISCONNECT_ANYLOG   stop AnyLog docker instance     (default: False)
         --disconnect-psql       DISCONNECT_PSQL     stop Postgres docker instance   (default: False)
         --disconnect-grafana    DISCONNECT_GRAFANA  stop Grafana docker instance    (default: False)
-        --remove-policy         REMOVE_POLICY       remove policy from ledger that's not of type 'cluster' or 'table' correlated to the node (default: False)
-        --remove-data           REMOVE_DATA         remove data from database in the correlated attached node (default: False)
-        --remove-volume         REMOVE_VOLUME       remove AnyLog volumes correlated to the attached node (default: False)
+        --remove-policy         REMOVE_POLICY       remove policy from ledger that's not of type 'cluster' or 'table'
+            correlated to the node (default: False)
+        --remove-data           REMOVE_DATA         remove data from database in the correlated attached node
+            (default: False)
+        --remove-volume         REMOVE_VOLUME       remove AnyLog volumes correlated to the attached node
+            (default: False)
         # Other parameters
-        -tz, --timezone             TIMEZONE            whether to set timezone of docker container(s) as local or utc (default: utc | options: local, utc) 
+        -tz, --timezone             TIMEZONE            whether to set timezone of docker container(s) as local or utc
+            (default: utc | options: local, utc)
         -t,  --timeout              TIMEOUT             REST timeout period (default: 30)
-        -c,  --update-config        UPDATE_CONFIG       Update information from config_file into AnyLog dictionary (default: False)
-        -dl, --disable-location     DISABLE_LOCATION    Whether to disable location when adding a new node policy to the ledger (default: False)
+        -c,  --update-config        UPDATE_CONFIG       Update information from config_file into AnyLog dictionary
+            (default: False)
+        -dl, --disable-location     DISABLE_LOCATION    Whether to disable location when adding a new node policy to
+            the ledger (default: False)
         -e,  --exception            EXCEPTION           print exception errors (default: False)
     :params:
         anylog_conn:anylog_api.AnyLogConnect - connection to AnyLog API
         config_data:dict - data from config_file
     """
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Send REST requests to configure an AnyLog instance.')
-    parser.add_argument('rest_conn',   type=str, default='127.0.0.1:2049',                          help='REST connection information')
-    parser.add_argument('config_file', type=str, default='$HOME/AnyLog-API/config/single-node.ini', help='AnyLog INI config file')
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description='Send REST requests to configure an AnyLog instance.')
+    parser.add_argument('rest_conn',   type=str, default='127.0.0.1:2049',
+                        help='REST connection information')
+    parser.add_argument('config_file', type=str, default='$HOME/AnyLog-API/config/single-node.ini',
+                        help='AnyLog INI config file')
 
     # Docker configs
-    parser.add_argument('--docker-password', type=str,  default=None, help='password for docker to download/update AnyLog')
-    parser.add_argument('--docker-only',     type=bool, nargs='?', const=True, default=False, help='If set, code will not continue once docker instances are up')
-    parser.add_argument('--full-deployment', type=bool, nargs='?', const=True, default=False, help='Update & connect to AnyLog, PSQL and Grafana containers')
-    parser.add_argument('--anylog',          type=bool, nargs='?', const=True, default=False, help='deploy AnyLog docker container')
-    parser.add_argument('--psql',            type=bool, nargs='?', const=True, default=False, help='deploy postgres docker container if db type is `psql` in config')
-    parser.add_argument('--grafana',         type=bool, nargs='?', const=True, default=False, help='deploy Grafana if `query` in node_type')
-    parser.add_argument('--update-anylog',   type=bool, nargs='?', const=True, default=False, help='Update AnyLog build')
+    parser.add_argument('--docker-password', type=str,  default=None,
+                        help='password for docker to download/update AnyLog')
+    parser.add_argument('--docker-only',     type=bool, nargs='?', const=True, default=False,
+                        help='If set, code will not continue once docker instances are up')
+    parser.add_argument('--full-deployment', type=bool, nargs='?', const=True, default=False,
+                        help='Update & connect to AnyLog, PSQL and Grafana containers')
+    parser.add_argument('--anylog',          type=bool, nargs='?', const=True, default=False,
+                        help='deploy AnyLog docker container')
+    parser.add_argument('--psql',            type=bool, nargs='?', const=True, default=False,
+                        help='deploy postgres docker container if db type is `psql` in config')
+    parser.add_argument('--grafana',         type=bool, nargs='?', const=True, default=False,
+                        help='deploy Grafana if `query` in node_type')
+    parser.add_argument('--update-anylog',   type=bool, nargs='?', const=True, default=False,
+                        help='Update AnyLog build')
 
     # Clean up
-    parser.add_argument('--full-clean',         type=bool, nargs='?', const=True, default=False, help='Remove everything AnyLog related from machine')
-    parser.add_argument('--disconnect-anylog',  type=bool, nargs='?', const=True, default=False, help="stop AnyLog docker instance")
-    parser.add_argument('--rm-policy',          type=bool, nargs='?', const=True, default=False, help="remove policy from ledger that's not of type 'cluster' or 'table' correlated to the node")
-    parser.add_argument('--rm-data',            type=bool, nargs='?', const=True, default=False, help="remove data from database in the correlated attached node")
-    parser.add_argument('--anylog-rm-volume',   type=bool, nargs='?', const=True, default=False, help="remove AnyLog volumes correlated to the attached node")
-    parser.add_argument('--anylog-rm-image',    type=bool, nargs='?', const=True, default=False, help="remove AnyLog image")
-    parser.add_argument('--disconnect-psql',    type=bool, nargs='?', const=True, default=False, help="stop Postgres docker instance")
-    parser.add_argument('--psql-rm-volume',     type=bool, nargs='?', const=True, default=False, help="remove Postgres volume")
-    parser.add_argument('--psql-rm-image',      type=bool, nargs='?', const=True, default=False, help="remove AnyLog volumes correlated to the attached node")
-    parser.add_argument('--disconnect-grafana', type=bool, nargs='?', const=True, default=False, help="stop Grafana docker instance")
-    parser.add_argument('--grafana-rm-volume',  type=bool, nargs='?', const=True, default=False, help="remove Grafana volumes")
-    parser.add_argument('--grafana-rm-image',   type=bool, nargs='?', const=True, default=False, help="remove Grafana image")
+    parser.add_argument('--full-clean',         type=bool, nargs='?', const=True, default=False,
+                        help='Remove everything AnyLog related from machine')
+    parser.add_argument('--disconnect-anylog',  type=bool, nargs='?', const=True, default=False,
+                        help="stop AnyLog docker instance")
+    parser.add_argument('--rm-policy',          type=bool, nargs='?', const=True, default=False,
+                        help="remove policy from ledger that's not of type 'cluster' or 'table' correlated to the node")
+    parser.add_argument('--rm-data',            type=bool, nargs='?', const=True, default=False,
+                        help="remove data from database in the correlated attached node")
+    parser.add_argument('--anylog-rm-volume',   type=bool, nargs='?', const=True, default=False,
+                        help="remove AnyLog volumes correlated to the attached node")
+    parser.add_argument('--anylog-rm-image',    type=bool, nargs='?', const=True, default=False,
+                        help="remove AnyLog image")
+    parser.add_argument('--disconnect-psql',    type=bool, nargs='?', const=True, default=False,
+                        help="stop Postgres docker instance")
+    parser.add_argument('--psql-rm-volume',     type=bool, nargs='?', const=True, default=False,
+                        help="remove Postgres volume")
+    parser.add_argument('--psql-rm-image',      type=bool, nargs='?', const=True, default=False,
+                        help="remove AnyLog volumes correlated to the attached node")
+    parser.add_argument('--disconnect-grafana', type=bool, nargs='?', const=True, default=False,
+                        help="stop Grafana docker instance")
+    parser.add_argument('--grafana-rm-volume',  type=bool, nargs='?', const=True, default=False,
+                        help="remove Grafana volumes")
+    parser.add_argument('--grafana-rm-image',   type=bool, nargs='?', const=True, default=False,
+                        help="remove Grafana image")
 
     # Other
-    parser.add_argument('-tz', '--timezone',         type=str,  default='utc', choices=['local', 'utc'],  help='whether to set timezone of docker container(s) as local or utc') 
+    parser.add_argument('-tz', '--timezone',         type=str,  default='utc', choices=['local', 'utc'],
+                        help='whether to set timezone of docker container(s) as local or utc')
     parser.add_argument('-t',  '--timeout',          type=int,  default=30,    help='REST timeout period')
-    parser.add_argument('-c',  '--upload-config',    type=bool, nargs='?',     const=True, default=False, help='Update information from config_file into AnyLog dictionary')
-    parser.add_argument('-dl', '--disable-location', type=bool, nargs='?',     const=True, default=False, help='Whether to disable location when adding a new node policy to the ledger')
-    parser.add_argument('-df', '--deployment-file',  type=str,  default=None,  help='An AnyLog file user would like to deploy in addition to the configurations') 
-    parser.add_argument('-e',  '--exception',        type=bool, nargs='?',     const=True, default=False, help='print exception errors')
+    parser.add_argument('-c',  '--upload-config',    type=bool, nargs='?',     const=True, default=False,
+                        help='Update information from config_file into AnyLog dictionary')
+    parser.add_argument('-dl', '--disable-location', type=bool, nargs='?',     const=True, default=False,
+                        help='Whether to disable location when adding a new node policy to the ledger')
+    parser.add_argument('-df', '--deployment-file',  type=str,  default=None,
+                        help='An AnyLog file user would like to deploy in addition to the configurations')
+    parser.add_argument('-e',  '--exception',        type=bool, nargs='?',     const=True, default=False,
+                        help='print exception errors')
     args = parser.parse_args()
 
     if args.full_deployment is True:
@@ -453,8 +492,9 @@ def main():
 
     # connect or disconnect to nodes:
     if args.anylog is True or args.psql is True or args.grafana is True:
-        if not deploy_docker(config_data=config_data, timezone=args.timezone, password=args.docker_password, update_anylog=args.update_anylog, anylog=args.anylog,
-                      psql=args.psql, grafana=args.grafana, exception=args.exception):
+        if not deploy_docker(config_data=config_data, timezone=args.timezone, password=args.docker_password,
+                             update_anylog=args.update_anylog, anylog=args.anylog,
+                             psql=args.psql, grafana=args.grafana, exception=args.exception):
             error = 'Failed to deploy AnyLog docker container.'
             if args.docker_only is False:
                 args.docker_only = True
@@ -486,7 +526,6 @@ def main():
         deploy_anylog(conn=anylog_conn, config_data=config_data, node_types=node_types,
                       disable_location=args.disable_location, deployment_file=args.deployment_file,
                       exception=args.exception)
-
 
 
 if __name__ == '__main__':

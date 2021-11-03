@@ -6,6 +6,7 @@ import dbms_cmd
 import policy_cmd
 import post_cmd
 
+
 def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:bool=True, exception:bool=False): 
     """
     Deploy a query or publisher node instance via REST 
@@ -30,16 +31,17 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:
             print('Failed to start almgm database')
 
     dbms_list = dbms_cmd.get_dbms(conn=conn, exception=exception)
-    if 'almgm' in dbms_list and not dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
+    if 'almgm' in dbms_list and not dbms_cmd.get_table(conn=conn, db_name='almgm', table_name='tsd_info',
+                                                       exception=exception):
         if not dbms_cmd.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             print('Failed to create table almgm.tsd_info')
 
-
     # declare Publisher
     node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                               master_node=config['master_node'], disable_location=disable_location, exception=exception)
+                                               master_node=config['master_node'], disable_location=disable_location,
+                                               exception=exception)
     if node_id is None:
-        print('Failed to add % node to blockchain' % config['node_typp'])
+        print('Failed to add % node to blockchain' % config['node_type'])
 
     if not post_cmd.set_immediate_threshold(conn=conn, exception=exception):
         print('Failed to set data streaming to immediate')
@@ -48,5 +50,3 @@ def publisher_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:
     if not post_cmd.run_publisher(conn=conn, master_node=config['master_node'], dbms_name='file_name[0]',
                                   table_name='file_name[1]', compress_json=True, move_json=True, exception=exception):
         print('Failed to set buffering to start publisher')
-
-

@@ -1,3 +1,8 @@
+"""
+Relevant links:
+    - Blockchain commands: https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
+    - Blockchain configuration: https://github.com/AnyLog-co/documentation/blob/master/blockchain%20configuration.md
+"""
 import json
 
 import import_packages
@@ -50,7 +55,8 @@ def __build_blockchain_query(policy_type:str="*", where_conditions:list=None, po
     return cmd
 
 
-def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where_conditions:list=[], exception:bool=False)->list:
+def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where_conditions:list=[],
+                   exception:bool=False)->list:
     """
     blockchain GET command 
     :args: 
@@ -88,7 +94,7 @@ def check_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exce
     :args: 
         conn:str - REST connection info
         db_name:str - database you'd like to use
-        table_name:str - table you'd like to ccheck
+        table_name:str - table you'd like to check
         auth:tuple - Authentication information
         timeout:int - REST timeout
     :param: 
@@ -158,8 +164,9 @@ def prepare_policy(conn:anylog_api.AnyLogConnect, policy_type:str, policy:dict, 
 
     # prepare policy
     r, error = conn.post(headers=HEADER, payload=raw_policy)
-    if not other_cmd.print_error(conn=conn.conn, request_type='post', command='blockchain prepare policy %s' % raw_policy,
-                                 r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type='post',
+                                 command='blockchain prepare policy %s' % raw_policy, r=r, error=error,
+                                 exception=exception):
         policy_id = __extract_policy_id(conn=conn, policy_type=policy_type, exception=exception)
 
     return policy_id
@@ -184,13 +191,13 @@ def post_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     header['command'] = 'blockchain push !policy'
     header['destination'] = master_node
 
-    if isinstance(policy, dict): # convert policy to str if dict
+    if isinstance(policy, dict):  # convert policy to str if dict
         policy = json.dumps(policy)
     raw_policy="<policy=%s>" % policy
 
     r, error = conn.post(headers=header, payload=raw_policy)
     if not other_cmd.print_error(conn=conn.conn, request_type="post", command='blockchain post policy %s' % raw_policy,
-                              r=r, error=error, exception=exception):
+                                 r=r, error=error, exception=exception):
         status = False
 
     if 'destination' in HEADER:
@@ -217,7 +224,7 @@ def drop_policy(conn:anylog_api.AnyLogConnect, policy:dict, master_node:str, exc
     header['command'] = 'blockchain drop policy !policy'
     header['destination'] = master_node
 
-    if isinstance(policy, dict): # convert policy to str if dict
+    if isinstance(policy, dict):  # convert policy to str if dict
         policy = json.dumps(policy)
     raw_policy="<policy=%s>" % policy
 
@@ -268,7 +275,8 @@ def master_pull_json(conn: anylog_api.AnyLogConnect, master_node: str = 'local',
     return status
 
 
-def blockchain_sync_scheduler(conn:anylog_api.AnyLogConnect, source:str, time:str, master_node:str=None, exception:bool=False)->bool:
+def blockchain_sync_scheduler(conn:anylog_api.AnyLogConnect, source:str, time:str, master_node:str=None,
+                              exception:bool=False)->bool:
     """
     Set Blockchain sync 
     :args: 
@@ -294,8 +302,8 @@ def blockchain_sync_scheduler(conn:anylog_api.AnyLogConnect, source:str, time:st
         if exception is True:
             print('When source is set to master, master_node must be set')
         status = False 
-
-    if 'Not declared' in get_cmd.get_processes(conn=conn, exception=exception).split('Blockchain Sync')[-1].split('\r')[0] and status is True:
+    process = get_cmd.get_processes(conn=conn, exception=exception)
+    if 'Not declared' in process.split('Blockchain Sync')[-1].split('\r')[0] and status is True:
         cmd = 'run blockchain sync where source=%s and time=%s and dest=file' % (source, time)
 
         if source == 'master': 
@@ -310,7 +318,7 @@ def blockchain_sync_scheduler(conn:anylog_api.AnyLogConnect, source:str, time:st
 
 def blockchain_sync(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     """
-    Execute "run blockchain sync" - blockchain sync scheduled process should alrady be running
+    Execute "run blockchain sync" - blockchain sync scheduled process should already be running
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         exception:bool - whether to write exceptions
@@ -329,7 +337,8 @@ def blockchain_sync(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     return status
 
 
-def blockchain_wait(conn:anylog_api.AnyLogConnect, policy_type:str, where_conditions:list=[], exception:bool=False)->bool:
+def blockchain_wait(conn:anylog_api.AnyLogConnect, policy_type:str, where_conditions:list=[],
+                    exception:bool=False)->bool:
     """
     Execute blockchain wait process
     :args:

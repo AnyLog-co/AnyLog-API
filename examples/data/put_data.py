@@ -24,8 +24,10 @@ def main():
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('rest_conn',  type=str, default='127.0.0.1:2049',  help='REST connection information')
-    parser.add_argument('db_name',    type=str, default='sample_database', help='logical database to send data into')
-    parser.add_argument('table_name', type=str, default='sample_table',    help='table within logical database to store data in')
+    parser.add_argument('db_name',    type=str, default='sample_database',
+                        help='logical database to send data into')
+    parser.add_argument('table_name', type=str, default='sample_table',
+                        help='table within logical database to store data in')
     parser.add_argument('-a', '--auth',    type=str, default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     args = parser.parse_args()

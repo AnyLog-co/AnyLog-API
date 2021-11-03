@@ -107,7 +107,7 @@ def main():
 
         # declare policy
         policy_id[key] = policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node,
-                                                           new_policy=policy, exception=True)
+                                                   new_policy=policy, exception=True)
 
         # validate policy was added
         if policy_id[key] is None:
