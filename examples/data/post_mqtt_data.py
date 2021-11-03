@@ -1,8 +1,9 @@
-import __init__
-from adding_data import mqtt_post_data
-import anylog_api
-
 import argparse
+
+import import_packages
+import_packages.import_dirs()
+import anylog_api
+from adding_data import mqtt_post_data
 from data_generator import data_generator
 
 

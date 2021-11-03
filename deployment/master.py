@@ -1,5 +1,6 @@
 import datetime 
-import __init__
+import import_packages
+import_packages.import_dirs()
 import anylog_api
 import blockchain_cmd
 import dbms_cmd

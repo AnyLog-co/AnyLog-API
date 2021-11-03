@@ -2,7 +2,9 @@ import argparse
 import json
 import time
 
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import policy_cmd
 

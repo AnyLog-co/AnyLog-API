@@ -1,10 +1,11 @@
 import argparse
 import json
 
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import policy_cmd
-import errors
 
 LOCATIONS = [
     'Los Angeles, CA',

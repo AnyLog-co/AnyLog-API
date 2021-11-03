@@ -1,4 +1,5 @@
-import __init__
+import import_packages
+import_packages.import_dirs()
 import post_cmd
 import anylog_api
 import blockchain_cmd

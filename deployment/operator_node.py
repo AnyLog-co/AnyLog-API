@@ -1,4 +1,5 @@
-import __init__
+import import_packages
+import_packages.import_dirs()
 import anylog_api
 import dbms_cmd
 import monitoring_cmd

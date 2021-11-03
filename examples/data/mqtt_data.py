@@ -1,10 +1,9 @@
-import __init__
-from adding_data import mqtt_data
-
-
 import argparse
-from data_generator import data_generator
 
+import import_packages
+import_packages.import_dirs()
+from adding_data import mqtt_data
+from data_generator import data_generator
 
 def main():
     """
