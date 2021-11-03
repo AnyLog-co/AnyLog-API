@@ -6,7 +6,8 @@ usage: main.py [-h] [--docker-password DOCKER_PASSWORD] [--docker-only [DOCKER_O
                [--disconnect-anylog [DISCONNECT_ANYLOG]] [--rm-policy [RM_POLICY]] [--rm-data [RM_DATA]] [--anylog-rm-volume [ANYLOG_RM_VOLUME]] 
                [--anylog-rm-image [ANYLOG_RM_IMAGE]] [--disconnect-psql [DISCONNECT_PSQL]] [--psql-rm-volume [PSQL_RM_VOLUME]] 
                [--psql-rm-image [PSQL_RM_IMAGE]] [--disconnect-grafana [DISCONNECT_GRAFANA]] [--grafana-rm-volume [GRAFANA_RM_VOLUME]] 
-               [--grafana-rm-image [GRAFANA_RM_IMAGE]] [-t TIMEOUT] [-c [UPLOAD_CONFIG]] [-dl [DISABLE_LOCATION]] [-df DEPLOYMENT_FILE] [-e [EXCEPTION]]
+               [--grafana-rm-image [GRAFANA_RM_IMAGE]] [-tz TIMEZONE] [-t TIMEOUT] [-c [UPLOAD_CONFIG]] [-dl [DISABLE_LOCATION]] 
+               [-df DEPLOYMENT_FILE] [-e [EXCEPTION]]
                rest_conn config_file
 
 Send REST requests to configure an AnyLog instance.
@@ -39,6 +40,7 @@ optional arguments:
   --grafana-rm-volume     GRAFANA_RM_VOLUME       remove Grafana volumes (default: False)
   --grafana-rm-image      GRAFANA_RM_IMAGE        remove Grafana image (default: False)
   
+  -tz, --timezone 	  TIMEZONE		  whether to set timezone of docker container(s) as local or utc (default: utc | options: local, utc)
   -t, --timeout           TIMEOUT                 REST timeout period (default: 30)
   -c, --upload-config     UPLOAD_CONFIG           Update information from config_file into AnyLog dictionary (default: False)
   -dl, --disable-location DISABLE_LOCATION        Whether to disable location when adding a new node policy to the ledger (default: False)
