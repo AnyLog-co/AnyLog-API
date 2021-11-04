@@ -43,9 +43,11 @@ def main():
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     args = parser.parse_args()
 
-    tuple(args.auth.split(','))
     # connect to AnyLog
-    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=tuple(args.auth.split(',')), timeout=args.timeout)
+    auth = ()
+    if args.auth is not None: 
+        auth = tuple(args.auth.split(','))
+    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=auth, timeout=args.timeout)
 
     # personalized hierarchy
     policy = {'panel': {

@@ -18,7 +18,6 @@ import operator_node
 import post_cmd
 import publisher
 import query
-import single_node
 
 
 def initial_config(config_file:str, exception:bool=False)->(dict,list):
