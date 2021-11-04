@@ -7,7 +7,9 @@ They do not include
     * database processes
     * authentication
 """
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import get_cmd
 import other_cmd
@@ -221,7 +223,7 @@ def run_operator(conn:anylog_api.AnyLogConnect, master_node:str, create_table:bo
 
 def set_immediate_threshold(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     """
-    Set threshold to immidiate
+    Set threshold to immediate
     :args: 
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         exception:bool - whether or not to print error to screen 
@@ -278,8 +280,8 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
         if ':' in config['mqtt_conn_info']:
             cmd += ' and password=%s' % config['mqtt_conn_info'].split(':')[-1]
 
-    if 'mqtt_port' in config:
-        cmd += ' and port=%s' % config['mqtt_port']
+    if 'mqtt_broker_port' in config:
+        cmd += ' and port=%s' % config['mqtt_broker_port']
 
     if 'mqtt_log' in config:
         cmd += ' and log=%s' % config['mqtt_log']
@@ -302,7 +304,7 @@ def run_mqtt(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False)->
         cmd = execute_cmd % (config['mqtt_topic_name'], config['mqtt_topic_dbms'], config['mqtt_topic_table'],
                      config['mqtt_column_timestamp'], config['mqtt_column_value_type'], config['mqtt_column_value'])
     HEADER['command'] = cmd
-    print(HEADER['command'])
+
     r, error = conn.post(headers=HEADER)
     if other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
         status = False

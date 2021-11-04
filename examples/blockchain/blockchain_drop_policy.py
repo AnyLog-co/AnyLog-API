@@ -1,10 +1,11 @@
 import argparse
 import json
 
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import policy_cmd
-import errors
 
 LOCATIONS = [
     'Los Angeles, CA',
@@ -43,7 +44,11 @@ def main():
     args = parser.parse_args()
 
     # connect to AnyLog
-    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
+    auth = ()
+    if args.auth is not None: 
+        auth = tuple(args.auth.split(','))
+    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=auth, timeout=args.timeout)
+
 
     # drop policy
     for city in LOCATIONS:
@@ -57,3 +62,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    

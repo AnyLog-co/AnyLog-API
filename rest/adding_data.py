@@ -30,9 +30,12 @@ def __convert_data(data:dict)->str:
     return json_data
 
 
-def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, data:dict, mode:str='streaming', exception:bool=False)->bool:
+def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, data:dict, mode:str='streaming',
+             exception:bool=False)->bool:
     """
     Send data via REST using PUT command
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-put-command
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog via REST
         dbms:str - logical database name
@@ -57,7 +60,8 @@ def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, data:dict, mode
 
     r, error = conn.put(headers=headers, payload=__convert_data(data))
 
-    if other_cmd.print_error(conn=conn.conn, request_type="put", command="insert data ", r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type="put", command="insert data ", r=r, error=error,
+                             exception=exception):
         status = False
 
     return status
@@ -66,6 +70,8 @@ def put_data(conn:anylog_api.AnyLogConnect, dbms:str, table:str, data:dict, mode
 def post_data(conn:anylog_api.AnyLogConnect, rest_topic:str, data:dict, exception:bool=False)->bool:
     """
     Send data via REST using POST command
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-post-command
     :requirement:
         an MQTT client that uses a REST connection as a broker
     :args:
@@ -97,21 +103,26 @@ def post_data(conn:anylog_api.AnyLogConnect, rest_topic:str, data:dict, exceptio
     }
 
     r, error = conn.post(headers=headers, payload=__convert_data(data))
-    if other_cmd.print_error(conn=conn.conn, request_type="post", command="insert data ", r=r, error=error, exception=exception):
+    if other_cmd.print_error(conn=conn.conn, request_type="post", command="insert data ", r=r, error=error,
+                             exception=exception):
         status = False
 
     return status
 
 
-def mqtt_post_data(conn:anylog_api.AnyLogConnect, mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception:bool=False)->bool:
+def mqtt_post_data(conn:anylog_api.AnyLogConnect, mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict,
+                   exception:bool=False)->bool:
     """
     Send data into the MQTT broker using AnyLog's MQTT publisher tool -
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/message%20broker.md#publishing
     :requirement:
-        an MQTT client that with broker set to local if deploying AnyLog as a broker (run message broker ${IP} ${BROKER_PORT)
+        an MQTT client that with broker set to local if deploying AnyLog as a broker (run message broker ${IP}
+            ${BROKER_PORT)
         an MQTT client that with broker set to URL if deploying any other MQTT broker
     :args:
         conn:str - REST IP & Port
-        mqtt_conn:str - MQTT connection info ( [usr]@[ip]:[passwrd] ), if using AnyLogg brokerr only IP is required
+        mqtt_conn:str - MQTT connection info ( [usr]@[ip]:[password] ), if using AnyLogg broker only IP is required
         mqtt_port:int - MQTT port
         mqtt_topic:str - Topic correlated to the MQTT client
         data:dict - data to post into AnyLog - should contain logical database name and table
@@ -157,9 +168,8 @@ def mqtt_post_data(conn:anylog_api.AnyLogConnect, mqtt_conn:str, mqtt_port:int, 
 def mqtt_data(mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception:bool=False)->bool:
     """
     Send data directly using MQTT
-
     :args:
-        mqtt_conn:str - MQTT connection info ( [usr]@[ip]:[passwrd] ), if using AnyLogg brokerr only IP is required
+        mqtt_conn:str - MQTT connection info ( [usr]@[ip]:[password] ), if using AnyLog broker only IP is required
         mqtt_port:int - MQTT port
         mqtt_topic:str - Topic correlated to the MQTT client
         data:dict - data to send into AnyLog
@@ -180,7 +190,7 @@ def mqtt_data(mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception
         }
     """
     status = True
-
+    cur = None
     try:
         cur = mqtt_client.Client(client_id=MQTT_CLIENT_ID)
     except Exception as e:
@@ -196,7 +206,7 @@ def mqtt_data(mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception
             if exception is True:
                 print('Failed to connect client to MQTT broker %s:%s (Error: %s)' % (broker, mqtt_port, e))
 
-    if status is True:
+    if status is True and cur is not None:
         if '@' in mqtt_conn and ':' in mqtt_conn:
             try:
                 cur.username_pw_set(username=mqtt_conn.split('@')[0], password=mqtt_conn.split(':')[-1])
@@ -212,7 +222,7 @@ def mqtt_data(mqtt_conn:str, mqtt_port:int, mqtt_topic:str, data:dict, exception
         except Exception as e:
             status = False
             if exception is True:
-                print('Failed to publish data against MQTT connection %s and portt %s (Error: %s)' % (
+                print('Failed to publish data against MQTT connection %s and port %s (Error: %s)' % (
                     mqtt_conn, mqtt_port, e))
 
     return status

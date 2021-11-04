@@ -2,10 +2,11 @@ import argparse
 import json
 import time
 
-import __init__
+import import_packages
+import_packages.import_dirs()
+
 import anylog_api
 import policy_cmd
-import errors
 
 POLICIES = {
     'manufacturer': { # Manufacturer of device
@@ -82,14 +83,17 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('rest_conn',       type=str,   default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument('master_node',     type=str,   default='127.0.0.1:2048', help='TCP master information')
-    parser.add_argument('-a', '--auth',    type=tuple, default=None, help='REST authentication information')
+    parser.add_argument('-a', '--auth',    type=str , default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     args = parser.parse_args()
 
     policy_id = {}
 
     # connect to AnyLog
-    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
+    auth = ()
+    if args.auth is not None: 
+        auth = tuple(args.auth.split(','))
+    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=auth, timeout=args.timeout)
 
     for key in POLICIES:
         # Generate policy based on POLICY
@@ -106,7 +110,7 @@ def main():
 
         # declare policy
         policy_id[key] = policy_cmd.declare_policy(conn=anylog_conn, master_node=args.master_node,
-                                                           new_policy=policy, exception=True)
+                                                   new_policy=policy, exception=True)
 
         # validate policy was added
         if policy_id[key] is None:

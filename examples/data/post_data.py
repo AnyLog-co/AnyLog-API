@@ -1,8 +1,9 @@
-import __init__
-from adding_data import post_data
-import anylog_api
-
 import argparse
+
+import import_packages
+import_packages.import_dirs()
+import anylog_api
+from adding_data import post_data
 from data_generator import data_generator
 
 
@@ -28,7 +29,8 @@ def main():
     parser.add_argument('rest_conn',  type=str, default='127.0.0.1:2049',  help='REST connection information')
     parser.add_argument('mqtt_topic', type=str, default='mqtt-rest',       help='MQTT topic for REST')
     parser.add_argument('db_name',    type=str, default='sample_database', help='logical database to send data into')
-    parser.add_argument('table_name', type=str, default='sample_table',    help='table within logical database to store data in')
+    parser.add_argument('table_name', type=str, default='sample_table',
+                        help='table within logical database to store data in')
     parser.add_argument('-a', '--auth',    type=tuple, default=None, help='REST authentication information')
     parser.add_argument('-t', '--timeout', type=int,   default=30,   help='REST timeout period')
     args = parser.parse_args()

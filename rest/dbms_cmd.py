@@ -10,6 +10,7 @@ HEADER = {
     "User-Agent": "AnyLog/1.23"
 }
 
+
 def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->list:
     """"
     Get list of connected databases
@@ -23,7 +24,7 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->list:
         output
     """
     output = None
-    datbase_list = []
+    database_list = []
     HEADER['command'] = "get databases"
     r, error = conn.get(headers=HEADER)
 
@@ -36,13 +37,13 @@ def get_dbms(conn:anylog_api.AnyLogConnect, exception:bool=False)->list:
                 print('Failed to extract data from GET (Error: %s)' % e)
 
     if output == 'No DBMS connections found':
-        datbase_list = output
+        database_list = output
     else:
         for db in output.split('\n'):
             if 'sqlite' in db or 'psql' in db:
-                datbase_list.append(db.split(' ')[0].rstrip().lstrip())
+                database_list.append(db.split(' ')[0].rstrip().lstrip())
 
-    return datbase_list
+    return database_list
 
 
 def get_dbms_type(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:

@@ -21,7 +21,7 @@ def data_generator(db_name:str, table_name:str)->dict:
 
 def put_data_generator()->dict:
     """
-    Generate data for REST PUT processs
+    Generate data for REST PUT processes
     :return:
         dict object to store in AnyLog
     """

@@ -29,6 +29,7 @@ class AnyLogConnect:
             r, error
         """
         error = None
+
         try:
             r = requests.get('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
         except Exception as e:
@@ -50,7 +51,8 @@ class AnyLogConnect:
         """
         error = None
         try:
-            r = requests.put('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers, data=payload)
+            r = requests.put('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers,
+                             data=payload)
         except Exception as e:
             error = str(e)
             r = False
@@ -67,7 +69,7 @@ class AnyLogConnect:
             1. payload can be data that you want to add into AnyLog, in which case you should also have an
                 MQTT client of type REST running on said node
             2. payload can be a policy you'd like to add into the blockchain
-            3. payload can be a policy you'd like to remove from the blokchain -
+            3. payload can be a policy you'd like to remove from the blockchain
                 note only works with Master, cannot remove a policy on a real blockchain like Ethereum.
         :args:
             headers:dict - request headers

@@ -1,4 +1,5 @@
-import __init__
+import import_packages
+import_packages.import_dirs()
 import post_cmd
 import anylog_api
 import blockchain_cmd
@@ -7,7 +8,8 @@ import policy_cmd
 import create_declaration
 
 
-def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, exception:bool=False): 
+def query_init(conn:anylog_api.AnyLogConnect, config:dict, disable_location:bool=True, declare_blockchain:bool=True,
+               exception:bool=False):
     """
     Deploy a query node instance via REST 
     :definition: 
@@ -15,7 +17,8 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
     :args:
        anylog_conn:anylog_api.AnyLogConnect - Connection to AnyLog 
        config:dict - config data (from file + hostname + AnyLog) 
-       location:bool -whetther or not to have location in policy
+       disable_location:bool - whether or not to have disable_location in policy
+       declare_blockchain:bool - whether or not to add Query policy to blockchain
        exception:bool - whether or not to print exception to screen 
     :params: 
         status:bool 
@@ -30,10 +33,12 @@ def query_init(conn:anylog_api.AnyLogConnect, config:dict, location:bool=True, e
         if not dbms_cmd.connect_dbms(conn=conn, config=config, db_name='system_query', exception=exception):
             print('Failed to start system_query database')
 
-    node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
-                                               master_node=config['master_node'], location=location, exception=exception)
-    if node_id is None:
-        print('Failed to add % node to blockchain' % config['node_typp'])
+    if declare_blockchain is True:
+        node_id = policy_cmd.declare_anylog_policy(conn=conn, policy_type=config['node_type'], config=config,
+                                                   master_node=config['master_node'], disable_location=disable_location,
+                                                   exception=exception)
+        if node_id is None:
+            print('Failed to add % node to blockchain' % config['node_type'])
 
 
 

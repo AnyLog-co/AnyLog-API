@@ -1,7 +1,34 @@
 """
 The following configures AnyLog node policy based on the provided configuration
 """
+import datetime
 import requests
+from importlib.util import find_spec
+
+try: 
+    import geocoder
+except: 
+    pass 
+
+
+def __validate_internet()->bool: 
+    """
+    Validate internet connection
+    :params: 
+        status:bool 
+        r:requests.models.Response - request output
+    :return: 
+        if succcess return True, else False
+    """
+    status = True
+    try: 
+        r = requests.get('https://google.com', timeout=10)
+    except: 
+        status = False
+    else:
+        if int(r.status_code) != 200:
+            status = False
+    return status 
 
 
 def __get_location(ip:str, exception:bool=False)->str:
@@ -12,29 +39,42 @@ def __get_location(ip:str, exception:bool=False)->str:
     :params:
         location:str - (Latitude, Longitude)
     :return:
-
+        location
     """
+    status = True
     location = "0.0, 0.0"
-    try:
-        r = requests.get("https://freegeoip.live/json/%s" % ip)
-    except Exception as e:
-        if exception is True:
-            print('Failed to execute request to get location by IP  (Error: %s)' % e)
-    else:
-        if int(r.status_code) == 200:
+    if find_spec('geocoder'):
+        try: 
+            myloc = geocoder.ip(ip)
+        except Exception as e: 
+            print('Error 1: %s' % e)
+            status = False
+        else: 
+            try: 
+                location = '%s, %s' % (myloc.latlng[0], myloc.latlng[1])
+            except Exception as e: 
+                print('Error 2: %s' % e)
+                status = False
+
+    if find_spec('geocoder') is None or status is False:
+        if __validate_internet() is True:  
             try:
-                output = r.json()
+                r = requests.get("https://freegeoip.live/json/%s" % ip)
             except Exception as e:
                 if exception is True:
-                    print('Failed to convert info regarding IP as JSON (Error: %s)' % e)
+                    print('Failed to execute request to get location by IP  (Error: %s)' % e)
             else:
-                if output['latitude'] != '' and output['longitude'] != '':
-                    location = '%s, %s' % (output['latitude'], output['longitude'])
-                elif exception is True:
-                    print('Failed to extract latitude & longitude regarding IP %s' % ip)
-        elif exception is True:
-            print('Failed to execute request to get location by IP (Network Error: %s)' % r.status_code)
-
+                if int(r.status_code) == 200:
+                    try:
+                        output = r.json()
+                    except Exception as e:
+                        if exception is True:
+                            print('Failed to convert info regarding IP as JSON (Error: %s)' % e)
+                    else:
+                        if output['latitude'] != '' and output['longitude'] != '':
+                            location = '%s, %s' % (output['latitude'], output['longitude'])
+                        elif exception is True:
+                            print('Failed to extract latitude & longitude regarding IP %s' % ip)
     return location
 
 
@@ -84,12 +124,12 @@ def declare_cluster(config:dict)->dict:
     return cluster
 
 
-def declare_node(config:dict, location:bool=True)->dict: 
+def declare_node(config:dict, disable_location:bool=False, exception:bool=False)->dict:
     """
     Declare generic node based on config
     :args: 
         config:dict - config info
-        location:bool - whether or to add location to policy if not in config
+        location:bool - whether or to disbale (ie not add) location information when declaring policy
     :params: 
         node:dict - dict object for generic node
     :return: 
@@ -97,13 +137,13 @@ def declare_node(config:dict, location:bool=True)->dict:
     """
     if 'node_type' not in config: 
         return {} 
-
     node = {config['node_type']: {
         'ip':        config['external_ip'],
         'local_ip':  config['ip'],
         'port':      int(config['anylog_server_port']),
         'rest_port': int(config['anylog_rest_port']), 
     }}
+
     if 'company_name' in config:
         node[config['node_type']]['company'] = config['company_name']
 
@@ -123,11 +163,11 @@ def declare_node(config:dict, location:bool=True)->dict:
 
     if 'hostname' in config:
          node[config['node_type']]['hostname'] = config['hostname']
-
-    if 'location' in config:
-         node[config['node_type']]['loc'] = config['location'] 
-    elif location is True:
-        node[config['node_type']]['loc'] = __get_location(ip = config['external_ip'])
+    
+    if disable_location is False and 'location' not in config:
+        node[config['node_type']]['loc'] = __get_location(ip=config['external_ip'], exception=exception)
+    elif disable_location is False:
+        node[config['node_type']]['loc'] = config['location']
 
     if config['node_type'] == 'operator':
         if 'cluster_id' in config:
@@ -142,5 +182,6 @@ def declare_node(config:dict, location:bool=True)->dict:
                     node[config['node_type']]['table'] = table
                     nodes.append(node)
                 node = nodes
+
     return node
 
