@@ -20,7 +20,7 @@ HEADER = {
 }
 
 
-def __build_blockchain_query(policy_type:str="*", where_conditions:list=None, policy:dict=None)->str:
+def __build_blockchain_query(policy_type:str="*", where_conditions:list=[], policy:dict={})->str:
     """
     Build blockchain GET command
     :args:
@@ -33,13 +33,15 @@ def __build_blockchain_query(policy_type:str="*", where_conditions:list=None, po
         cmd
     """
     cmd = "blockchain get %s" % policy_type
-    if where_conditions is None and policy is not None:
-        where_conditions = []
+    if policy is None: 
+        policy = {} 
+
+    if len(policy) >= 1: 
         for key in policy:
             if key != 'id' and key != 'date':
                 where_conditions.append(other_cmd.format_string(key, policy[policy_type][key]))
 
-    if where_conditions is not None: 
+    if len(where_conditions) >= 1: 
         cmd += " where " 
         if isinstance(where_conditions, list): 
             for condition in where_conditions: 
@@ -73,7 +75,7 @@ def blockchain_get(conn:anylog_api.AnyLogConnect, policy_type:str='*', where_con
     :return:
         blockchains
     """
-    cmd = __build_blockchain_query(policy_type=policy_type, where_conditions=where_conditions, policy=None)
+    cmd = __build_blockchain_query(policy_type=policy_type, where_conditions=where_conditions, policy={})
     HEADER['command'] = cmd
     blockchain = []
 

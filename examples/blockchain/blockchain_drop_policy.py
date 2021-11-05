@@ -44,7 +44,11 @@ def main():
     args = parser.parse_args()
 
     # connect to AnyLog
-    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=args.auth, timeout=args.timeout)
+    auth = ()
+    if args.auth is not None: 
+        auth = tuple(args.auth.split(','))
+    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=auth, timeout=args.timeout)
+
 
     # drop policy
     for city in LOCATIONS:

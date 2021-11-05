@@ -90,7 +90,10 @@ def main():
     policy_id = {}
 
     # connect to AnyLog
-    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=tuple(args.auth.split(',')), timeout=args.timeout)
+    auth = ()
+    if args.auth is not None: 
+        auth = tuple(args.auth.split(','))
+    anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=auth, timeout=args.timeout)
 
     for key in POLICIES:
         # Generate policy based on POLICY
