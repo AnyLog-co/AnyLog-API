@@ -226,10 +226,10 @@ def deploy_anylog(conn:anylog_api.AnyLogConnect, config_data:dict, node_types:li
             print("File: '%s' does not exist" % full_path)
 
     # Enable MQTT 
-    if 'mqtt_enable' in config_data and config_data['mqtt_enable'] == 'true' 'operator' in node_types or \
-            'publisher' in node_types:
-        if not post_cmd.run_mqtt(conn=conn, config=config_data, exception=exception):
-            print('Failed to initiate MQTT client')
+    if 'operator' in node_types or 'publisher' in node_types: 
+        if 'mqtt_enable' in config_data and config_data['mqtt_enable'] == 'true':
+            if not post_cmd.run_mqtt(conn=conn, config=config_data, exception=exception):
+                print('Failed to initiate MQTT client')
 
     # Start an AnyLog process for a specific node_type
     if 'master' in node_types: 
