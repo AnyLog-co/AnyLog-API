@@ -3,11 +3,9 @@
 The following takes an INI configuration file & deploys an AnyLog docker container.
 If the user adds DOCKER_PASSWORD parameter, then the code will also update the AnyLog image
 
-The deployed docker container will use (by default) UTC. To use local time, update the volumes list to contain:
-"""
+Note 1: The deployed docker container will use (by default) UTC. To use local time, update the volumes list to contain:
       -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro
       -v /etc/localtime:/etc/localtime:ro
-"""
 COMMENT
 
 if [[ $#  -gt 0 ]] && [[ $# -lt 3 ]]
@@ -149,6 +147,7 @@ then
   fi
 fi
 
+# MQTT params
 
 if [[ ${DOCKER_PASSWORD} ]]
 then
@@ -156,6 +155,35 @@ then
   docker pull oshadmon/anylog:${BUILD##*( )}
   docker logout
 fi
+
+#MQTT_ENABLE=$(grep -v ^\# ${CONFIG_FILE} | awk -F "mqtt_enable=" '{print $2}')
+#
+#if [[ ! ${MQTT_ENABLE} ]]
+#then
+#  MQTT_ENABLE=false
+#elif [[ ! ${MQTT_ENABLE} -eq true ]] && [[ ! ${MQTT_ENABLE} -eq false ]]
+#then
+#  MQTT_ENABLE=false
+#elif [[ ${MQTT_ENABLE} -eq true ]]
+#then
+#  MQTT_CONN=$(grep -v ^\# ${CONFIG_FILE} | awk -F "mqtt_conn_info=" '{print $2}')
+#  if [[ ! ${MQTT_CONN} ]]
+#  then
+#    MQTT_ENABLE=false
+#  else
+#    MQTT_USER=$(echo ${MQTT_CONN} | awk -F "@" '{print $1}'})
+#    MQTT_BROKER=$(echo ${MQTT_CONN} | awk -F "@" '{print $2}' | awk -F ":" '{print $1}')
+#    MQTT_PASSWORD=$(echo ${MQTT_CONN} | awk -F ":" '{print $2}')
+#  fi
+#  MQTT_LOG=$(grep -v ^\# ${CONFIG_FILE} | awk -F "mqtt_log=" '{print $2}')
+#  if [[ ! ${MQTT_LOG} ]]
+#  then
+#    MQTT_LOG=false
+#  elif [[ ! ${MQTT_LOG} -eq true ]] && [[ ! ${MQTT_LOG} -eq false ]]
+#  then
+#    MQTT_LOG=false
+#  fi
+#  MQTT_TOPIC=$(grep -v ^\# ${CONFIG_FILE} | awk -F "mqtt_topic_name=" '{print $2}')
 
 docker run --network host --name ${NODE_NAME} --privileged \
     -e NODE_TYPE=${NODE_TYPE} \
