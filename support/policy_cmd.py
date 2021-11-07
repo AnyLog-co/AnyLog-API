@@ -48,8 +48,7 @@ def declare_policy(conn:anylog_api.AnyLogConnect, master_node:str, new_policy:di
         if policy_id is not None:
             # sync & wait until blockchain is updated process
             blockchain_cmd.blockchain_sync(conn=conn, exception=exception)
-            new_policy[policy_type]['id'] = policy_id
-            blockchain_cmd.blockchain_wait(conn=conn, policy=new_policy, exception=exception)
+            blockchain_cmd.blockchain_wait(conn=conn, policy_id=policy_id, exception=exception)
 
     return policy_id
 

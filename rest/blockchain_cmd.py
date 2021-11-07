@@ -339,13 +339,12 @@ def blockchain_sync(conn:anylog_api.AnyLogConnect, exception:bool=False)->bool:
     return status
 
 
-def blockchain_wait(conn:anylog_api.AnyLogConnect, policy:str, exception:bool=False)->bool:
+def blockchain_wait(conn:anylog_api.AnyLogConnect, policy_id:str, exception:bool=False)->bool:
     """
     Execute blockchain wait process
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
-        policy_type:str - policy type
-        policy:dict - policy that was executed
+        policy_id:dict - ID of policy executed
         exception:bool - whether to print exception
     :params:
         status:bool
@@ -355,7 +354,7 @@ def blockchain_wait(conn:anylog_api.AnyLogConnect, policy:str, exception:bool=Fa
         status
     """
     status = True
-    wait_cmd = "blockchain wait where policy=%s" % policy
+    wait_cmd = "blockchain wait where id=%s" % policy_id
     HEADER['command'] = wait_cmd
 
     r, error = conn.post(headers=HEADER['command'])
