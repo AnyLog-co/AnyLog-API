@@ -27,6 +27,8 @@ BUILD=$(grep -v ^\# ${CONFIG_FILE} | awk -F "build=" '{print $2}')
 if [[ ! ${BUILD} ]]
 then
   BUILD=predevelop
+else
+    BUILD=$(echo ${BUILD} | awk -F " " '{print $1}') 
 fi
 
 NODE_TYPE=$(grep -v ^\# ${CONFIG_FILE} | awk -F "node_type=" '{print $2}')
@@ -152,7 +154,7 @@ fi
 if [[ ${DOCKER_PASSWORD} ]]
 then
   docker login -u oshadmon -p ${DOCKER_PASSWORD}
-  docker pull oshadmon/anylog:${BUILD##*( )}
+  docker pull oshadmon/anylog:${BUILD}
   docker logout
 fi
 
@@ -185,7 +187,7 @@ fi
 #  fi
 #  MQTT_TOPIC=$(grep -v ^\# ${CONFIG_FILE} | awk -F "mqtt_topic_name=" '{print $2}')
 
-docker run --network host --name ${NODE_NAME} --privileged \
+echo "docker run --network host --name ${NODE_NAME} --privileged \
     -e NODE_TYPE=${NODE_TYPE} \
     -e BUILD=${BUILD} \
     -e NODE_TYPE=${NODE_TYPE} \
@@ -215,4 +217,4 @@ docker run --network host --name ${NODE_NAME} --privileged \
     -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
     -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
     -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
-    -d -it --detach-keys="ctrl-d" --rm oshadmon/anylog:${BUILD}
+    -d -it --detach-keys="ctrl-d" --rm oshadmon/anylog:${BUILD}"
