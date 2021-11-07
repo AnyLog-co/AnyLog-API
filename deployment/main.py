@@ -83,8 +83,8 @@ def initial_config(config_file:str, exception:bool=False)->(dict,list):
     return config_data, node_types
 
 
-def deploy_docker(config_data:dict, timezone:str, password:str, update_anylog:bool=False, anylog:bool=False,
-                  psql:bool=False, grafana:bool=False, exception:bool=False)->(bool, dict):
+def deploy_docker(config_data:dict, timezone:str, password:str, update_anylog:bool=False, generic_anylog:bool=False,
+                  anylog:bool=False, psql:bool=False, grafana:bool=False, exception:bool=False)->(bool, dict):
     """
     Deploy docker instances
     :process:
@@ -96,6 +96,7 @@ def deploy_docker(config_data:dict, timezone:str, password:str, update_anylog:bo
     :args:
         update_anylog:bool - whether to update the AnyLog docker image
         timezone:str - whether to set container(s) timezone to local or UTC
+        generic_anylog:bool - whether to deploy AnyLog using pre-created AnyLog files rather than via REST
         anylog:bool - deploy AnyLog
         psql:bool - deploy postgres image version 14.0-alpine
         grafana:bool - deploy grafana image version 7.5.7
@@ -118,6 +119,26 @@ def deploy_docker(config_data:dict, timezone:str, password:str, update_anylog:bo
     if grafana is True:
         if not docker_conn.deploy_grafana_container(exception=exception):
             print('Failed to deploy Grafana docker container')
+
+    if generic_anylog is True:
+        if len(node_types) > 1:
+            anylog = True
+        else:
+            anylog = False
+            if not docker_conn.deploy_generic_anylog(docker_password=password, node_type=config_data['node_type'],
+                                                     update_image=update_anylog, container_name=config_data['node_name'],
+                                                     build=config_data['build'], external_ip=config_data['external_ip'],
+                                                     local_ip=config_data['ip'],
+                                                     server_port=config_data['anylog_tcp_port'],
+                                                     rest_port=config_data['anylog_rest_port'],
+                                                     broker_port=config_data['anylog_broker_port'],
+                                                     authentication=config_data['authentication'],
+                                                     auth_type=config_data['auth_type'],
+                                                     username=config_data['username'], password=config_data['password'],
+                                                     exception=exception):
+                status = False
+            else:
+                time.sleep(30)
 
     if anylog is True:
         if not docker_conn.deploy_anylog_container(docker_password=password, update_image=update_anylog,
@@ -403,6 +424,8 @@ def main():
                         help='If set, code will not continue once docker instances are up')
     parser.add_argument('--full-deployment', type=bool, nargs='?', const=True, default=False,
                         help='Update & connect to AnyLog, PSQL and Grafana containers')
+    parser.add_argument('--generic-anylog', type=bool, nargs='?', const=True, default=False,
+                        help='')
     parser.add_argument('--anylog',          type=bool, nargs='?', const=True, default=False,
                         help='deploy AnyLog docker container')
     parser.add_argument('--psql',            type=bool, nargs='?', const=True, default=False,
