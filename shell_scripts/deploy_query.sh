@@ -1,13 +1,12 @@
 <<COMMENT
-The following is an example of deploying AnyLog Master node using docker run, instead of the API tool.
+The following is an example of deploying AnyLog Query node using docker run, instead of the API tool.
 The deployment process is hard-coded and can be found in volume - ${NODE_NAME}-local-scripts
 This means that AnyLog will contain only:
 - TCP port
 - REST port
 - Authentication (if set)
 - run blockchain sync
-- connect to database blockchain & system_query
-- create ledger table in blockchain (if DNE)
+- connect to database system_query
 - create policy if DNE exist in blockchain.ledger
 COMMENT
 if [ $# -gt 0 ] && [ $# -lt 3 ]
@@ -21,16 +20,16 @@ fi
 
 # General configs
 ANYLOG_ROOT_DIR=/app # configured within Dockerfile
-NODE_TYPE=master
-NODE_NAME=anylog-master-node
+NODE_TYPE=query
+NODE_NAME=anylog-query-node
 COMPANY_NAME=AnyLog
 
 # Networking
 # External and local IPs user would like to use if not default on the machine
 #EXTERNAL_IP=10.0.0.231
 #LOCAL_IP=10.0.0.231
-ANYLOG_SERVER_PORT=2048
-ANYLOG_REST_PORT=2049
+ANYLOG_SERVER_PORT=2348
+ANYLOG_REST_PORT=2349
 MASTER_NODE=10.0.0.231:2048
 
 # authentication
