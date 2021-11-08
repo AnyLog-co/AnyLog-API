@@ -24,7 +24,8 @@ fi
 ANYLOG_ROOT_DIR=/app # configured within Dockerfile
 NODE_TYPE=master
 NODE_NAME=anylog-master-node
-COMPANY_NAME=AnyLog Co.
+COMPANY_NAME=AnyLog
+
 # Networking
 # External and local IPs user would like to use if not default on the machine
 #EXTERNAL_IP=10.0.0.231
@@ -56,6 +57,7 @@ docker run --network host --name ${NODE_NAME} --privileged \
   -e ANYLOG_ROOT_DIR=${ANYLOG_ROOT_DIR} \
   -e NODE_TYPE=${NODE_TYPE} \
   -e NODE_NAME=${NODE_NAME} \
+  -e COMPANY_NAME=${COMPANY_NAME} \
   -e ANYLOG_SERVER_PORT=${ANYLOG_SERVER_PORT} \
   -e ANYLOG_REST_PORT=${ANYLOG_REST_PORT} \
   -e ANYLOG_BROKER_PORT=${ANYLOG_BROKER_PORT} \
