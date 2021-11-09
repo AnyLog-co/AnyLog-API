@@ -7,7 +7,7 @@ This means that AnyLog will contain only:
 - Authentication (if set)
 - run blockchain sync
 - connect to database system_query
-- create policy if DNE exist in blockchain.ledger
+- create policy if DNE exist
 COMMENT
 if [ $# -gt 0 ] && [ $# -lt 3 ]
 then
@@ -20,16 +20,16 @@ fi
 
 # General configs
 ANYLOG_ROOT_DIR=/app # configured within Dockerfile
-NODE_TYPE=publisher
-NODE_NAME=anylog-publisher-node
+NODE_TYPE=query
+NODE_NAME=anylog-query-node
 COMPANY_NAME=AnyLog
 
 # Networking
 # External and local IPs user would like to use if not default on the machine
 #EXTERNAL_IP=10.0.0.231
 #LOCAL_IP=10.0.0.231
-ANYLOG_SERVER_PORT=2248
-ANYLOG_REST_PORT=2249
+ANYLOG_SERVER_PORT=2348
+ANYLOG_REST_PORT=2349
 MASTER_NODE=10.0.0.231:2048
 
 # authentication

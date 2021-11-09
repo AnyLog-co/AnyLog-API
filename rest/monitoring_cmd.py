@@ -29,7 +29,7 @@ def set_monitor_streaming_data(conn:anylog_api.AnyLogConnect, db_name:str, table
         cmd:str - command to execute
         HEADER:dict - REST header information
     :return:
-        status
+        status 
     """
     status = True
     cmd = "data monitor where dbms=%s" % db_name
