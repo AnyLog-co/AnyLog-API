@@ -44,6 +44,21 @@ DBMS_TYPE=sqlite
 DBMS_CONN=anylog@127.0.0.1:demo
 DBMS_PORT=5432
 
+# MQTT params
+ENABLE_MQTT=true
+MQTT_BROKER=rest
+MQTT_PORT=2249
+MQTT_USER=anylog
+MQTT_PASSWORD=demo
+MQTT_LOG=true
+MQTT_TOPIC_NAME=rest-topic
+MQTT_TOPIC_DBMS="bring [dbms]"
+MQTT_TOPIC_TABLE="bring [table]"
+MQTT_COLUMN_TIMESTAMP="bring [timestamp]"
+MQTT_COLUMN_VALUE_TYPE=float
+MQTT_COLUMN_VALUE="bring [value]"
+
+
 if [[ ${DOCKER_PASWORD} ]]
 then
   docker login -u oshadmon -p ${DOCKER_PASSWORD}
