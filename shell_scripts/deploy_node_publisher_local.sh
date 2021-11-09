@@ -1,11 +1,13 @@
 <<COMMENT
-The following is an example of deploying AnyLog Master node using docker run, instead of the API tool.
-The deployment process is hard-coded and can be found in volume - ${NODE_NAME}-local-scripts
+The following is an example of deploying AnyLog Publisher node using docker run, instead of the API tool.
+The deployment process is hard-coded and can be found in volume - ${NODE_NAME}-local-scripts.
 
 This specific deployment provides an example of having:
   - REST authentication
-  - Using the IP address for both internal and external as 10.0.0.231
+  - local Message Broker
+  - an MQTT client against local broker
 COMMENT
+
 if [ $# -gt 0 ] && [ $# -lt 3 ]
 then
     BUILD=$1
@@ -17,16 +19,17 @@ fi
 
 # General configs
 ANYLOG_ROOT_DIR=/app # configured within Dockerfile
-NODE_TYPE=master
-NODE_NAME=anylog-master-node
+NODE_TYPE=publisher
+NODE_NAME=anylog-publisher-broker-node
 COMPANY_NAME=AnyLog
 
 # Networking
 # External and local IPs user would like to use if not default on the machine
-EXTERNAL_IP=10.0.0.231
-LOCAL_IP=10.0.0.231
-ANYLOG_SERVER_PORT=2048
-ANYLOG_REST_PORT=2049
+#EXTERNAL_IP=10.0.0.231
+#LOCAL_IP=10.0.0.231
+ANYLOG_SERVER_PORT=2258
+ANYLOG_REST_PORT=2259
+ANYLOG_BROKER_PORT=2260
 MASTER_NODE=10.0.0.231:2048
 
 # authentication
@@ -40,6 +43,21 @@ DBMS_TYPE=sqlite
 DBMS_CONN=anylog@127.0.0.1:demo
 DBMS_PORT=5432
 
+# MQTT params
+ENABLE_MQTT=true
+MQTT_BROKER=10.0.0.231
+MQTT_PORT=2260
+MQTT_USER=anylog
+MQTT_PASSWORD=demo
+MQTT_LOG=true
+MQTT_TOPIC_NAME=rest-topic
+MQTT_TOPIC_DBMS="bring [dbms]"
+MQTT_TOPIC_TABLE="bring [table]"
+MQTT_COLUMN_TIMESTAMP="bring [timestamp]"
+MQTT_COLUMN_VALUE_TYPE=float
+MQTT_COLUMN_VALUE="bring [value]"
+
+
 if [[ ${DOCKER_PASWORD} ]]
 then
   docker login -u oshadmon -p ${DOCKER_PASSWORD}
@@ -52,10 +70,9 @@ docker run --network host --name ${NODE_NAME} --privileged \
   -e NODE_TYPE=${NODE_TYPE} \
   -e NODE_NAME=${NODE_NAME} \
   -e COMPANY_NAME=${COMPANY_NAME} \
-  -e EXTERNAL_IP=${EXTERNAL_IP} \
-  -e LOCAL_IP=${LOCAL_IP} \
   -e ANYLOG_SERVER_PORT=${ANYLOG_SERVER_PORT} \
   -e ANYLOG_REST_PORT=${ANYLOG_REST_PORT} \
+  -e ANYLOG_BROKER_PORT=${ANYLOG_BROKER_PORT} \
   -e MASTER_NODE=${MASTER_NODE} \
   -e AUTHENTICATION=${AUTHENTICATION} \
   -e USERNAME=${USERNAME} \
@@ -64,6 +81,18 @@ docker run --network host --name ${NODE_NAME} --privileged \
   -e DBMS_TYPE=${DBMS_TYPE} \
   -e DBMS_CONN=${DBMS_CONN} \
   -e DBMS_PORT=${DBMS_PORT} \
+  -e ENABLE_MQTT=${ENABLE_MQTT} \
+  -e MQTT_BROKER=${MQTT_BROKER} \
+  -e MQTT_PORT=${MQTT_PORT} \
+  -e MQTT_USER=${MQTT_USER} \
+  -e MQTT_PASSWORD=${MQTT_PASSWORD} \
+  -e MQTT_LOG=${MQTT_LOG} \
+  -e MQTT_TOPIC_NAME=${MQTT_TOPIC_NAME} \
+  -e MQTT_TOPIC_DBMS=${MQTT_TOPIC_DBMS} \
+  -e MQTT_TOPIC_TABLE=${MQTT_TOPIC_TABLE} \
+  -e MQTT_COLUMN_TIMESTAMP=${MQTT_COLUMN_TIMESTAMP} \
+  -e MQTT_COLUMN_VALUE_TYPE=${MQTT_COLUMN_VALUE_TYPE} \
+  -e MQTT_COLUMN_VALUE=${MQTT_COLUMN_VALUE} \
   -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
   -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \

@@ -1,14 +1,12 @@
 <<COMMENT
-The following is an example of deploying AnyLog Query node using docker run, instead of the API tool.
-The deployment process is hard-coded and can be found in volume - ${NODE_NAME}-local-scripts
-This means that AnyLog will contain only:
-- TCP port
-- REST port
-- Authentication (if set)
-- run blockchain sync
-- connect to database system_query
-- create policy if DNE exist
+The following is an example of deploying AnyLog Publisher node using docker run, instead of the API tool.
+The deployment process is hard-coded and can be found in volume - ${NODE_NAME}-local-scripts.
+
+This specific deployment provides an example of having:
+  - REST authentication
+  - an MQTT client against the REST (port 2249)
 COMMENT
+
 if [ $# -gt 0 ] && [ $# -lt 3 ]
 then
     BUILD=$1
@@ -21,7 +19,7 @@ fi
 # General configs
 ANYLOG_ROOT_DIR=/app # configured within Dockerfile
 NODE_TYPE=publisher
-NODE_NAME=anylog-publisher-node
+NODE_NAME=anylog-publisher-rest-node
 COMPANY_NAME=AnyLog
 
 # Networking
@@ -30,7 +28,6 @@ COMPANY_NAME=AnyLog
 #LOCAL_IP=10.0.0.231
 ANYLOG_SERVER_PORT=2248
 ANYLOG_REST_PORT=2249
-ANYLOG_BROKER_PORT=2250
 MASTER_NODE=10.0.0.231:2048
 
 # authentication
@@ -73,7 +70,6 @@ docker run --network host --name ${NODE_NAME} --privileged \
   -e COMPANY_NAME=${COMPANY_NAME} \
   -e ANYLOG_SERVER_PORT=${ANYLOG_SERVER_PORT} \
   -e ANYLOG_REST_PORT=${ANYLOG_REST_PORT} \
-  -e ANYLOG_BROKER_PORT=${ANYLOG_BROKER_PORT} \
   -e MASTER_NODE=${MASTER_NODE} \
   -e AUTHENTICATION=${AUTHENTICATION} \
   -e USERNAME=${USERNAME} \
@@ -82,6 +78,18 @@ docker run --network host --name ${NODE_NAME} --privileged \
   -e DBMS_TYPE=${DBMS_TYPE} \
   -e DBMS_CONN=${DBMS_CONN} \
   -e DBMS_PORT=${DBMS_PORT} \
+  -e ENABLE_MQTT=${ENABLE_MQTT} \
+  -e MQTT_BROKER=${MQTT_BROKER} \
+  -e MQTT_PORT=${MQTT_PORT} \
+  -e MQTT_USER=${MQTT_USER} \
+  -e MQTT_PASSWORD=${MQTT_PASSWORD} \
+  -e MQTT_LOG=${MQTT_LOG} \
+  -e MQTT_TOPIC_NAME=${MQTT_TOPIC_NAME} \
+  -e MQTT_TOPIC_DBMS=${MQTT_TOPIC_DBMS} \
+  -e MQTT_TOPIC_TABLE=${MQTT_TOPIC_TABLE} \
+  -e MQTT_COLUMN_TIMESTAMP=${MQTT_COLUMN_TIMESTAMP} \
+  -e MQTT_COLUMN_VALUE_TYPE=${MQTT_COLUMN_VALUE_TYPE} \
+  -e MQTT_COLUMN_VALUE=${MQTT_COLUMN_VALUE} \
   -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
   -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
