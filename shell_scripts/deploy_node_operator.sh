@@ -47,9 +47,9 @@ DEFAULT_DBMS=anylog_db
 # Operator (specific) configs
 ENABLE_CLUSTER=true
 CLUSTER_NAME=anylog-cluster1
-ENABLE_PARTITION=true
+ENABLE_PARTITION=false
 PARTITION_COLUMN=timestamp
-PARTITION_INTERVAL=7 days
+PARTITION_INTERVAL='7 days'
 
 
 if [[ ${DOCKER_PASWORD} ]]
@@ -78,8 +78,6 @@ docker run --network host --name ${NODE_NAME} --privileged \
   -e ENABLE_CLUSTER=${ENABLE_CLUSTER} \
   -e CLUSTER_NAME=${CLUSTER_NAME} \
   -e ENABLE_PARTITION=${ENABLE_PARTITION} \
-  -e PARTITION_COLUMN=${PARTITION_COLUMN} \
-  -e PARTITION_INTERVAL=${PARTITION_INTERVAL} \
   -v ${NODE_NAME}-anylog:/app/AnyLog-Network/anylog:rw \
   -v ${NODE_NAME}-blockchain:/app/AnyLog-Network/blockchain:rw \
   -v ${NODE_NAME}-data:/app/AnyLog-Network/data:rw \
