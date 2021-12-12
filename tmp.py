@@ -48,7 +48,7 @@ def format_content():
     content = read_configs(config_file)
 
     for param in content:
-        output += "\t-e %s=%s\n" % (param, content[param])
+        output += "\t-e %s=%s \\\n" % (param, content[param])
 
     print(output)
     
