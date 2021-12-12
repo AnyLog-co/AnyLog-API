@@ -362,6 +362,94 @@ class DeployAnyLog:
 
         return status
 
+    def deploy_generi_canylog_container(self, docker_password:str, node_type:str='none', update_image:bool=False,
+                                        container_name:str='anylog-test-node', build:str='predevelop',
+                                        external_ip:str=None, local_ip:str=None, server_port:int=2048,
+                                        rest_port:int=2049, broker_port:int=None, authentication:str='off',
+                                        auth_type:str='admin', username:str='anylog', password:str='demo',
+                                        expiration:str=None, exception:bool=True)->bool:
+        """
+        Deploy an AnyLog where the user specify the node type in the config file
+        :args:
+            docker_password:str - docker password to download AnyLog container
+            update_image:bool - whether to update the image (if exists)
+            container_name:str - name of the container
+            build:str - version of AnyLog image to download
+            server_port:int - TCP server port
+            rest_port:int - REST server port
+            authentication:str - whether to enable authentication
+            exception:bool - whether or not to print exceptions
+            # Optional configs
+            external_ip:str - IP address that's different than the default external IP
+            local_ip:str - IPs address that's different  than the default local IP
+            broker_port:int - MQTT message broker port
+            username:str - authentication username
+            password:str - authentication password
+        :params:
+            status:bool
+            volume_paths:dict - key: volume_name | value: path within AnyLog
+            volumes:dict - volumes related to AnyLog
+            environment:dict - environment variables for docker based on arguments
+        :return:
+            status
+        """
+        status = True
+
+        environment = {
+            'NODE_TYPE': node_type,
+            'NODE_NAME': container_name,
+            'ANYLOG_SERVER_PORT': server_port,
+            'ANYLOG_REST_PORT': rest_port,
+            'AUTHENTICATION': authentication,
+            'AUTH_TYPE': auth_type,
+            'USERNAME': username,
+            'PASSWORD': password,
+            'EXPIRATION': expiration,
+        }
+        if external_ip is not None:
+            environment['EXTERNAL_IP'] = external_ip
+        if local_ip is not None:
+            environment['IP'] = local_ip
+        if broker_port is not None:
+            environment['ANYLOG_BROKER_PORT'] = broker_port
+
+        volume_paths = {
+            '%s-anylog' % container_name: '/app/AnyLog-Network/anylog',
+            '%s-blockchain' % container_name: '/app/AnyLog-Network/blockchain',
+            '%s-data' % container_name: '/app/AnyLog-Network/data',
+            '%s-local-scripts' % container_name: '/app/AnyLog-Network/local_scripts'
+        }
+
+        volumes = {}
+        if self.timezone == 'local':
+            volumes = {'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
+
+        # Prepare volumes
+        for volume in volume_paths:
+            if self.__validate_volume(volume_name=volume) is None:
+                if self.__create_volume(volume_name=volume, exception=exception) is not None:
+                    volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
+            else:
+                volumes[volume] = {'bind': volume_paths[volume], 'mode': 'rw'}
+
+        # login
+        if update_image is True or self.__validate_image(image_name='oshadmon/anylog:%s' % build) is None:
+            status = self.__docker_login(password=docker_password, exception=exception)
+
+        # Update image
+        if status is True and update_image is True:
+            status = self.__update_image(image_name='oshadmon/anylog:%s' % build, exception=exception)
+
+        # deploy AnyLcg container
+        if status is True:
+            if self.validate_container(container_name=container_name) is None:
+                if not self.__run_container(image='oshadmon/anylog:%s' % build, container_name=container_name,
+                                          environment=environment, volumes=volumes, exception=exception):
+                    print('Fails')
+                    status = False
+
+        return status
+
     def deploy_grafana_container(self, exception:bool=True)->bool:
         """
         Deploy a Grafana v 7.5.7 as a docker container
