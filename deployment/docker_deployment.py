@@ -6,19 +6,22 @@ rest_dir = os.path.join(ROOT_PATH, 'rest')
 support_dir = os.path.join(ROOT_PATH, 'support')
 sys.path.insert(0, support_dir)
 
+import io_configs
+
 try:
     from docker_api import DeployDocker
 except:
     pass
 
-def deploy_anylog_container(env_params:dict, docker_only:bool=False, docker_update:bool=False,
+
+def deploy_anylog_container(env_configs:dict, docker_only:bool=False, update_anylog:bool=False,
                             docker_password:str=None, exception:bool=True):
     """
     Deploy AnyLog container
     :args:
-        env_params:dict - parameters from config_file
+        env_configs:dict - parameters from config_file
         docker_only:bool - whether to deploy docker only or continue to REST requests
-        docker_update:bool - whether to update AnyLog image
+        update_anylog:bool - whether to update AnyLog image
         docker_password:str - docker password
         exception:bool - whether to print exceptions
     :params:
@@ -34,27 +37,34 @@ def deploy_anylog_container(env_params:dict, docker_only:bool=False, docker_upda
             * db_params:dict - database params
             * operator_params:dict - params related to operator
             * mqtt_params:dict - params related to MQTT
+
     :print:
         when exception is True, print whether AnyLog was deployed properly or not
     :return:
         none
     """
-    # {'general': {'build': 'predevelop', 'node_type': 'none', 'node_name': 'new-node', 'company_name': 'Your Company Name'}, 'authentication': {'authentication': 'true', 'username': 'ori', 'password': 'gAAAAABhvOWrY9fUHVdvCVUX3HQPyCODvIpV_tMTf0HwR0NfPnl1BFba_xT3XQubg7_xmhC-htbUPPZ9RSFe2JEthdaahIYDYg==', 'auth_type': 'admin'}, 'database': {'db_type': 'sqlite', 'db_port': '5432', 'db_user': 'db_user@127.0.0.1:gAAAAABhvOWrgnn-zE7yN8Jc3orzLuHgTPjW-B8XIs_SwRLLsn3lgye0WkAVJwIikOyEncbY4yINXEqPGWDCZThZzXy_Y5zlpw=='}}
-    
-    build = env_params['build']
-    node_type = env_params[node_type]
-    node_name = env_params['node_name']
-    master_node = env_params['master_node']
-    auth_params = {
-        'authentication': 'off',
-        'username': '',
-        'password': '',
-        'auth_type': ''
-    }
+    try: 
+        build = env_params['general']['build']
+    except: 
+        build = "predevelop"
+    try: 
+        node_type = env_params['general']['node_type']
+    except:
+        node_type = "none"
+    else: 
+        if docker_only is False:
+            node_type = 'rest'
+    try:
+        node_name = env_params['general']['node_name']
+    except:
+        node_name = 'new-node'
 
-    if docker_only is False:
-        node_type = 'rest'
+    env_params = io_configs.format_configs(env_configs=env_configs)
+    env_params['NODE_TYPE'] = node_type
 
+    deploy_docker = DeployDocker()
+    deploy_docker.depoly_anylog_container(build=build, node_name=node_name, environment_variables=env_params,
+                                          docker_password=docker_password, update_anylog=update_anylog)
 
 def deploy_postgres(env_params:dict, exception:bool=True):
     """

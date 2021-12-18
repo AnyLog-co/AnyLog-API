@@ -182,8 +182,8 @@ class DeployDocker:
 
         return container
 
-    def deploy_anylog_container(self, docker_password:str, environment_variables:dict={}, timezone:str='utc',
-                                update_anylog:bool=False)->bool:
+    def deploy_anylog_container(self, build:str, node_name:str, environment_variables:dict={},
+                                docker_password:str=None, update_anylog:bool=False)->bool:
         """
         Deploy AnyLog container
         :args:
@@ -203,15 +203,14 @@ class DeployDocker:
 
         status = True
         errors = []
-        image = 'oshadmon/anylog:%s' % environment_variables['BUILD']
-        node_name = environment_variables['NODE_NAME']
+        image = 'oshadmon/anylog:%s' % build
         volume_paths = {
             '%s-anylog' % node_name: '/app/AnyLog-Network/anylog',
             '%s-blockchain' % node_name: '/app/AnyLog-Network/blockchain',
             '%s-data' % node_name: '/app/AnyLog-Network/data',
             '%s-local-scripts' % node_name: '/app/AnyLog-Network/local_scripts'
         }
-
+        
         """
         # Validate image information  
         1. Check if image exists || needs to be updated 
@@ -227,9 +226,6 @@ class DeployDocker:
                     errors.append("Failed to locate / download image: '%s'" % image)
 
         volumes = {}
-        if timezone == 'local':
-            volumes = {'/etc/localtime': {'bind': '/etc/localtime', 'mode': 'ro'}}
-        
         for volume in volume_paths:
             if self.__validate_volume(volume_name=volume) is None:
                 output = self.__create_volume(volume_name=volume)

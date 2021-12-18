@@ -88,3 +88,23 @@ def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
                 data[value.split(':', )[0].rstrip().lstrip()] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
 
     return data 
+
+
+def format_configs(env_configs:dict)->dict:
+    """
+    format configurations to be used for docker call
+    :example:
+        {"general": {"node_name": "new-node", "company": "AnyLog Co."}} --> {"NODE_NAME": "new-node", "COMPANY": "AnyLog co."}
+    :args:
+        env_configs:dict - environment configurations
+    :params:
+        env_params:dict - formatted env_configs
+    :return:
+        env_params
+    """
+    env_params = {}
+    for key in env_configs:
+        for param in env_configs[key]:
+            env_params[param.upper()] = env_configs[key][param]
+
+    return env_params
