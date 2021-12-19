@@ -9,6 +9,8 @@ support_dir = os.path.join(ROOT_PATH, 'support')
 sys.path.insert(0, rest_dir)
 sys.path.insert(0, support_dir)
 
+import anylog_api
+import get_cmd
 import io_configs
 import docker_deployment as docker
 
@@ -32,6 +34,9 @@ def main():
         config_file           AnyLog INI configuration file
     :optional arguments:
         -h, --help                              show this help message and exit
+        -a, --auth,         [AUTH]              comma separated authentication username and password            (default: None)
+        -ca, --config-auth  [CONFIG_AUTH]       use authentication found in config file                         (default: False)
+        -t, --timeout       [TIMEOUT]           REST timeout (in seconds)                                       (default: 30)
         --anylog            [ANYLOG]            deploy AnyLog docker container                                  (default: False)
         --psql              [PSQL]              deploy postgres docker container if db type is `psql` in config (default: False)
         --grafana           [GRAFANA]           deploy Grafana if `query` in node_type                          (default: False)
@@ -46,6 +51,11 @@ def main():
     parser.add_argument('rest_conn', type=str, default='127.0.0.1:2049', help='REST connection information to send requests against')
     parser.add_argument('config_file', type=str, default='$HOME/AnyLog-API/config/single-node.ini', help='AnyLog INI configuration file')
 
+    # REST authentication & timeout
+    parser.add_argument('-a', '--auth', type=str, default=None, help='comma separated authentication username and password')
+    parser.add_argument('-ca', '--config-auth', type=bool, nargs='?', const=True, default=False, help='use authentication found in config file')
+    parser.add_argument('-t', '--timeout', type=int, default=30, help='REST timeout (in seconds')
+
     # docker deployment
     parser.add_argument('--anylog',          type=bool, nargs='?', const=True, default=False, help='deploy AnyLog docker container')
     parser.add_argument('--psql',            type=bool, nargs='?', const=True, default=False, help='deploy postgres docker container if db type is `psql` in config')
@@ -55,6 +65,9 @@ def main():
     parser.add_argument('--docker-only',     type=bool, nargs='?', const=True, default=False, help='If set, code will not continue once docker instances are up')
     parser.add_argument('-e', '--exception', type=bool, nargs='?', const=True, default=False, help='Whether to print exceptions or not')
     args = parser.parse_args()
+
+    auth = None
+    status = True
 
     # validate config_file exists
     config_file = os.path.expandvars(os.path.expanduser(args.config_file))
@@ -66,7 +79,6 @@ def main():
     if bool(pkgutil.find_loader('docker')) is False and (args.anylog is True or args.psql is True or args.grafana is True):
         print('Unable to deploy docker container(s). Missing docker python package.')
         exit(1)
-
 
     # extract env_configs
     env_configs, error_msgs = io_configs.read_config(config_file=config_file)
@@ -91,9 +103,23 @@ def main():
                                        docker_password=args.docker_password, docker_only=args.docker_only,
                                        exception=args.exception)
 
-    # process to execute REST commands 
-    if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest']:
+    # validate node is running
+    if env_configs['general']['node_type'] != 'none':
+        if args.config_auth is True and env_configs['authentication']['authentication'] == 'true':
+            auth = (env_configs['authentication']['username'], env_configs['authentication']['password'])
+        elif args.auth is not None:
+            auth = tuple(args.auth.split(','))
+        anylog_conn = anylog_api.AnyLogConnect(conn=args.conn, auth=auth, timeout=args.timeout)
+        status = get_cmd.get_status(conn=anylog_conn, exception=args.exception)
+
+    # process to execute REST commands
+    if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest'] and status is True:
         pass
+    elif env_configs['general']['node_type'] != 'none':
+        if status is True:
+            print('AnyLog is accessible via REST')
+        else:
+            print('Failed to reach AnyLog Node')
 
 
 if __name__ == '__main__':
