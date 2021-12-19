@@ -243,6 +243,8 @@ class DeployDocker:
             if not isinstance(output, docker.models.containers.Container):
                 status = False
                 errors.append("Failed to deploy AnyLog container '%s'" % node_name)
+            else:
+                time.sleep(15)
         if errors != []:
             for error in errors:
                 self.error_message.append(error)

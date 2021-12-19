@@ -63,8 +63,14 @@ def deploy_anylog_container(env_configs:dict, docker_only:bool=False, update_any
     env_params['NODE_TYPE'] = node_type
 
     deploy_docker = DeployDocker()
-    deploy_docker.depoly_anylog_container(build=build, node_name=node_name, environment_variables=env_params,
-                                          docker_password=docker_password, update_anylog=update_anylog)
+    status = deploy_docker.deploy_anylog_container(build=build, node_name=node_name, environment_variables=env_params,
+                                                   docker_password=docker_password, update_anylog=update_anylog)
+    if exception is True:
+        if status is True:
+            print('Successfully deployed AnyLog container node of type: %s' % node_type)
+        else:
+            print('Failed to deploy AnyLog container node of type: %s' % node_type)
+
 
 def deploy_postgres(env_params:dict, exception:bool=True):
     """

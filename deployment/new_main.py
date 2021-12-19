@@ -87,9 +87,9 @@ def main():
     if args.grafana is True:
         docker.deploy_grafana(exception=args.exception)
     if args.anylog:
-        docker.deploy_anylog(env_configs=env_configs, update_anylog=args.update_anylog,
-                             docker_password=args.docker_password, docker_only=args.docker_only,
-                             exception=args.exception)
+        docker.deploy_anylog_container(env_configs=env_configs, update_anylog=args.update_anylog,
+                                       docker_password=args.docker_password, docker_only=args.docker_only,
+                                       exception=args.exception)
 
     # process to execute REST commands 
     if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest']:
