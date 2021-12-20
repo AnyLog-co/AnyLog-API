@@ -113,10 +113,10 @@ def main():
     if status is True and env_configs['general']['node_type'] != 'none':
         anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=auth, timeout=args.timeout)
         status = get_cmd.get_status(conn=anylog_conn, exception=args.exception)
-
+   
     # process to execute REST commands
     if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest'] and status is True:
-        messages = generic_node.deplog_genric_params(conn=conn, env_configs=env_configs, exception=args.exception)
+        messages = generic_node.deplog_genric_params(conn=anylog_conn, env_configs=env_configs, exception=args.exception)
 
     elif env_configs['general']['node_type'] == 'rest' and status is True:
         print('AnyLog accessible via REST')

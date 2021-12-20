@@ -101,7 +101,7 @@ def connect_dbms(conn:anylog_api.AnyLogConnect, db_type:str='sqlite', db_credent
     """
     HEADER['command'] = "connect dbms %s %s %s %s" % (db_type, db_credentials, db_port, db_name)
     r, error = conn.post(headers=HEADER)
-    if not other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+    if not other_cmd.print_error(conn=conn.conn, request_type="post", command=HEADER['command'], r=r, error=error, exception=exception):
         status = True
     return status 
 
