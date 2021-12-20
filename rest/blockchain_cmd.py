@@ -9,7 +9,7 @@ import import_packages
 import_packages.import_dirs()
 
 import anylog_api
-import config
+# import config
 import get_cmd
 import post_cmd
 import other_cmd
@@ -119,28 +119,28 @@ def check_table(conn:anylog_api.AnyLogConnect, db_name:str, table_name:str, exce
     return status
 
 
-def __extract_policy_id(conn:anylog_api.AnyLogConnect, policy_type:str, exception:bool=False)->str:
-    """
-    Extract new policy ID from dictionary following prepare command
-    :args:
-        conn:anylog_api.AnyLogConnect - connection to AnyLog
-        policy_type:str - node type that's being processed
-        exception:bool - whether to print exception
-    :params:
-        policy_id - ID of new policy
-    :return:
-        policy_id
-    """
-    policy_id = None
-    config_data = config.import_config(conn=conn, exception=exception)
-    if 'policy' in config_data:
-        try:
-            policy_id = json.loads(config_data['policy'])[policy_type]['id']
-        except Exception as e:
-            if exception is True:
-                print('Failed to extract policy ID (Error: %s)' % e)
-
-    return policy_id
+# def __extract_policy_id(conn:anylog_api.AnyLogConnect, policy_type:str, exception:bool=False)->str:
+#     """
+#     Extract new policy ID from dictionary following prepare command
+#     :args:
+#         conn:anylog_api.AnyLogConnect - connection to AnyLog
+#         policy_type:str - node type that's being processed
+#         exception:bool - whether to print exception
+#     :params:
+#         policy_id - ID of new policy
+#     :return:
+#         policy_id
+#     """
+#     policy_id = None
+#     config_data = config.import_config(conn=conn, exception=exception)
+#     if 'policy' in config_data:
+#         try:
+#             policy_id = json.loads(config_data['policy'])[policy_type]['id']
+#         except Exception as e:
+#             if exception is True:
+#                 print('Failed to extract policy ID (Error: %s)' % e)
+#
+#     return policy_id
 
 
 def prepare_policy(conn:anylog_api.AnyLogConnect, policy_type:str, policy:dict, exception:bool=False):
