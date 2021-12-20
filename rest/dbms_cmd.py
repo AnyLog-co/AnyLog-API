@@ -82,43 +82,27 @@ def get_dbms_type(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
 
     return datbase_list
 
-def connect_dbms(conn:anylog_api.AnyLogConnect, config:dict, db_name:str=None, exception:bool=False)->bool:
+
+def connect_dbms(conn:anylog_api.AnyLogConnect, db_type:str='sqlite', db_credentials:str=None, db_port:int=5432,
+                 db_name:str=None, exception:bool=False)->bool:
     """
     Execute connection to database
     :args: 
         conn:str - REST connection info
-        config:dict - dict to extract config from
+        db_type:str - database type
+        db_credentials:str - database user@ip:password
+        db_port:str - database port
         db_name:str - database you'd like to create
-        auth:tuple - Authentication information
-        timeout:int - REST timeout
     :param: 
         cmd:str - command to execute 
         status:bool
     :return:
         status
     """
-    status = True
-    if db_name is None and 'default_dbms' in config:
-        db_name = config['default_dbms']
-    elif db_name is None and 'default_dbms' not in config:
-        if exception is True:
-            print('Missing database name') 
-        status = False
-       
-    if status is not False:
-        if 'db_type' not in config: 
-            config['db_type'] = 'sqlite'
-        if 'db_user' not in config: 
-            config['db_user'] = 'anylog@127.0.0.1:anylog' 
-        if 'db_port' not in config: 
-            config['db_port'] = 5432
-
-        cmd = "connect dbms %s %s %s %s" % (config['db_type'],  config['db_user'], config['db_port'], db_name)
-        HEADER['command'] = cmd
-        r, error = conn.post(headers=HEADER)
-        if not other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
-            status = True
-
+    HEADER['command'] = "connect dbms %s %s %s %s" % (db_type, db_credentials, db_port, db_name)
+    r, error = conn.post(headers=HEADER)
+    if not other_cmd.print_error(conn=conn.conn, request_type="post", command=cmd, r=r, error=error, exception=exception):
+        status = True
     return status 
 
 

@@ -112,7 +112,7 @@ def main():
 
     # process to execute REST commands
     if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest'] and status is True:
-        pass
+            
 
 
 

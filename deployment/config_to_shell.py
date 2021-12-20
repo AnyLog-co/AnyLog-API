@@ -9,7 +9,6 @@ support_dir = os.path.join(ROOT_PATH, 'support')
 sys.path.insert(0, rest_dir)
 sys.path.insert(0, support_dir)
 
-import print_docker_shell
 import io_configs
 
 
