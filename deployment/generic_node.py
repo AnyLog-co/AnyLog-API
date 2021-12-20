@@ -62,7 +62,7 @@ def deplog_genric_params(conn:anyloy_api.AnyLogConnect, env_configs:dict, except
                                                                         db_credentials=env_configs['database']['db_user'],
                                                                         db_port=env_configs['database']['db_port'],
                                                                         db_name='blockchain', exception=exception):
-        error_msgs.append(error % 'blockchain')
+            error_msgs.append(error % 'blockchain') 
 
     if env_configs['generic']['node_type'] not in ['master', 'query']:
         if 'almgm' not in dbms_list and not dbms_conn.connect_dbms(conn=conn,
@@ -74,7 +74,7 @@ def deplog_genric_params(conn:anyloy_api.AnyLogConnect, env_configs:dict, except
 
         elif not dbms_conn.get_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             if not dbms_conn.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
-            error_msgs.append("Faileed to create table 'almgm.tsd_info'")
+                error_msgs.append("Faileed to create table 'almgm.tsd_info'")
 
     if env_configs['generic']['node_type'] in ['operator', 'single-node']:
         try:
