@@ -13,6 +13,7 @@ import anylog_api
 import get_cmd
 import io_configs
 import docker_deployment as docker
+import generic_node
 
 def main():
     """
@@ -96,23 +97,29 @@ def main():
         if 'db_user' not in env_configs:
             env_configs['database']['db_user'] = 'anylog@127.0.0.1:demo'
         docker.deploy_postgres(env_params=env_configs['database'], exception=args.exception)
+
     if args.grafana is True:
         docker.deploy_grafana(exception=args.exception)
     if args.anylog:
-        docker.deploy_anylog_container(env_configs=env_configs, update_anylog=args.update_anylog,
-                                       docker_password=args.docker_password, docker_only=args.docker_only,
-                                       exception=args.exception)
-   
-    # validate node is running
-    if env_configs['general']['node_type'] != 'none':
-        if args.config_auth is True and env_configs['authentication']['authentication'] == 'true':
-            auth = (env_configs['authentication']['username'], env_configs['authentication']['password'])
-        elif args.auth is not None:
-            auth = tuple(args.auth.split(','))
+        status = docker.deploy_anylog_container(env_configs=env_configs, update_anylog=args.update_anylog,
+                                                            docker_password=args.docker_password,
+                                                            docker_only=args.docker_only, exception=args.exception)
+
+    if args.config_auth is True and env_configs['authentication']['authentication'] == 'true':
+        auth = (env_configs['authentication']['username'], env_configs['authentication']['password'])
+    elif args.auth is not None:
+        auth = tuple(args.auth.split(','))
+
+    if status is True and env_configs['general']['node_type'] != 'none':
+        anylog_conn = anylog_api.AnyLogConnect(conn=args.rest_conn, auth=auth, timeout=args.timeout)
+        status = get_cmd.get_status(conn=anylog_conn, exception=args.exception)
 
     # process to execute REST commands
     if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest'] and status is True:
-            
+        messages = generic_node.deplog_genric_params(conn=conn, env_configs=env_configs, exception=args.exception)
+
+    elif env_configs['general']['node_type'] == 'rest' and status is True:
+        print('AnyLog accessible via REST')
 
 
 

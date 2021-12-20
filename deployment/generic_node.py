@@ -19,7 +19,6 @@ def deplog_genric_params(conn:anyloy_api.AnyLogConnect, env_configs:dict, except
         * run scheduler
         * blockchain sync
         * connect to database(s)
-        * declare policy(s)
     :args:
         conn:anylog_api.AnyLogConnect - connection to AnyLog
         env_configs:dict - environment configuration
@@ -77,7 +76,7 @@ def deplog_genric_params(conn:anyloy_api.AnyLogConnect, env_configs:dict, except
             if not dbms_conn.create_table(conn=conn, db_name='almgm', table_name='tsd_info', exception=exception):
             error_msgs.append("Faileed to create table 'almgm.tsd_info'")
 
-    if env_configs['generic']['nodee_type'] in ['operator', 'single-node']:
+    if env_configs['generic']['node_type'] in ['operator', 'single-node']:
         try:
             default_dbms = env_configs['database']['default_dbms']
         except:
@@ -90,5 +89,4 @@ def deplog_genric_params(conn:anyloy_api.AnyLogConnect, env_configs:dict, except
                                                                             db_name='almgm', exception=exception):
                 error_msgs.append(error % default_dbms)
 
-    # declare cluster
 

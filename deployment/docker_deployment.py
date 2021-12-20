@@ -41,7 +41,7 @@ def deploy_anylog_container(env_configs:dict, docker_only:bool=False, update_any
     :print:
         when exception is True, print whether AnyLog was deployed properly or not
     :return:
-        none
+        status
     """
     try: 
         build = env_configs['general']['build']
@@ -71,6 +71,8 @@ def deploy_anylog_container(env_configs:dict, docker_only:bool=False, update_any
         else:
             print('Failed to deploy AnyLog container node of type: %s' % node_type)
 
+    return status
+
 
 def deploy_postgres(env_params:dict, exception:bool=True):
     """
@@ -85,8 +87,6 @@ def deploy_postgres(env_params:dict, exception:bool=True):
         deploy_docker:docker_api.DeployDocker - call to DeployDocker class
     :print:
         when exception is True, print whether postgres was deployed properly or not
-    :return:
-        none
     """
     username = 'anylog'
     password = 'demo'
@@ -106,7 +106,7 @@ def deploy_postgres(env_params:dict, exception:bool=True):
             print('Failed to deploy Postgres container')
 
 
-def deploy_grafana(exception:bool=True)->bool:
+def deploy_grafana(exception:bool=True):
     """
     Deploy Grafana instance
     :args:
