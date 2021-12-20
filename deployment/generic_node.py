@@ -86,7 +86,7 @@ def deplog_genric_params(conn:anylog_api.AnyLogConnect, env_configs:dict, except
                                                                             db_type=env_configs['database']['db_type'],
                                                                             db_credentials=env_configs['database']['db_user'],
                                                                             db_port=env_configs['database']['db_port'],
-                                                                            db_name='almgm', exception=exception):
+                                                                            db_name=default_dbms, exception=exception):
                 error_msgs.append(error % default_dbms)
 
 
