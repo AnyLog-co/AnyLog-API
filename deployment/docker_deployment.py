@@ -44,18 +44,18 @@ def deploy_anylog_container(env_configs:dict, docker_only:bool=False, update_any
         none
     """
     try: 
-        build = env_params['general']['build']
+        build = env_configs['general']['build']
     except: 
         build = "predevelop"
     try: 
-        node_type = env_params['general']['node_type']
+        node_type = env_configs['general']['node_type']
     except:
         node_type = "none"
     else: 
-        if docker_only is False:
+        if docker_only is False and node_type != 'none':
             node_type = 'rest'
     try:
-        node_name = env_params['general']['node_name']
+        node_name = env_configs['general']['node_name']
     except:
         node_name = 'new-node'
 

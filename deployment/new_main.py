@@ -102,24 +102,18 @@ def main():
         docker.deploy_anylog_container(env_configs=env_configs, update_anylog=args.update_anylog,
                                        docker_password=args.docker_password, docker_only=args.docker_only,
                                        exception=args.exception)
-
+   
     # validate node is running
     if env_configs['general']['node_type'] != 'none':
         if args.config_auth is True and env_configs['authentication']['authentication'] == 'true':
             auth = (env_configs['authentication']['username'], env_configs['authentication']['password'])
         elif args.auth is not None:
             auth = tuple(args.auth.split(','))
-        anylog_conn = anylog_api.AnyLogConnect(conn=args.conn, auth=auth, timeout=args.timeout)
-        status = get_cmd.get_status(conn=anylog_conn, exception=args.exception)
 
     # process to execute REST commands
     if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest'] and status is True:
         pass
-    elif env_configs['general']['node_type'] != 'none':
-        if status is True:
-            print('AnyLog is accessible via REST')
-        else:
-            print('Failed to reach AnyLog Node')
+
 
 
 if __name__ == '__main__':
