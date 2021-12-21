@@ -68,24 +68,25 @@ def post_config(conn:anylog_api.AnyLogConnect, config:dict, exception:bool=False
     return status
 
 
-def import_config(conn:anylog_api.AnyLogConnect, exception:bool=False)->dict:
+def import_config(conn:anylog_api.AnyLogConnect, env_params:dict, exception:bool=False)->dict:
     """
     Extract parameters from AnyLog dictionary into dictionary  
     :args: 
-        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt 
+        conn:anylog_api.AnyLogConnect - connection to AnyLog RESt
+        env_params:dict - configurations params
         exception:bool - whether to print errors to screen 
-    :param: 
-        data:dict - formatted results from dictionary
+    :param:
         dictionary:str - raw results from get_cmd.get_dictionary 
     :return: 
-        data 
+        updated env_params with content from AnyLog dictionary
     """
-    data = {} 
     dictionary = get_cmd.get_dictionary(conn=conn, exception=exception)
     if dictionary is not None:
         for value in dictionary.split('\n'):
-            if value != '\r' and value != '':  
-                data[value.split(':', )[0].rstrip().lstrip()] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
+            if value != '\r' and value != '':
+                param = value.split(':', )[0].rstrip().lstrip()
+                if param not in env_params:
+                    env_params[param] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
 
     return data 
 

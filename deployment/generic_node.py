@@ -90,4 +90,4 @@ def deplog_genric_params(conn:anylog_api.AnyLogConnect, env_configs:dict, except
                 error_msgs.append(error % default_dbms)
 
 
-    print(error_msgs) 
+    return error_msgs

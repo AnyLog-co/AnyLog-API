@@ -46,7 +46,10 @@ def main():
         --docker-only       [DOCKER_ONLY]       If set, code will not continue once docker instance(s) are up   (default: False)
         -e, --exception     [EXCEPTION]         Whether to print exceptions or not                              (default: False)
     :params:
+        anylog_conn:anylog_api.AnyLogConnect - connection to AnyLog via REST
         env_configs:dict - configuration parameters from config_file
+        env_params:dict - formatted env_configs + parameters from AnyLog dictionary
+
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('rest_conn', type=str, default='127.0.0.1:2049', help='REST connection information to send requests against')
@@ -116,7 +119,15 @@ def main():
    
     # process to execute REST commands
     if args.docker_only is False and env_configs['general']['node_type'] not in ['none', 'rest'] and status is True:
+        # deploy generic params
         messages = generic_node.deplog_genric_params(conn=anylog_conn, env_configs=env_configs, exception=args.exception)
+        if messages is not []:
+            for error in messages:
+                print(error)
+                exit(1)
+        env_params = io_configs.format_configs(env_configs)
+        env_params = io_configs.import_config(conn=anylog_conn, env_params=env_params, exception=args.exception)
+        print(env_params)
 
     elif env_configs['general']['node_type'] == 'rest' and status is True:
         print('AnyLog accessible via REST')
