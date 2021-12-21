@@ -148,7 +148,7 @@ def get_dictionary(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     :return: 
         dictionary values
     """
-    HEADER['command'] = 'get dictionary'
+    HEADER['command'] = 'get dictionary where format=json'
 
     r, error = conn.get(headers=HEADER)
     if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get dictionary', r=r, error=error, exception=exception):

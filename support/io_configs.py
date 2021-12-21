@@ -82,12 +82,9 @@ def import_config(conn:anylog_api.AnyLogConnect, env_params:dict, exception:bool
     """
     dictionary = get_cmd.get_dictionary(conn=conn, exception=exception)
     if dictionary is not None:
-        for value in dictionary.split('\n'):
-            if value != '\r' and value != '':
-                param = value.split(':', )[0].rstrip().lstrip()
-                if param not in env_params:
-                    env_params[param] = value.split(':', 1)[-1].split('\r')[0].rstrip().lstrip()
-
+        for key in dictionary:
+            if key.upper() not in env_params:
+                env_params[key.upper()] = dictionary[key]
     return data 
 
 
