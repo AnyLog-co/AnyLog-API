@@ -153,11 +153,15 @@ def get_dictionary(conn:anylog_api.AnyLogConnect, exception:bool=False)->str:
     r, error = conn.get(headers=HEADER)
     if not other_cmd.print_error(conn=conn.conn, request_type="get", command='get dictionary', r=r, error=error, exception=exception):
         try: 
-            return r.text
-        except Exception as e: 
-            if exception is True:
-                print('Failed to get dictionary from: %s (Error: %s)' % (conn, e))
-
+            dict = r.json()
+        except:
+            try:
+                dict = r.text
+            except Exception as e:
+                dict = None
+                if exception is True:
+                    print('Failed to get dictionary from: %s (Error: %s)' % (conn, e))
+    return dict
 
 def get_hostname(conn:anylog_api.AnyLogConnect, exception:bool=False)->str: 
     """
