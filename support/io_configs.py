@@ -80,12 +80,12 @@ def import_config(conn:anylog_api.AnyLogConnect, env_params:dict, exception:bool
     :return: 
         updated env_params with content from AnyLog dictionary
     """
-    dictionary = get_cmd.get_dictionary(conn=conn, exception=exception)
-    if dictionary is not None:
+    dictionary = get_cmd.get_dictionary(conn=conn, json_format=True, exception=exception)
+    if isinstance(dictionary, dict):
         for key in dictionary:
             if key.upper() not in env_params:
                 env_params[key.upper()] = dictionary[key]
-    return data 
+    return env_params
 
 
 def format_configs(env_configs:dict)->dict:

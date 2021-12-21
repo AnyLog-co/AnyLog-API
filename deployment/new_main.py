@@ -127,7 +127,6 @@ def main():
                 exit(1)
         env_params = io_configs.format_configs(env_configs)
         env_params = io_configs.import_config(conn=anylog_conn, env_params=env_params, exception=args.exception)
-        print(env_params)
 
     elif env_configs['general']['node_type'] == 'rest' and status is True:
         print('AnyLog accessible via REST')
