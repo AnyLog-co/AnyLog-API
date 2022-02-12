@@ -136,7 +136,8 @@ def declare_node(config:dict, disable_location:bool=False, exception:bool=False)
          node 
     """
     if 'node_type' not in config: 
-        return {} 
+        return {}
+
     node = {config['node_type']: {
         'ip':        config['external_ip'],
         'local_ip':  config['ip'],

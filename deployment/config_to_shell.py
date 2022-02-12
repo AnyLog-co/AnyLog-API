@@ -28,7 +28,7 @@ def print_docker_shell(env_params:dict)->str:
     except:
         node_name = 'new-node'
 
-    docker_run_cmd = "docker run --network host --name new-node --privileged"
+    docker_run_cmd = "docker run --network host --name new-node --privileged \\"
 
     # environment params
     for param in env_params:
