@@ -8,6 +8,7 @@ sys.path.insert(0, REST_PATH)
 from anylog_connection import AnyLogConnect
 import database_calls
 import deployment_calls
+import generic_get_calls
 import generic_post_calls
 
 
@@ -24,6 +25,12 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         anylog_conn:AnyLogCOnnect - connection to AnyLog via REST
     """
     anylog_conn = AnyLogConnect(conn=conn, auth=auth, timeout=timeout)
+
+    # validate status
+    node_status = generic_get_calls.get_status(anylog_conn=anylog_conn, exception=exception)
+    if not node_status:
+        print(f'Failed to validate connection to AnyLog on {anylog_conn.conn}')
+        exit(1)
 
     # set home path
     rest_call.set_home_path(anylog_conn=anylog_conn, anylog_root_dir="!anylog_root_dir", excetion=exception)
