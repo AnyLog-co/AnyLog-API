@@ -1,6 +1,5 @@
 import requests
 
-
 class AnyLogConnect:
     def __init__(self, conn:str, auth:tuple=None, timeout:int=30):
         """
