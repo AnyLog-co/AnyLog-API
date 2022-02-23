@@ -11,11 +11,15 @@ from anylog_connection import AnyLogConnect
 
 def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
+    The following is intended as an example of deploying Single-Node instance via REST.
+    Note, code for adding policies has yet to be implemented.
     :args:
         conn:str - REST IP:PORT for communicating with AnyLog
         auth:tuple - authentication information
         timeout:int - REST timeout (in seconds)
         exception:bool - whether to print exception
+    :params:
+        anylog_conn:AnyLogCOnnect - connection to AnyLog via REST
     """
     anylog_conn = AnyLogConnect(conn=conn, auth=auth, timeout=timeout)
 
