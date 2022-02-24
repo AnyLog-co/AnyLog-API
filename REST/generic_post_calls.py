@@ -27,6 +27,30 @@ def set_home_path(anylog_conn:AnyLogConnect, anylog_root_dir:str="!anylog_root_d
     return r
 
 
+def create_work_dirs(anylog_conn:AnyLogConnect, exception:bool=False)->bool:
+    """
+    create work directories for AnyLog
+    :command:
+        create work directories
+    :args:
+        anylog_conn:AnyLogConnect - connection to AnyLog
+        exception:bool - whether to print exception
+    :params:
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        r
+    """
+    headers = {
+        "command": "create work directories",
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+    return r
+
+
 def run_scheduler1(anylog_conn:AnyLogConnect, exception:bool=False)->bool:
     """
     Run base scheduler

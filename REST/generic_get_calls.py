@@ -1,5 +1,32 @@
+import requests
 from anylog_connection import AnyLogConnection
 from support import print_error
+
+
+def get_location(exception:bool=False)->str:
+    """
+    Get location from  https://ipinfo.io/json
+    :args:
+        exception:bool - whether or not to print exception(s)
+    :params:
+        location:str - location from URL
+        r:requests.models.Response- request response
+    :return:
+        location
+    """
+    location = '0.0, 0.0'
+    try:
+        r = requests.get(url='https://ipinfo.io/json')
+    except Exception as e:
+        if exception is True:
+            print(f"Failed to execute GET against 'https://ipinfo.io/json' (Error {e})")
+    else:
+        try:
+            location = r.json()['loc']
+        except Exception as e:
+            if exception is True:
+                print(f'Failed to extract location (Error {e})')
+    return location
 
 
 def validate_status(anylog_conn:AnyLogConnection, exception:bool=False)->bool:

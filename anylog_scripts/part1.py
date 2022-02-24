@@ -15,7 +15,9 @@ import generic_post_calls
 def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
     The following is intended as an example of deploying Single-Node instance via REST.
-    Note, code for adding policies has yet to be implemented.
+    :note:
+        When a node is first deployed a user should run part2.py to configure the node agianst the blockchain and
+        set unchanged parameters within the node
     :args:
         conn:str - REST IP:PORT for communicating with AnyLog
         auth:tuple - authentication information
@@ -23,6 +25,10 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         exception:bool - whether to print exception
     :params:
         anylog_conn:AnyLogCOnnect - connection to AnyLog via REST
+        node_status:bool - whether or not able to `get status` of node
+        # database creation specific params
+        db_status:bool - whether or not database exists
+        db_type:str - database type
     """
     anylog_conn = AnyLogConnect(conn=conn, auth=auth, timeout=timeout)
 
@@ -35,10 +41,18 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     # set home path
     rest_call.set_home_path(anylog_conn=anylog_conn, anylog_root_dir="!anylog_root_dir", excetion=exception)
 
-    # connect to logical database(s)
+    # connect to logical database(s) - if fails to connect reattempt using SQLite
     for db_name in ['blockchain', 'almgm', '!default_dbms', 'system_query']:
-        database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type="psql", db_ip="!db_ip",
-                                    db_port="!db_port", db_user="!db_user", db_passwd="!db_passwd", exception=exception)
+        db_status = False
+        db_type = 'psql'
+        while db_status is False:
+            database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=db_type, db_ip="!db_ip",
+                                        db_port="!db_port", db_user="!db_user", db_passwd="!db_passwd",
+                                        exception=exception)
+            if db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception):
+                db_type = 'sqlite'
+            else:
+                db_status = True
 
     # Set schedulers
     generic_post_calls.run_scheduler1(anylog_conn=anylog_conn, exception=exception)
