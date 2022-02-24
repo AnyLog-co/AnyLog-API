@@ -1,63 +1,63 @@
 {
-  "config" : [
+  "config": [
     {
-      "name" : "Generic Variables",
-      "description" : "Init params on start",
-      "setting" : {
-        "anylog_root_dir" : "C:",
-        "node_name" : "al-aiops-node1",
-        "company_name " : "Ai-Ops"
+      "name": "Generic Variables",
+      "description": "Init params on start",
+      "setting": {
+        "anylog_root_dir": "C:",
+        "node_name": "al-aiops-node1",
+        "company_name": "Ai-Ops"
       },
-      "commands" : [
+      "commands": [
         "hostname = get hostname"
       ]
     },
     {
-      "name" : "IP / Port Variables",
-      "description" : "Init params on start",
-      "setting" : {
-        "anylog_server_port" : 2148,
-        "anylog_rest_port" : 2149,
-        "master_node" : "10.0.0.111:2148",
-        "sync_time" : "30 seconds"
+      "name": "IP / Port Variables",
+      "description": "Init params on start",
+      "setting": {
+        "anylog_server_port": 2148,
+        "anylog_rest_port": 2149,
+        "master_node": "10.0.0.111:2148",
+        "sync_time": "30 seconds"
       }
     },
     {
-      "name" : "DBMS Variables",
-      "description" : "Init DBMS params on start",
-      "setting" : {
+      "name": "DBMS Variables",
+      "description": "Init DBMS params on start",
+      "setting": {
         "db_type": "sqlite",
-        "db_user" : "postgres",
-        "db_passwd" : "postgres",
-        "db_ip" : "!ip",
-        "db_port" : 5432,
-        "default_dbms" : "aiops"
+        "db_user": "postgres",
+        "db_passwd": "postgres",
+        "db_ip": "!ip",
+        "db_port": 5432,
+        "default_dbms": "aiops"
       }
     },
     {
-      "name" : "Cluster and Partition Variables",
-      "description" : "Init Cluster params on start",
-      "setting" : {
-        "cluster_name" : "cluster_1",
+      "name": "Cluster and Partition Variables",
+      "description": "Init Cluster params on start",
+      "setting": {
+        "cluster_name": "cluster_1",
         "partition_table": "*",
-        "partition_column" : "timestamp",
-        "partition_interval" : "15 days",
+        "partition_column": "timestamp",
+        "partition_interval": "15 days",
         "partition_keep": 6,
         "partition_sync": "1 day"
       }
     },
     {
-      "name" : "Broker functionality",
-      "description" : "Configure a process to map source data to the table structure",
-      "setting" : {
-        "broker" : "rest",
-        "mqtt_log " : false,
-        "mqtt_topic_name" : "aiops",
-        "mqtt_topic_dbms" : "bring [dbms]",
-        "mqtt_topic_table" : "bring [table]",
-        "mqtt_column_timestamp" : "bring [ts]",
-        "mqtt_column_value" : "bring [value]",
-        "mqtt_column_value_type" : "float"
+      "name": "Broker functionality",
+      "description": "Configure a process to map source data to the table structure",
+      "setting": {
+        "broker": "rest",
+        "mqtt_log ": false,
+        "mqtt_topic_name": "aiops",
+        "mqtt_topic_dbms": "bring [dbms]",
+        "mqtt_topic_table": "bring [table]",
+        "mqtt_column_timestamp": "bring [ts]",
+        "mqtt_column_value": "bring [value]",
+        "mqtt_column_value_type": "float"
       }
     }
   ]
