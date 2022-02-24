@@ -15,7 +15,7 @@ import generic_post_calls
 
 def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
-    The following is intended as an example of deploying Single-Node instance via REST.
+    The following is intended as an example of deploying an Operator / Single-Node without blockchain policy declaration(s).
     :note:
         When a node is first deployed a user should run part2.py to configure the node agianst the blockchain and
         set unchanged parameters within the node
