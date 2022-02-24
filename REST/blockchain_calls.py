@@ -18,7 +18,7 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
     :params:
         blockchain_data:dict - Results from blockchain
         cmd:str - command to execute
-        headers:dict - headers:dict - REST header
+        headers:dict - REST header
         r:bool, error:str - whether the command failed & why
     :return:
         blockchain_data
@@ -39,7 +39,7 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
         "command": cmd,
         "User-Agent": "AnyLog/1.23"
     }
-    r, error = anylog_conn.get(headers=headers, payload=None)
+    r, error = anylog_conn.get(headers=headers)
     if exception is True and r is False:
         print_error(error_type="GET", cmd=headers['command'], error=error)
     else:
@@ -69,6 +69,9 @@ def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:s
         status:bool
         policy:dict - policy to post on blockchain
         payload:str - policy converted to string
+        headers:dict - REST header
+    :return:
+        status
     """
     status = True
     if 'company' not in policy_values:

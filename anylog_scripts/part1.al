@@ -1,5 +1,6 @@
 # The following script (in REST) should be run each time a node started
 set anylog home !anylog_root_dir
+set authentication off
 
 connect dbms blockchain where type=psql and user = !db_user and password = !db_passwd and ip = !db_ip and port = !db_port
 

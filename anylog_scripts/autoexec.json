@@ -9,7 +9,9 @@
         "company_name": "Ai-Ops"
       },
       "commands": [
-        "hostname = get hostname"
+        "set authentication off",
+        "hostname = get hostname",
+        "node_id = "
       ]
     },
     {

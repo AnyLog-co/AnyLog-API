@@ -2,6 +2,37 @@ from anylog_connection import AnyLogConnection
 from support import print_error
 
 
+def set_variables(anylog_conn:AnyLogConnection, key:str, value:str, exception:bool=False)->bool:
+    """
+    Add variable to AnyLog dictionary
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        key:str - variable name
+        value:str - variable value
+        exception:bool - whether to print exception
+    :params:
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        r
+    """
+    key = key.lstrip().rstrip()
+    if isinstance(value, str):
+        value = value.replace('"', '').replace("'", "").lstrip().rstrip()
+        cmd = f'set {key}="{value}"'
+    else:
+        cmd = f'set {key}={value}'
+    headers = {
+        "command": cmd,
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+    return r
+
+
+
 def set_home_path(anylog_conn:AnyLogConnection, anylog_root_dir:str="!anylog_root_dir", exception:bool=False)->bool:
     """
     The following sets the home root path

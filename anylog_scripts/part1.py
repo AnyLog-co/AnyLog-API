@@ -6,6 +6,7 @@ REST_PATH = os.path.join(ROOT_PATH, 'REST')
 sys.path.insert(0, REST_PATH)
 
 from anylog_connection import AnyLogConnection
+import authentication
 import database_calls
 import deployment_calls
 import generic_get_calls
@@ -39,7 +40,15 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         print(f'Failed to validate connection to AnyLog on {anylog_conn.conn}')
         exit(1)
 
+    authentication.disable_authentication(anylog_conn=anylog_conn, exception=exception)
     anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
+
+    node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=exception)
+    if not isinstance(node_id, str):
+        while int(node_id.status_code) != 200:
+            authentication.create_public_key(anylog_conn=anylog_conn, password='passwd', exception=exception)
+            node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=exception)
+    generic_post_calls.set_variables(anylog_conn=anylog_conn, key='node_id', value=node_id, exception=exception)
 
     # set home path & create work dirs
     print("Set Directories")
