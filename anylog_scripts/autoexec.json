@@ -7,12 +7,7 @@
         "anylog_root_dir": "C:",
         "node_name": "al-aiops-node1",
         "company_name": "Ai-Ops"
-      },
-      "commands": [
-        "set authentication off",
-        "hostname = get hostname",
-        "node_id = "
-      ]
+      }
     },
     {
       "name": "IP / Port Variables",
