@@ -1,7 +1,7 @@
-from anylog_connection import AnyLogConnect
+from anylog_connection import AnyLogConnection
 from support import *
 
-def run_mqtt_client(anylog_conn:AnyLogConnect, broker:str, port:str, mqtt_user:str='', mqtt_passd:str='',
+def run_mqtt_client(anylog_conn:AnyLogConnection, broker:str, port:str, mqtt_user:str='', mqtt_passd:str='',
                     mqtt_log:bool=False, topic_name:str='*', topic_dbms:str='', topic_table:str='',
                     columns:dict={}, exception:bool=False)->bool:
     """
@@ -9,7 +9,7 @@ def run_mqtt_client(anylog_conn:AnyLogConnect, broker:str, port:str, mqtt_user:s
     :command:
         run mqtt client where broker=!broker and port=!port and user-agent=anylog and user=!mqtt_user and password=!mqtt_password and log=!mqtt_log and topic=(name=!mqtt_topic_name and dbms=!mqtt_topic_dbms and table=!mqtt_topic_table and column.timestamp.timestamp=!mqtt_column_timestamp and column.value=(value=!mqtt_column_value and type=!mqtt_column_value_type))
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         broker:str - broker connection information
         port:str - port correlated to broker
         mqtt_user:str - user for accessing MQTT
@@ -43,13 +43,13 @@ def run_mqtt_client(anylog_conn:AnyLogConnect, broker:str, port:str, mqtt_user:s
     return r
 
 
-def set_threshold(anylog_conn:AnyLogConnect, write_immediate:bool=True, exception:bool=False)->bool:
+def set_threshold(anylog_conn:AnyLogConnection, write_immediate:bool=True, exception:bool=False)->bool:
     """
     Set buffer threshold
     :command:
         set buffer threshold where write_immediate = true
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         write_immediate:bool - whether to set threshold to immediate
         exception:bool - whether to print exception
     :params:
@@ -72,13 +72,13 @@ def set_threshold(anylog_conn:AnyLogConnect, write_immediate:bool=True, exceptio
     return r
 
 
-def run_streamer(anylog_conn:AnyLogConnect, exception:bool=False)->bool:
+def run_streamer(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     """
     Set streamer
     :command:
         run streamer
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         header:dict - REST header
@@ -96,14 +96,14 @@ def run_streamer(anylog_conn:AnyLogConnect, exception:bool=False)->bool:
     return r
 
 
-def run_operator(anylog_conn:AnyLogConnect, create_table:bool=True, update_tsd_info:bool=True, archive:bool=True,
+def run_operator(anylog_conn:AnyLogConnection, create_table:bool=True, update_tsd_info:bool=True, archive:bool=True,
                  distributor:bool=True, master_node:str="!master_node", exception:bool=False)->bool:
     """
     Start Operator process
     :command:
         run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and master_node=!master_node
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         create_table:bool - Whether to create/declare table if DNE
         update_tsd_info:str - Whether to update tsd_info table
         archive:str - whether to archive (or backup) files

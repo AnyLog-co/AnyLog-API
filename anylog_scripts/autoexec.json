@@ -39,9 +39,11 @@
       "description" : "Init Cluster params on start",
       "setting" : {
         "cluster_name" : "cluster_1",
+        "partition_table": "*",
         "partition_column" : "timestamp",
         "partition_interval" : "15 days",
-        "partition_keep": 6
+        "partition_keep": 6,
+        "partition_sync": "1 day"
       }
     },
     {

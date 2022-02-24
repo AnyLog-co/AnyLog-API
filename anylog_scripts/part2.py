@@ -5,7 +5,7 @@ ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('anylog_scripts')[0
 REST_PATH = os.path.join(ROOT_PATH, 'REST')
 sys.path.insert(0, REST_PATH)
 
-from anylog_connection import AnyLogConnect
+from anylog_connection import AnyLogConnection
 import blockcahin_calls
 import database_calls
 import deployment_calls
@@ -26,7 +26,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         exception:bool - whether to print exception
     :params:
         db_table_list:dict - dictionary of database with their corresponding tables that should be created
-        anylog_conn:AnyLogCOnnect - connection to AnyLog via REST
+        anylog_conn:AnyLogConnection - connection to AnyLog via REST
         node_status:bool - whether or not able to `get status` of node
         db_list:list - list of connected databases
         # policy specific params
@@ -37,7 +37,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         policy_values:dict - dictionary of values correlated to policy
     """
     db_table_list = {'blockchain': 'ledger', 'almgm': 'tsd_info'}
-    anylog_conn = AnyLogConnect(conn=conn, auth=auth, timeout=timeout)
+    anylog_conn = AnyLogConnection(conn=conn, auth=auth, timeout=timeout)
 
     # validate status
     node_status = generic_get_calls.get_status(anylog_conn=anylog_conn, exception=exception)

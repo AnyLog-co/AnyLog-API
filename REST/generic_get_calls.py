@@ -33,7 +33,7 @@ def validate_status(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     """
     Validate if Node is running or not
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         status:bool
@@ -51,7 +51,7 @@ def validate_status(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     r, error = anylog_conn.get(headers=headers)
     if exception is True and r is False:
         print_error(print_error='GET', cmd=headers['command'], error=error)
-    elif r is True and ('running' in r.text and 'not' not in r.text):
+    elif 'running' in r.text and 'not' not in r.text:
         status = True
     return status
 
@@ -60,7 +60,7 @@ def get_dictionary(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
     """
     Get dictionary in dictionary format
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         dictionary:dict - dictionary of values extracted from AnyLog
@@ -93,7 +93,7 @@ def get_event_log(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
     """
     Get event log in dictionary format
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         event_log:dict - event log extracted from AnyLog
@@ -126,7 +126,7 @@ def get_error_log(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
     """
     Get error log in dictionary format
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         error_log:dict - error log extracted from AnyLog

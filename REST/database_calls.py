@@ -1,12 +1,12 @@
-from anylog_connection import AnyLogConnect
+from anylog_connection import AnyLogConnection
 from support import print_error
 
 
-def get_dbms(anylog_conn:AnyLogConnect, exception:bool=False)->list:
+def get_dbms(anylog_conn:AnyLogConnection, exception:bool=False)->list:
     """
     Get list of database connected locally
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         db_list:list - list of databases
@@ -33,19 +33,19 @@ def get_dbms(anylog_conn:AnyLogConnect, exception:bool=False)->list:
         else:
             if output != 'No DBMS connections found':
                 for row in output.split('\n'):
-                    if 'Persistent' in row:
-                        db_list.append(db.split(' ')[0].rstrip().lstrip())
+                    if 'sqlite' in row or 'psql' in row:
+                        db_list.append(row.split(' ')[0].rstrip().lstrip())
     return db_list
 
 
-def connect_dbms(anylog_conn:AnyLogConnect, db_name:str, db_type:str="sqlite", db_ip:str="!db_ip", db_port:str="!db_port",
+def connect_dbms(anylog_conn:AnyLogConnection, db_name:str, db_type:str="sqlite", db_ip:str="!db_ip", db_port:str="!db_port",
                  db_user:str="!db_user", db_passwd:str="!db_passwd", exception:bool=False)->bool:
     """
     Connect to logical database
     :command:
         connect dbms blockchain where type=psql and user = !db_user and password = !db_passwd and ip = !db_ip and port = !db_port
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         db_name:str - logical database name
         db_type:str - logical database type (ex SQLite or PSQL)
         db_ip:str - database IP address
@@ -61,7 +61,7 @@ def connect_dbms(anylog_conn:AnyLogConnect, db_name:str, db_type:str="sqlite", d
     """
     cmd = f"connect dbms {db_name} where type={db_type}"
     if db_type != 'sqlite':
-        cmd += f" and ip={db_ip} and port={db_port} and user={db_user} and password=${db_passwd}"
+        cmd += f" and ip={db_ip} and port={db_port} and user={db_user} and password={db_passwd}"
     headers ={
         'command': cmd,
         'User-Agent': 'AnyLog/1.23'
@@ -72,11 +72,11 @@ def connect_dbms(anylog_conn:AnyLogConnect, db_name:str, db_type:str="sqlite", d
     return r
 
 
-def check_table(anylog_conn:AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool:
+def check_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, exception:bool=False)->bool:
     """
     Validate if table if exists
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         db_name:str - logical database name
         table_name:str - table to check if exists
         exception:bool - whether to print exception
@@ -105,11 +105,11 @@ def check_table(anylog_conn:AnyLogConnect, db_name:str, table_name:str, exceptio
     return status
 
 
-def create_table(anylog_conn:AnyLogConnect, db_name:str, table_name:str, exception:bool=False)->bool:
+def create_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, exception:bool=False)->bool:
     """
     Create table based on params
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         db_name:str - logical database name
         table_name:str - table to create
         exception:bool - whether to print exception
@@ -130,7 +130,7 @@ def create_table(anylog_conn:AnyLogConnect, db_name:str, table_name:str, excepti
     return r
 
 
-def set_partitions(anylog_conn:AnyLogConnect, db_name:str="!default_dbms", table:str="*",
+def set_partitions(anylog_conn:AnyLogConnection, db_name:str="!default_dbms", table:str="*",
                    partition_column:str="!partition_column", partition_interval:str="!partition_interval",
                    exception:bool=False)->bool:
     """
@@ -138,7 +138,7 @@ def set_partitions(anylog_conn:AnyLogConnect, db_name:str="!default_dbms", table
     :command:
         partition !default_dbms * using !partition_column by !partition_interval
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnection - connection to AnyLog
         db_name:str - logical database to partition
         table:str - table to partition against, if set to '*' partition all tables in database
         partition_column:str - column to partition by

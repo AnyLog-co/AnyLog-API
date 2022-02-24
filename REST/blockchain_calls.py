@@ -1,5 +1,5 @@
 import json
-from anylog_connection import AnyLogConnect
+from anylog_connection import AnyLogConnectionion
 
 
 def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=None, bring_param:str=None,
@@ -9,7 +9,7 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
     :command:
         blockchain get operator where company=AnyLog  bring [operator][name] separator=,
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnectionion - connection to AnyLog
         policy_type:str - policy type to get from blockchain
         where_condition:str - where conditions
         bring_param:str - param correlated to bring command (ex. first)
@@ -54,12 +54,12 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
     return blockchain_data
 
 
-def declare_policy(anylog_conn:AnyLogConnect, policy_type:str, company_name:str, policy_values:str={},
+def declare_policy(anylog_conn:AnyLogConnectionion, policy_type:str, company_name:str, policy_values:str={},
                    master_node:str="!master_node", exception:bool=False)->bool:
     """
     Process to declare on blockchain
     :args:
-        anylog_conn:AnyLogConnect - connection to AnyLog
+        anylog_conn:AnyLogConnectionion - connection to AnyLog
         policy_type:str - policy type (ex. master, operator, cluster)
         company_name:str - name of company policy is correlated to
         policy_values:dict - values correlated to policy type
