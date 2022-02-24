@@ -126,6 +126,7 @@ def run_operator(anylog_conn:AnyLogConnection, create_table:bool=True, update_ts
         cmd = cmd.replace("archive=true", "archive=false")
     if distributor is False:
         cmd = cmd.replace("distributor=true", "distributor=false")
+
     headers = {
         "command": cmd,
         "User-Agent": "AnyLog/1.23"

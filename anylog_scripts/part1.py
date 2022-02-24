@@ -60,6 +60,12 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
             if db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception):
                 anylog_dictionary['db_type'] = 'sqlite'
 
+        if db_name in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception) and db_name == 'almgm' and \
+                not database_calls.check_table(anylog_conn=anylog_conn, db_name=db_name, table_name='tsd_info',
+                                               exception=exception):
+            database_calls.create_table(anylog_conn=anylog_conn, db_name='almgm', table_name='tsd_info',
+                                        exception=exception)
+
     # Set schedulers
     print("Set Scheduler(s)")
     generic_post_calls.run_scheduler1(anylog_conn=anylog_conn, exception=exception)
@@ -73,7 +79,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     database_calls.set_partitions(anylog_conn=anylog_conn, db_name=anylog_dictionary['default_dbms'],
                                   table=anylog_dictionary['partition_table'],
                                   partition_column=anylog_dictionary['partition_column'],
-                                  partition_interval=anylog_conn['partition_interval'],
+                                  partition_interval=anylog_dictionary['partition_interval'],
                                   exception=exception)
 
     drop_partition_task = f"drop partition where dbms={anylog_dictionary['default_dbms']} and table={anylog_dictionary['partition_table']} and keep={anylog_dictionary['partition_keep']}"

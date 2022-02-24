@@ -48,13 +48,16 @@ def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', m
         cmd = cmd.replace('false', 'true')
     topic = f"name={topic_name}"
     if topic_dbms != '':
-        topic += f" and dbms={topic_dbms}"
+        topic += f' and dbms="{topic_dbms}"'
     if topic_table != '':
-        topic += f" and table={topic_name}"
+        topic += f' and table="{topic_table}"'
     if columns != {} :
         for column in columns:
             if columns[column]['type'] not in ['str', 'int', 'float', 'bool', 'timestamp']:
                 columns[column]['type'] = 'str'
-            topic += f" and column.{column}=(value={columns[column]['value']} and type={columns[column]['type']})"
+            if columns[column]['type'] == 'timestamp':
+                topic += f' and column.{column}.timestamp="%s"' % columns[column]['value']
+            else:
+                topic += f' and column.{column}=(value="%s" and type=%s)' % (columns[column]['value'], columns[column]['type'])
     cmd += f" and topic=({topic})"
     return cmd
