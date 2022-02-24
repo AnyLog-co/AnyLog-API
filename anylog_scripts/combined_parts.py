@@ -37,6 +37,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         print(f'Failed to validate connection to AnyLog on {anylog_conn.conn}')
         exit(1)
 
+    anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
     authentication.disable_authentication(anylog_conn=anylog_conn, exception=exception)
 
     # set home path & create work dirs
@@ -60,6 +61,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
 
     anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
 
+    get_process = generic_get_calls.get_processes(anylog_conn=anylog_conn, exception=exception)
     """
     connect to logical database(s) - if fails to connect reattempt using SQLite.
     """
@@ -85,17 +87,20 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
 
     # Set schedulers
     print("Set Scheduler(s)")
-    generic_post_calls.run_scheduler1(anylog_conn=anylog_conn, exception=exception)
+    if get_process['Scheduler'] == 'Not declared':
+        generic_post_calls.run_scheduler1(anylog_conn=anylog_conn, exception=exception)
 
-    generic_post_calls.blockchain_sync_scheduler(anylog_conn=anylog_conn, source="master",
-                                                 time=anylog_dictionary['sync_time'], dest="file",
-                                                 connection=anylog_dictionary['master_node'], exception=exception)
+    if get_process['Blockchain Sync'] == 'Not declared':
+        generic_post_calls.blockchain_sync_scheduler(anylog_conn=anylog_conn, source="master",
+                                                     time=anylog_dictionary['sync_time'], dest="file",
+                                                     connection=anylog_dictionary['master_node'], exception=exception)
 
     # declare policies
     if 'loc' not in anylog_dictionary:
         location = generic_get_calls.get_location(exception=exception)
     else:
         location = anylog_dictionary['loc']
+
     # Master
     print('Declare Master')
     if not blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='master',
@@ -165,43 +170,47 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
                                         company_name=anylog_dictionary['company_name'], policy_values=policy_values,
                                         master_node=anylog_dictionary['master_node'], exception=False)
 
+
     # set partitions
     print("Set Partitions")
-    database_calls.set_partitions(anylog_conn=anylog_conn, db_name=anylog_dictionary['default_dbms'],
-                                  table=anylog_dictionary['partition_table'],
-                                  partition_column=anylog_dictionary['partition_column'],
-                                  partition_interval=anylog_dictionary['partition_interval'],
-                                  exception=exception)
-
-    drop_partition_task = f"drop partition where dbms={anylog_dictionary['default_dbms']} and table={anylog_dictionary['partition_table']} and keep={anylog_dictionary['partition_keep']}"
-    generic_post_calls.schedule_task(anylog_conn=anylog_conn, time=anylog_dictionary['partition_sync'],
-                                     name="Remove Old Partitions", task=drop_partition_task, exception=exception)
+    if database_calls.check_partitions(anylog_conn=anylog_conn, exception=exception) is False:
+        database_calls.set_partitions(anylog_conn=anylog_conn, db_name=anylog_dictionary['default_dbms'],
+                                      table=anylog_dictionary['partition_table'],
+                                      partition_column=anylog_dictionary['partition_column'],
+                                      partition_interval=anylog_dictionary['partition_interval'],
+                                      exception=exception)
+        drop_partition_task = f"drop partition where dbms={anylog_dictionary['default_dbms']} and table={anylog_dictionary['partition_table']} and keep={anylog_dictionary['partition_keep']}"
+        generic_post_calls.schedule_task(anylog_conn=anylog_conn, time=anylog_dictionary['partition_sync'],
+                                         name="Remove Old Partitions", task=drop_partition_task, exception=exception)
 
     # Set MQTT client
     print("Run MQTT client")
-    deployment_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=anylog_dictionary['broker'],
-                                     port=anylog_dictionary['anylog_rest_port'],  mqtt_log=False,
-                                     topic_name=anylog_dictionary['mqtt_topic_name'],
-                                     topic_dbms=anylog_dictionary['mqtt_topic_dbms'],
-                                     topic_table=anylog_dictionary['mqtt_topic_table'],
-                                     columns={
-                                         "timestamp": {
-                                             "value": anylog_dictionary['mqtt_column_timestamp'],
-                                             "type": "timestamp"
+    if get_process['MQTT'] == 'Not declared':
+        deployment_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=anylog_dictionary['broker'],
+                                         port=anylog_dictionary['anylog_rest_port'],  mqtt_log=False,
+                                         topic_name=anylog_dictionary['mqtt_topic_name'],
+                                         topic_dbms=anylog_dictionary['mqtt_topic_dbms'],
+                                         topic_table=anylog_dictionary['mqtt_topic_table'],
+                                         columns={
+                                             "timestamp": {
+                                                 "value": anylog_dictionary['mqtt_column_timestamp'],
+                                                 "type": "timestamp"
+                                             },
+                                             "value": {
+                                                 "value": anylog_dictionary['mqtt_column_value'],
+                                                 'type': anylog_dictionary['mqtt_column_value_type']
+                                             }
                                          },
-                                         "value": {
-                                             "value": anylog_dictionary['mqtt_column_value'],
-                                             'type': anylog_dictionary['mqtt_column_value_type']
-                                         }
-                                     },
-                                     exception=exception)
+                                         exception=exception)
 
     # Start Operator
     print("Start Operatorg")
     deployment_calls.set_threshold(anylog_conn=anylog_conn, write_immediate=True, exception=exception)
-    deployment_calls.run_streamer(anylog_conn=anylog_conn, exception=exception)
-    deployment_calls.run_operator(anylog_conn=anylog_conn, create_table=True, update_tsd_info=True, archive=True,
-                                  distributor=True, master_node=anylog_dictionary['master_node'], exception=exception)
+    if get_process['Streamer'] == 'Not declared':
+        deployment_calls.run_streamer(anylog_conn=anylog_conn, exception=exception)
+    if get_process['Operator'] == 'Not declared':
+        deployment_calls.run_operator(anylog_conn=anylog_conn, create_table=True, update_tsd_info=True, archive=True,
+                                      distributor=True, master_node=anylog_dictionary['master_node'], exception=exception)
 
 
 if __name__ == '__main__':

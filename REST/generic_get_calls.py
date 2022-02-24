@@ -155,6 +155,41 @@ def get_error_log(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
     return error_log
 
 
+def get_processes(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
+    """
+    Get processes in dictionary format
+    :command:
+        get processes where format=json
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        exception:bool - whether to print exception
+    :params:
+        get_process:dict - get processes as a dictionary
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        dictionary as dict
+    """
+    get_process = {}
+    headers = {
+        "command": "get processes where format=json",
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.get(headers=headers)
+    if exception is True and r is False:
+        print_error(print_error='GET', cmd=headers['command'], error=error)
+    else:
+        try:
+            get_process = r.json()
+        except Exception as e:
+            try:
+                get_process = r.text
+            except Exception as e:
+                if exception is True:
+                    print(f"Failed to extract content for {headers['command']} (Error: {e})")
+    return get_process
+
+
 def get_hostname(anylog_conn:AnyLogConnection, exception:bool=False)->str:
     """
     Extract hostname

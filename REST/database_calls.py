@@ -160,3 +160,33 @@ def set_partitions(anylog_conn:AnyLogConnection, db_name:str="!default_dbms", ta
     return r
 
 
+def check_partitions(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
+    """
+    Check whether partitions already exist or not
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        status - if partition DNE return False, else return True
+    """
+    status = False
+    headers = {
+        "command": "get partitions",
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.get(headers=headers)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+    elif int(r.status_code) == 200:
+        try:
+            if r.text != 'No partitions declared':
+                status = True
+        except Exception as e:
+            if exception is True:
+                print(f'Failed to check whether partitions are set or not (Error {e})')
+    return status
+
