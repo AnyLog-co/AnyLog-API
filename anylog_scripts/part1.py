@@ -41,7 +41,18 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         exit(1)
 
     authentication.disable_authentication(anylog_conn=anylog_conn, exception=exception)
-    anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
+
+    # set home path & create work dirs
+    print("Set Directories")
+    generic_post_calls.set_home_path(anylog_conn=anylog_conn, anylog_root_dir=anylog_dictionary['anylog_root_dir'],
+                                     exception=exception)
+    generic_post_calls.create_work_dirs(anylog_conn=anylog_conn, exception=exception)
+
+    # Set AnyLog params & extract them
+    print("Set Params & Extract Dictionary")
+    hostname = generic_get_calls.get_hostname(anylog_conn=anylog_conn, exception=exception)
+    if hostname != '':
+        generic_post_calls.set_variables(anylog_conn=anylog_conn, key='hostname', value=hostname, exception=exception)
 
     node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=exception)
     if not isinstance(node_id, str):
@@ -50,11 +61,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
             node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=exception)
     generic_post_calls.set_variables(anylog_conn=anylog_conn, key='node_id', value=node_id, exception=exception)
 
-    # set home path & create work dirs
-    print("Set Directories")
-    generic_post_calls.set_home_path(anylog_conn=anylog_conn, anylog_root_dir=anylog_dictionary['anylog_root_dir'],
-                                     exception=exception)
-    generic_post_calls.create_work_dirs(anylog_conn=anylog_conn, exception=exception)
+    anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
 
     """
     connect to logical database(s) - if fails to connect reattempt using SQLite.

@@ -155,3 +155,34 @@ def get_error_log(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
     return error_log
 
 
+def get_hostname(anylog_conn:AnyLogConnection, exception:bool=False)->str:
+    """
+    Extract hostname
+    :command:
+        get hostname
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        exception:bool - whether to print exception
+    :params:
+        hostname:str - hostname
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        hostname
+    """
+    hostname = ''
+    headers = {
+        "command": "get hostname",
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.get(headers=headers)
+    if exception is True and r is False:
+        print_error(print_error='GET', cmd=headers['command'], error=error)
+    else:
+        try:
+            hostname = r.text
+        except Exception as e:
+            if exception is True:
+                print(f'Failed to extract hostname (Error: {e})')
+
+    return hostname
