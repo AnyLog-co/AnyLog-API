@@ -88,13 +88,13 @@ def disconnect_dbms(anylog_conn:AnyLogConnection, db_name:str, exception:bool=Fa
     :return: 
         r
     """
-    header = {
+    headers = {
         "command": f"disconnect dbms {db_name}",
         "User-Agent": "AnyLog/1.23"
     }
     r, error = anylog_conn.post(headers=headers, payload=None)
     if exception is True and r is False:
-        print_error(error_type="POST", cmd=headers['command'], error=error
+        print_error(error_type="POST", cmd=headers['command'], error=error)
     return r
 
 

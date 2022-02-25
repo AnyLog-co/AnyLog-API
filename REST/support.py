@@ -1,3 +1,5 @@
+import json
+
 def print_error(error_type:str, cmd:str, error:str):
     """
     Print Error message
@@ -61,3 +63,31 @@ def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', m
                 topic += f' and column.{column}=(value="%s" and type=%s)' % (columns[column]['value'], columns[column]['type'])
     cmd += f" and topic=({topic})"
     return cmd
+
+
+def read_file(file_name:str, exception:bool=False)->dict:
+    """
+    Read content in file
+    :args:
+        file_name:str - file to extract content from
+    :params:
+        file_content:dict - content in autoexec file
+    :return:
+        file content
+    """
+    file_content = {}
+    try:
+        with open(file_name, 'r') as rf:
+            try:
+                file_content = json.load(rf)
+            except:
+                try:
+                    file_content = rf.read()
+                except Exception as e:
+                    if exception is True:
+                        print(f"Failed to read content in {file_name} (Error: {e})")
+    except Exception as e:
+        if exception is True:
+            print(f"Failed to open file {file_name} (Error: {e})")
+
+    return file_content

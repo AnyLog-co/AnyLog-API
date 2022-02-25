@@ -1,3 +1,4 @@
+import json
 from anylog_connection import AnyLogConnection
 from support import print_error
 
@@ -192,6 +193,61 @@ def exit_cmd(anylog_conn:AnyLogConnection, process:str=None, exception:bool=Fals
         cmd += f" {process}"
     headers = {
         "command": cmd,
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+    return r
+
+
+def set_script(anylog_conn:AnyLogConnection, script_path:str, script_content:str, exception:bool=False)->bool:
+    """
+    Given a script_path set content into it
+    :command:
+        set script autoexec.json [script data]
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        script_path:str - file to write content to
+        script_content:str - content to write to file
+        exception:bool - whether to print exception
+    :params:
+        payload:str - content to write into file
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    """
+    if isinstance(script_content, dict):
+        payload = f"<script_content={json.dumps(script_content)}>"
+    else:
+        payload = f"<script_contnent={script_content}>"
+
+    headers = {
+        "command": f"set script {script_path} !script_content",
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.post(headers=headers, payload=payload)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+    return r
+
+
+def process_script(anylog_conn:AnyLogConnection, script_path:str, exception:bool=False)->bool:
+    f"""
+    Given a script_path set content into it
+    :command:
+        process {script_path}
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        script_path:str - script to execute
+        exception:bool - whether to print exception
+    :params: 
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return: 
+        r
+    """
+    headers = {
+        "command": f"process {script_path}",
         "User-Agent": "AnyLog/1.23"
     }
     r, error = anylog_conn.post(headers=headers, payload=None)
