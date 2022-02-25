@@ -47,6 +47,7 @@
       "name": "Broker functionality",
       "description": "Configure a process to map source data to the table structure",
       "setting": {
+        "enable_mqtt": true,
         "broker": "rest",
         "mqtt_log ": false,
         "mqtt_topic_name": "aiops",

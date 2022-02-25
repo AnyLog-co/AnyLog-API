@@ -15,7 +15,7 @@ import generic_post_calls
 
 def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
-    The following is intended as an example of deploying Single-Node with blockchain policy declaration(s).
+    The following is intended as an example of deploying an Operator node.
     :args:
         conn:str - REST IP:PORT for communicating with AnyLog
         auth:tuple - authentication information
@@ -66,7 +66,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     connect to logical database(s) - if fails to connect reattempt using SQLite.
     """
     print("Connect to Databases")
-    for db_name in ['blockchain', 'almgm', anylog_dictionary['default_dbms'], 'system_query']:
+    for db_name in ['almgm', anylog_dictionary['default_dbms'], 'system_query']:
         while db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception):
             database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=anylog_dictionary['db_type'],
                                         db_ip=anylog_dictionary['db_port'], db_port=anylog_dictionary['db_port'],
@@ -80,10 +80,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
                                                                      table_name='tsd_info', exception=exception):
                 database_calls.create_table(anylog_conn=anylog_conn, db_name='almgm', table_name='tsd_info',
                                             exception=exception)
-            elif db_name == 'blockchain' and not database_calls.check_table(anylog_conn=anylog_conn, db_name=db_name,
-                                                                            table_name='ledger', exception=exception):
-                database_calls.create_table(anylog_conn=anylog_conn, db_name='blockchain', table_name='ledger',
-                                            exception=exception)
+
 
     # Set schedulers
     print("Set Scheduler(s)")
@@ -100,29 +97,6 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         location = generic_get_calls.get_location(exception=exception)
     else:
         location = anylog_dictionary['loc']
-
-    # Master
-    print('Declare Master')
-    if not blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='master',
-                                           where_condition=f"name={anylog_dictionary['node_name']} and company={anylog_dictionary['company_name']} and ip={anylog_dictionary['external_ip']} and port={anylog_dictionary['anylog_server_port']}",
-                                           bring_condition=None, separator=None, exception=exception):
-        policy_type = 'master'
-        policy_values = {
-            "hostname": anylog_dictionary['hostname'],
-            "name": anylog_dictionary['node_name'],
-            "ip" : anylog_dictionary['external_ip'],
-            "local_ip": anylog_dictionary['ip'],
-            "company": anylog_dictionary['company_name'],
-            "port" : int(anylog_dictionary['anylog_server_port']),
-            "rest_port": int(anylog_dictionary['anylog_rest_port']),
-            'loc': location
-        }
-
-        blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
-                                                         company_name=anylog_dictionary['company_name'],
-                                                         policy_values=policy_values,
-                                                         master_node=anylog_dictionary['master_node'],
-                                                         exception=False)
 
     # Cluster
     print('Declare Cluster')
@@ -205,7 +179,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
                                          exception=exception)
 
     # Start Operator
-    print("Start Operatorg")
+    print("Start Operator")
     deployment_calls.set_threshold(anylog_conn=anylog_conn, write_immediate=True, exception=exception)
     if get_process['Streamer'] == 'Not declared':
         deployment_calls.run_streamer(anylog_conn=anylog_conn, exception=exception)

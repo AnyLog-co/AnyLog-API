@@ -7,6 +7,9 @@ class AnyLogConnection:
             - GET: extract information from AnyLog (information + queries)
             - POST: Execute or POST command against AnyLog
             - POST_POLICY: POST information to blockchain
+        :url:
+            Using Rest: https://github.com/AnyLog-co/documentation/blob/master/using%20rest.md
+
         :param:
             conn:str - REST connection info
             auth:tuple - Authentication information

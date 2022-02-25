@@ -1,3 +1,6 @@
+"""
+URL: https://github.com/AnyLog-co/documentation/blob/master/authentication.md
+"""
 from anylog_connection import AnyLogConnection
 from support import print_error
 
@@ -24,6 +27,7 @@ def disable_authentication(anylog_conn:AnyLogConnection, exception:bool=False)->
         print_error(error_type="POST", cmd=headers['command'], error=error)
     return r
 
+
 def get_node_id(anylog_conn:AnyLogConnection, exception:bool=False)->str:
     """
     disable authentication
@@ -33,6 +37,7 @@ def get_node_id(anylog_conn:AnyLogConnection, exception:bool=False)->str:
         anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
     :params:
+        output:str - placeholder containing Node ID extracted via REST
         headers:dict - REST header
         r:bool, error:str - whether the command failed & why
     :return:
@@ -56,6 +61,7 @@ def get_node_id(anylog_conn:AnyLogConnection, exception:bool=False)->str:
         else:
             r = output
     return r
+
 
 def create_public_key(anylog_conn:AnyLogConnection, password='passwd', exception:bool=False)->bool:
     """

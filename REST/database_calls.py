@@ -1,3 +1,6 @@
+"""
+URL: https://github.com/AnyLog-co/documentation/blob/master/sql%20setup.md
+"""
 from anylog_connection import AnyLogConnection
 from support import print_error
 
@@ -42,10 +45,10 @@ def get_dbms(anylog_conn:AnyLogConnection, exception:bool=False)->list:
 
 def connect_dbms(anylog_conn:AnyLogConnection, db_name:str, db_type:str="sqlite", db_ip:str="!db_ip", db_port:str="!db_port",
                  db_user:str="!db_user", db_passwd:str="!db_passwd", exception:bool=False)->bool:
-    """
+    f"""
     Connect to logical database
     :command:
-        connect dbms blockchain where type=psql and user = !db_user and password = !db_passwd and ip = !db_ip and port = !db_port
+        connect dbms {db_name} where type={db_type} and user={db_user} and password={db_passwd} and ip={db_ip} and port={db_port}
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         db_name:str - logical database name
@@ -101,6 +104,8 @@ def disconnect_dbms(anylog_conn:AnyLogConnection, db_name:str, exception:bool=Fa
 def check_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, exception:bool=False)->bool:
     """
     Validate if table if exists
+    :command:
+        get table local status where dbms={db_name} and name={table_name}
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         db_name:str - logical database name
@@ -132,8 +137,10 @@ def check_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, excep
 
 
 def create_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, exception:bool=False)->bool:
-    """
+    f"""
     Create table based on params
+    :command: 
+        create table {table_name} where dbms={db_name}
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         db_name:str - logical database name

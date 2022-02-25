@@ -29,6 +29,41 @@ def get_location(exception:bool=False)->str:
     return location
 
 
+def get_help(anylog_conn:AnyLogConnection, help_cmd:str=None, exception:bool=None)->str:
+    """
+    Execute the `help` command against AnyLog
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        help_cmd:str - specific command to get help for
+        exception:bool - whether to print exception
+    :params:
+        output:str - content from help
+        cmd:str - command to execute
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        the results from help, else None
+    """
+    output = None
+    cmd = "help"
+    if help_cmd is not None:
+        cmd ++ f" {help_cmd}"
+    headers = {
+        "command": cmd,
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.get(headers=headers)
+    if exception is True and r is False:
+        print_error(print_error='GET', cmd=headers['command'], error=error)
+    else:
+        try:
+            output = r.text
+        except Exception as e:
+            if exception is True:
+                print(f"Failed to extract information for cmd: {cmd} (Error: {e})")
+    return output
+
+
 def validate_status(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     """
     Validate if Node is running or not

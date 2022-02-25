@@ -232,7 +232,7 @@ def set_script(anylog_conn:AnyLogConnection, script_path:str, script_content:str
 
 
 def process_script(anylog_conn:AnyLogConnection, script_path:str, exception:bool=False)->bool:
-    f"""
+    """
     Given a script_path set content into it
     :command:
         process {script_path}

@@ -1,3 +1,6 @@
+"""
+URL: https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
+"""
 import json
 from anylog_connection import AnyLogConnection
 
@@ -57,7 +60,13 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
 def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:str, policy_values:str={},
                    master_node:str="!master_node", exception:bool=False)->bool:
     """
-    Process to declare on blockchain
+    Process to declare policy in (blockchain) ledger
+    :steps:
+        1. prepare policy - Adds an ID and a date attributes to an existing policy.
+        2. insert policy - Add a new policy to the ledger in one or more blockchain platform.s
+    :commands:
+        blockchain prepare policy !new_policy
+        blockchain insert where policy=!new_policy and local=true and master=!master_node
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         policy_type:str - policy type (ex. master, operator, cluster)
@@ -79,14 +88,14 @@ def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:s
         policy_values['company'] = company_name
     policy = {policy_type: policy_values}
 
-    try:
+    try: # convert policy to AnyLog JSON policy object
         payload = f"<new_policy={json.dumps(policy)}>"
     except Exception as e:
         status = False
         if exception is True:
             print(f"Failed to convert {policy} to string (Error: {e})")
 
-    if status is True: # blockchain prepare policy !new_policy
+    if status is True: # prepare policy
         headers = {
             "command": "blockchain prepare policy !new_policy",
             "User-Agent": "AnyLog/1.23"
@@ -97,7 +106,7 @@ def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:s
             if exception is True:
                 print(f"Failed to prepare '{payload}' (Error {e})")
 
-    if status is True: # blockchain insert where policy=!new_policy and local=true and master=!master_node
+    if status is True: # insert policy
         headers = {
             "command": f"blockchain insert where policy=!new_policy and local=true and master={master_node}",
             "User-Agent": "AnyLog/1.23"

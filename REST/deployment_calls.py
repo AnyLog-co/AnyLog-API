@@ -1,13 +1,32 @@
 from anylog_connection import AnyLogConnection
 from support import *
 
+
 def run_mqtt_client(anylog_conn:AnyLogConnection, broker:str, port:str, mqtt_user:str='', mqtt_passd:str='',
                     mqtt_log:bool=False, topic_name:str='*', topic_dbms:str='', topic_table:str='',
                     columns:dict={}, exception:bool=False)->bool:
     """
     Run MQTT client
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/message%20broker.md#subscribing-to-a-third-party-broker
     :command:
-        run mqtt client where broker=!broker and port=!port and user-agent=anylog and user=!mqtt_user and password=!mqtt_password and log=!mqtt_log and topic=(name=!mqtt_topic_name and dbms=!mqtt_topic_dbms and table=!mqtt_topic_table and column.timestamp.timestamp=!mqtt_column_timestamp and column.value=(value=!mqtt_column_value and type=!mqtt_column_value_type))
+        run mqtt client where \
+            broker={broker} and \
+            port={port} and \
+            [user-agent=anylog] and \
+            [user={mqtt_user} and] \
+            [password={mqtt_password} and] \
+            log={mqtt_log} and \
+            topic=( \
+                name={mqtt_topic_name} and
+                dbms={mqtt_topic_dbms} and
+                table={mqtt_topic_table} and \
+                column.timestamp.timestamp={mqtt_column_timestamp} and \
+                column.value=( \
+                    value={mqtt_column_value} and \
+                    type={mqtt_column_value_type} \
+                ) \
+            )
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         broker:str - broker connection information
@@ -101,7 +120,7 @@ def run_operator(anylog_conn:AnyLogConnection, create_table:bool=True, update_ts
     """
     Start Operator process
     :command:
-        run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and master_node=!master_node
+        run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and master_node={master_node}
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         create_table:bool - Whether to create/declare table if DNE

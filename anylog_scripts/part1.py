@@ -108,7 +108,8 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
 
     # Set MQTT client
     print("Run MQTT client")
-    if get_process['MQTT'] == 'Not declared':
+    if anylog_dictionary['enable_mqtt'] == 'true':
+        # if MQTT client with an identical topic name is already running code will return "Network Error 400" output
         deployment_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=anylog_dictionary['broker'],
                                          port=anylog_dictionary['anylog_rest_port'],  mqtt_log=False,
                                          topic_name=anylog_dictionary['mqtt_topic_name'],
