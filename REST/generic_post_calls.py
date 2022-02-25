@@ -149,10 +149,49 @@ def schedule_task(anylog_conn:AnyLogConnection, time:str, name:str, task:str, ex
        task:str - The actual task to run
        exception:bool - whether to print exception
     :params:
-
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        r
     """
     headers = {
         "command": f"schedule time={time} and name={name} task {task}",
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+    return r
+
+
+def exit_cmd(anylog_conn:AnyLogConnection, process:str=None, exception:bool=False)->bool:
+    """
+    Exit an AnyLog command - if no process is set will exit AnyLog completely
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        process:str - AnyLog process to exit
+            exit tcp
+            exit rest
+            exit scripts
+            exit scheduler
+            exit synchronizer
+            exit mqtt
+            exit kafka
+            exit smtp
+            exit workers
+        exception:bool - whether to print exception
+    :params:
+        cmd:str - command to execute
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        r
+    """
+    cmd = "exit"
+    if process is not None:
+        cmd += f" {process}"
+    headers = {
+        "command": cmd,
         "User-Agent": "AnyLog/1.23"
     }
     r, error = anylog_conn.post(headers=headers, payload=None)

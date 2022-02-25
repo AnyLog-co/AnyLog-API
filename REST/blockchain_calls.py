@@ -70,6 +70,7 @@ def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:s
         policy:dict - policy to post on blockchain
         payload:str - policy converted to string
         headers:dict - REST header
+        r:bool, error:str - whether the command failed & why
     :return:
         status
     """
@@ -98,7 +99,7 @@ def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:s
 
     if status is True: # blockchain insert where policy=!new_policy and local=true and master=!master_node
         headers = {
-            "command": "blockchain insert where policy=!new_policy and local=true and master=!master_node",
+            "command": f"blockchain insert where policy=!new_policy and local=true and master={master_node}",
             "User-Agent": "AnyLog/1.23"
         }
         r, error = anylog_conn.post(headers=headers, payload=payload)

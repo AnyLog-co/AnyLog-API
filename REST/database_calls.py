@@ -5,6 +5,8 @@ from support import print_error
 def get_dbms(anylog_conn:AnyLogConnection, exception:bool=False)->list:
     """
     Get list of database connected locally
+    :command:
+        get databases
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         exception:bool - whether to print exception
@@ -21,7 +23,7 @@ def get_dbms(anylog_conn:AnyLogConnection, exception:bool=False)->list:
         "User-Agent": "AnyLog/1.23"
     }
 
-    r, error =anylog_conn.get(headers=headers)
+    r, error = anylog_conn.get(headers=headers)
     if exception is True and r is False:
         print_error(error_type="GET", cmd=headers['command'], error=error)
     else:
@@ -69,6 +71,30 @@ def connect_dbms(anylog_conn:AnyLogConnection, db_name:str, db_type:str="sqlite"
     r, error = anylog_conn.post(headers=headers, payload=None)
     if exception is True and r is False:
         print_error(error_type="POST", cmd=headers['command'], error=error)
+    return r
+
+def disconnect_dbms(anylog_conn:AnyLogConnection, db_name:str, exception:bool=False)->bool:
+    """
+    Disconnect database
+    :command: 
+        disconnect dbms {db_name} 
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        db_name:str - logical database name
+        exception:bool - whether to print exception
+    :params:
+        headers:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return: 
+        r
+    """
+    header = {
+        "command": f"disconnect dbms {db_name}",
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error
     return r
 
 
