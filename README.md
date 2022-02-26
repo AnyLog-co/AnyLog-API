@@ -44,6 +44,6 @@ python3.9 $HOME/AnyLog-API/anylog_scripts/part2.py
 
 **Note**: Alternatively to Steps 1 and 2, user can just run the following: 
 ```commandline
-python3.9 $HOME/AnyLog-API/anylog_scripts/combined_parts.py
+python3.9 $HOME/AnyLog-API/anylog_scripts/standalone.py
 ```
 
