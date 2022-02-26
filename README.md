@@ -1,7 +1,6 @@
 # AnyLog-API
 The AnyLog API is intended to act an easy-to-use interface between AnyLog and third-party applications. Currently, 
-the code provides only support specifically for deploying a standalone node, but can easily be evolved to provide more  
-functionality overtime. 
+the code provides only support specifically for deploying a standalone node, but can easily be evolved to provide more functionality overtime. 
 
 ## Key Files
 ```commandline
