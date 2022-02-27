@@ -60,7 +60,7 @@ class AnyLogConnection:
             r = False
         else:
             if int(r.status_code) != 200:
-                error = int(r.status_code)
+                error = str(r.status_code)
                 r = False
 
         return r, error
@@ -91,7 +91,7 @@ class AnyLogConnection:
             r = False
         else:
             if int(r.status_code) != 200:
-                error = int(r.status_code)
+                error = str(r.status_code)
                 r = False
         return r, error
 

@@ -1,5 +1,82 @@
 import json
 
+
+def validate_dictionary(anylog_dict:dict={})->dict:
+    """
+    Validate if needed values exist in dictionary
+    if something is miissing, fix it so code will work
+    :args:
+        anylog_dict:dict - dictionary to validate e
+    :return:
+        anylog_dict
+    """
+    # general
+    if 'company_name' not in anylog_dict:
+        anylog_dict['company_name'] = 'New Company'
+
+    # database [default: sqlite]
+    if 'db_type' not in anylog_dict:
+        anylog_dict['db_type']='sqlite'
+        anylog_dictionary['db_ip'] = None
+        anylog_dictionary['db_port'] = None
+        anylog_dictionary['db_user'] = None
+        anylog_dictionary['db_passwd'] = None
+    elif anylog_dict['db_type'] not in ['psql', 'sqlite']:
+        anylog_dict['db_type'] = 'sqlite'
+    elif anylog_dict['db_type'] == 'psql':
+        if 'db_port' not in anylog_dict:
+            anylog_dict['db_port'] = 5432
+        if 'db_ip' not in anylog_dict or 'db_user' not in anylog_dict or 'db_passwd' not in anylog_dict:
+            anylog_dict['db_type'] = 'sqlite'
+
+    # blockchain sync [default: enabled]
+    if 'enable_blockchain_sync' not in anylog_dict:
+        anylog_dict['enable_blockchain_sync'] = 'true'
+    if 'blockchain_source' not in anylog_dict:
+        anylog_dict['blockchain_source'] = 'master'
+    if 'sync_time' not in anylog_dict:
+        anylog_dict['sync_time'] = '30 seconds'
+    if 'blockchain_destination' not in anylog_dict:
+        anylog_dict['blockchain_destination'] = 'file'
+    if 'master_node' not in anylog_dict:
+        anylog_dict['master_node'] = f"127.0.0.1:{anylog_dict['anylog_server_port']}"
+
+    # partitioning
+    if 'enable_partitions' in anylog_dict and anylog_dict['enable_partitions'] == 'true':
+        if 'partition_table' not in anylog_dict:
+            anylog_dict['partition_table'] = '*'
+        if 'partition_column' not in anylog_dict:
+            anylog_dict['partition_column'] = 'timestamp'
+        if 'partition_interval' not in anylog_dict['partition_interval']:
+            anylog_dict['partition_interval'] = '15 days'
+        if 'partition_keep' not in anylog_dict['partition_keep']:
+            anylog_dict['partition_keep'] = 6 # ~3 months
+        if 'partition_sync' not in anylog_dict['partition_sync']:
+            anylog_dict['partition_sync'] = '1 day'
+    else:
+        anylog_dict['enable_partitions'] = 'false'
+
+    # MQTT
+    if 'enable_mqtt' in anylog_dict and anylog_dict['enable_mqtt'] == 'true':
+        if 'broker' not in anylog_dict or 'mqtt_port' not in anylog_dict:
+            anylog_dict['enable_mqtt'] = 'false'
+
+    # MQTT configs
+    if anylog_dict['enable_mqtt'] == 'true':
+        if 'mqtt_log' not in anylog_dict:
+            anylog_dict['mqtt_log'] = 'false'
+        elif anylog_dict['mqtt_log'] != 'false' and anylog_dict['mqtt_log'] != 'true':
+            anylog_dict['mqtt_log'] = 'false'
+        if 'mqtt_user' not in anylog_dict:
+            anylog_dict['mqtt_user'] = ''
+        if 'mqtt_passwd' not in anylog_dict:
+            anylog_dict['mqtt_passwd'] = ''
+        if 'topic_name' not in anylog_dict:
+            anylog_dict['topic_name'] = '*'
+
+    return anylog_dict
+
+
 def print_error(error_type:str, cmd:str, error:str):
     """
     Print Error message

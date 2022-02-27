@@ -4,6 +4,7 @@
       "name": "Generic Variables",
       "description": "Init params on start",
       "setting": {
+        "anylog_path": "/app",
         "node_name": "al-aiops-node1",
         "company_name": "Ai-Ops"
       }
@@ -15,8 +16,17 @@
         "anylog_server_port": 2148,
         "anylog_rest_port": 2149,
         "anylog_broker_port": 2150,
-        "master_node": "10.0.0.111:2148",
-        "sync_time": "30 seconds"
+        "master_node": "10.0.0.111:2148"
+      }
+    },
+    {
+      "name": "Blockchain Sync Variables",
+      "description": "`run blockchain sync` configuration values",
+      "settings": {
+        "enable_blockchain_sync": true,
+        "sync_time": "30 seconds",
+        "blockchain_source": "master",
+        "blockchain_destination": "file"
       }
     },
     {
@@ -36,6 +46,7 @@
       "description": "Init Cluster params on start",
       "setting": {
         "cluster_name": "cluster_1",
+        "enable_partitions": true,
         "partition_table": "*",
         "partition_column": "timestamp",
         "partition_interval": "15 days",
@@ -49,6 +60,7 @@
       "setting": {
         "enable_mqtt": true,
         "broker": "rest",
+        "mqtt_port": 2149,
         "mqtt_log ": false,
         "mqtt_topic_name": "aiops",
         "mqtt_topic_dbms": "bring [dbms]",

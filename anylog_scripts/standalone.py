@@ -42,7 +42,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
 
     # set home path & create work dirs
     print("Set Directories")
-    generic_post_calls.set_home_path(anylog_conn=anylog_conn, anylog_root_dir=anylog_dictionary['anylog_root_dir'],
+    generic_post_calls.set_home_path(anylog_conn=anylog_conn, anylog_root_dir=anylog_dictionary['anylog_path'],
                                      exception=exception)
     generic_post_calls.create_work_dirs(anylog_conn=anylog_conn, exception=exception)
 
@@ -60,6 +60,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     generic_post_calls.set_variables(anylog_conn=anylog_conn, key='node_id', value=node_id, exception=exception)
 
     anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
+    anylog_dictionary = support.validate_dictionary(anylog_dict=validate_dictionary)
 
     get_process = generic_get_calls.get_processes(anylog_conn=anylog_conn, exception=exception)
     """
@@ -71,7 +72,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
             database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=anylog_dictionary['db_type'],
                                         db_ip=anylog_dictionary['db_port'], db_port=anylog_dictionary['db_port'],
                                         db_user=anylog_dictionary['db_user'],
-                                        db_passwd=anylog_dictionary['default_dbms'], exception=exception)
+                                        db_passwd=anylog_dictionary['db_passwd'], exception=exception)
             if db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception):
                 anylog_dictionary['db_type'] = 'sqlite'
 
@@ -90,9 +91,11 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     if get_process['Scheduler'] == 'Not declared':
         generic_post_calls.run_scheduler1(anylog_conn=anylog_conn, exception=exception)
 
-    if get_process['Blockchain Sync'] == 'Not declared':
-        generic_post_calls.blockchain_sync_scheduler(anylog_conn=anylog_conn, source="master",
-                                                     time=anylog_dictionary['sync_time'], dest="file",
+    if get_process['Blockchain Sync'] == 'Not declared' and anylog_dictionary['enable_blockchain_sync'] == 'true':
+        generic_post_calls.blockchain_sync_scheduler(anylog_conn=anylog_conn,
+                                                     source=anylog_dictionary['blockchain_source'],
+                                                     time=anylog_dictionary['sync_time'],
+                                                     dest=anylog_dictionary['blockchain_destination'],
                                                      connection=anylog_dictionary['master_node'], exception=exception)
 
     # declare policies
@@ -173,7 +176,8 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
 
     # set partitions
     print("Set Partitions")
-    if database_calls.check_partitions(anylog_conn=anylog_conn, exception=exception) is False:
+    if database_calls.check_partitions(anylog_conn=anylog_conn, exception=exception) is False and \
+            anylog_dictionary['enable_partitions'] == 'true':
         database_calls.set_partitions(anylog_conn=anylog_conn, db_name=anylog_dictionary['default_dbms'],
                                       table=anylog_dictionary['partition_table'],
                                       partition_column=anylog_dictionary['partition_column'],
@@ -188,7 +192,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     if anylog_dictionary['enable_mqtt'] == 'true':
         # if MQTT client with an identical topic name is already running code will return "Network Error 400" output
         deployment_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=anylog_dictionary['broker'],
-                                         port=anylog_dictionary['anylog_rest_port'],  mqtt_log=False,
+                                         port=anylog_dictionary['mqtt_port'],  mqtt_log=anylog_dictionary['mqtt_log'],
                                          topic_name=anylog_dictionary['mqtt_topic_name'],
                                          topic_dbms=anylog_dictionary['mqtt_topic_dbms'],
                                          topic_table=anylog_dictionary['mqtt_topic_table'],
