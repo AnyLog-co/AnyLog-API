@@ -4,7 +4,6 @@
       "name": "Generic Variables",
       "description": "Init params on start",
       "setting": {
-        "anylog_path": "/app",
         "node_name": "al-aiops-node1",
         "company_name": "Ai-Ops"
       }
