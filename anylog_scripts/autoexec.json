@@ -35,7 +35,7 @@
         "db_type": "sqlite",
         "db_user": "postgres",
         "db_passwd": "postgres",
-        "db_ip": "!ip",
+        "db_ip": "127.0.0.1",
         "db_port": 5432,
         "default_dbms": "aiops"
       }
