@@ -1,7 +1,6 @@
 # AnyLog-API
 The AnyLog API is intended to act an easy-to-use interface between AnyLog and third-party applications. Currently, 
-the code provides only support specifically for deploying a standalone node, but can easily be evolved to provide more  
-functionality overtime. 
+the code provides only support specifically for deploying a standalone node, but can easily be evolved to provide more functionality overtime. 
 
 ## Key Files
 ```commandline
@@ -45,6 +44,6 @@ python3.9 $HOME/AnyLog-API/anylog_scripts/part2.py
 
 **Note**: Alternatively to Steps 1 and 2, user can just run the following: 
 ```commandline
-python3.9 $HOME/AnyLog-API/anylog_scripts/combined_parts.py
+python3.9 $HOME/AnyLog-API/anylog_scripts/standalone.py
 ```
 
