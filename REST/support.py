@@ -10,7 +10,7 @@ def print_error(error_type:str, cmd:str, error:str):
     :print:
         error message
     """
-    if isinstance(error, int):
+    if isinstance(error, int): 
         print(f'Failed to execute {error_type} for "{cmd}" (Network Error: {error})')
     else:
         print(f'Failed to execute {error_type} for "{cmd}" (Error: {e})')
