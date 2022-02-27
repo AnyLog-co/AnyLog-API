@@ -122,7 +122,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
                                                          company_name=anylog_dictionary['company_name'],
                                                          policy_values=policy_values,
                                                          master_node=anylog_dictionary['master_node'],
-                                                         exception=False)
+                                                         exception=exception)
 
     # Cluster
     print('Declare Cluster')
@@ -168,7 +168,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
 
         blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
                                         company_name=anylog_dictionary['company_name'], policy_values=policy_values,
-                                        master_node=anylog_dictionary['master_node'], exception=False)
+                                        master_node=anylog_dictionary['master_node'], exception=exception)
 
 
     # set partitions

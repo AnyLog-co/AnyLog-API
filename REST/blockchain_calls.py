@@ -57,7 +57,7 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
     return blockchain_data
 
 
-def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:str, policy_values:str={},
+def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:str, policy_values:dict={},
                    master_node:str="!master_node", exception:bool=False)->bool:
     """
     Process to declare policy in (blockchain) ledger
@@ -84,8 +84,14 @@ def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:s
         status
     """
     status = True
-    if 'company' not in policy_values:
+    if not isinstance(policy_values, dict):
+        try:
+            policy_values = json.loads(policy_values)
+        except:
+            pass
+    if isinstance(policy_values, dict) and  'company' not in policy_values:
         policy_values['company'] = company_name
+
     policy = {policy_type: policy_values}
 
     try: # convert policy to AnyLog JSON policy object
