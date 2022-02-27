@@ -1,0 +1,73 @@
+{
+  "config": [
+    {
+      "name": "Generic Variables",
+      "description": "Init params on start",
+      "setting": {
+        "node_name": "al-aiops-node1",
+        "company_name": "Ai-Ops"
+      }
+    },
+    {
+      "name": "IP / Port Variables",
+      "description": "Init params on start",
+      "setting": {
+        "anylog_server_port": 2148,
+        "anylog_rest_port": 2149,
+        "anylog_broker_port": 2150,
+        "master_node": "10.0.0.111:2148"
+      }
+    },
+    {
+      "name": "Blockchain Sync Variables",
+      "description": "`run blockchain sync` configuration values",
+      "settings": {
+        "enable_blockchain_sync": true,
+        "sync_time": "30 seconds",
+        "blockchain_source": "master",
+        "blockchain_destination": "file"
+      }
+    },
+    {
+      "name": "DBMS Variables",
+      "description": "Init DBMS params on start",
+      "setting": {
+        "db_type": "sqlite",
+        "db_user": "postgres",
+        "db_passwd": "postgres",
+        "db_ip": "127.0.0.1",
+        "db_port": 5432,
+        "default_dbms": "aiops"
+      }
+    },
+    {
+      "name": "Cluster and Partition Variables",
+      "description": "Init Cluster params on start",
+      "setting": {
+        "cluster_name": "cluster_1",
+        "enable_partitions": true,
+        "partition_table": "*",
+        "partition_column": "timestamp",
+        "partition_interval": "15 days",
+        "partition_keep": 6,
+        "partition_sync": "1 day"
+      }
+    },
+    {
+      "name": "Broker functionality",
+      "description": "Configure a process to map source data to the table structure",
+      "setting": {
+        "enable_mqtt": true,
+        "broker": "rest",
+        "mqtt_port": 2149,
+        "mqtt_log ": false,
+        "mqtt_topic_name": "aiops",
+        "mqtt_topic_dbms": "bring [dbms]",
+        "mqtt_topic_table": "bring [table]",
+        "mqtt_column_timestamp": "bring [ts]",
+        "mqtt_column_value": "bring [value]",
+        "mqtt_column_value_type": "float"
+      }
+    }
+  ]
+}
