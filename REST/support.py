@@ -60,6 +60,8 @@ def validate_dictionary(anylog_dict:dict={})->dict:
     if 'enable_mqtt' in anylog_dict and anylog_dict['enable_mqtt'] == 'true':
         if 'broker' not in anylog_dict or 'mqtt_port' not in anylog_dict:
             anylog_dict['enable_mqtt'] = 'false'
+    elif 'enable_mqtt' not in anylog_dict:
+        anylog_dict['enable_mqtt'] = 'false'
 
     # MQTT configs
     if anylog_dict['enable_mqtt'] == 'true':
@@ -90,7 +92,7 @@ def print_error(error_type:str, cmd:str, error:str):
     if isinstance(error, int): 
         print(f'Failed to execute {error_type} for "{cmd}" (Network Error: {error})')
     else:
-        print(f'Failed to execute {error_type} for "{cmd}" (Error: {e})')
+        print(f'Failed to execute {error_type} for "{cmd}" (Error: {error})')
 
 
 def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', mqtt_log:bool=False,

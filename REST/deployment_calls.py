@@ -52,11 +52,13 @@ def run_mqtt_client(anylog_conn:AnyLogConnection, broker:str, port:str, mqtt_use
     """
     cmd = format_mqtt_cmd(broker=broker, port=port, mqtt_user=mqtt_user, mqtt_passd=mqtt_passd, mqtt_log=mqtt_log,
                           topic_name=topic_name, topic_dbms=topic_dbms, topic_table=topic_table, columns=columns)
+    print(cmd) 
     headers = {
         "command": cmd,
         "User-Agent": "AnyLog/1.23"
     }
     r, error = anylog_conn.post(headers=headers, payload=None)
+    print(r, error) 
     if exception is True and r is False:
         print_error(error_type="POST", cmd=headers['command'], error=error)
     return r

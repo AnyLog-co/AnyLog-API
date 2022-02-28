@@ -7,11 +7,12 @@ sys.path.insert(0, REST_PATH)
 
 from anylog_connection import AnyLogConnection
 import authentication
+import blockchain_calls
 import database_calls
 import deployment_calls
 import generic_get_calls
 import generic_post_calls
-
+import support 
 
 def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
@@ -60,7 +61,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     generic_post_calls.set_variables(anylog_conn=anylog_conn, key='node_id', value=node_id, exception=exception)
 
     anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
-    anylog_dictionary = support.validate_dictionary(anylog_dict=validate_dictionary)
+    anylog_dictionary = support.validate_dictionary(anylog_dict=anylog_dictionary)
 
     get_process = generic_get_calls.get_processes(anylog_conn=anylog_conn, exception=exception)
     """
@@ -219,4 +220,4 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
 
 
 if __name__ == '__main__':
-    main(conn='10.0.0.111:2149', auth=(), timeout=30, exception=True)
+    main(conn='10.1.2.10:32149', auth=(), timeout=30, exception=True)
