@@ -1,6 +1,9 @@
 import json
 import requests
 
+__version__ = "beta"
+__author__ = "Ori Shadmon"
+__copyright__ = "Copyright (c) AnyLog, Co"
 
 def get_location(exception:bool=False)->str:
     """
