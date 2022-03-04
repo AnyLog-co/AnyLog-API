@@ -5,8 +5,8 @@
       "description": "Init params on start",
       "setting": {
 	"anylog_path": "$HOME", 
-        "node_name": "anylog-node",
-        "company_name": "AnyLog"
+        "node_name": "al-aiops-node1",
+        "company_name": "Ai-Ops"
       }
     },
     {
@@ -37,7 +37,7 @@
         "db_passwd": "postgres",
         "db_ip": "127.0.0.1",
         "db_port": 5432,
-        "default_dbms": "test"
+        "default_dbms": "aiops"
       }
     },
     {
@@ -58,16 +58,14 @@
       "description": "Configure a process to map source data to the table structure",
       "setting": {
         "enable_mqtt": "true",
-        "broker": "driver.cloudmqtt.com",
-        "mqtt_port": 18785,
-        "mqtt_user": "ibglowct",
-        "mqtt_passwd": "MSY4e009J7ts",
+        "broker": "rest",
+        "mqtt_port": 32149,
         "mqtt_log ": "false",
-        "mqtt_topic_name": "anylogedgex",
-        "mqtt_topic_dbms": "test",
-        "mqtt_topic_table": "bring [device]",
-        "mqtt_column_timestamp": "now",
-        "mqtt_column_value": "bring [readings][][value]",
+        "mqtt_topic_name": "aiops",
+        "mqtt_topic_dbms": "bring [dbms]",
+        "mqtt_topic_table": "bring [table]",
+        "mqtt_column_timestamp": "bring [ts]",
+        "mqtt_column_value": "bring [value]",
         "mqtt_column_value_type": "float"
       }
     }
