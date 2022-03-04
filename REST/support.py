@@ -95,6 +95,75 @@ def print_error(error_type:str, cmd:str, error:str):
         print(f'Failed to execute {error_type} for "{cmd}" (Error: {error})')
 
 
+def read_file(file_name:str, exception:bool=False)->dict:
+    """
+    Read content in file
+    :args:
+        file_name:str - file to extract content from
+    :params:
+        file_content:dict - content in autoexec file
+    :return:
+        file content
+    """
+    file_content = {}
+    try:
+        with open(file_name, 'r') as rf:
+            try:
+                file_content = json.load(rf)
+            except:
+                try:
+                    file_content = rf.read()
+                except Exception as e:
+                    if exception is True:
+                        print(f"Failed to read content in {file_name} (Error: {e})")
+    except Exception as e:
+        if exception is True:
+            print(f"Failed to open file {file_name} (Error: {e})")
+
+    return file_content
+
+
+def build_policy(policy_type:str, company_name:str, policy_values:dict={})->str:
+    """
+    Build policy for node of type: master, cluster, operator, publisher and query
+    :complete-policy:
+        {'publisher': {
+            'hostname': 'edgex',
+            'name': 'edgex-publisher',
+            'company': 'IOTech',
+            'local_ip': '139.162.205.95',
+            'ip': '139.162.205.95',
+            'port': 2048,
+            'rest_port' : 2049,
+            'loc': '51.5085,-0.1257'
+        }}
+    :args:
+        policy_type:str - policy type (ex. master, operator, cluster)
+        company_name:str - name of company policy is correlated to
+        policy_values:dict - values correlated to policy type
+    :params:
+        policy - a complete policy
+    :return:
+        policy
+    """
+    if not isinstance(policy_values, dict):
+        try:
+            policy_values = json.loads(policy_values)
+        except:
+            pass
+    if isinstance(policy_values, dict) and 'company' not in policy_values:
+        policy_values['company'] = company_name
+
+    policy = {policy_type: policy_values}
+
+    try:
+        policy = json.dumps(policy)
+    except:
+        pass
+
+    return policy
+
+
 def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', mqtt_log:bool=False,
                       topic_name:str='*', topic_dbms:str='', topic_table:str='', columns:dict={})->str:
     """
@@ -144,29 +213,4 @@ def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', m
     return cmd
 
 
-def read_file(file_name:str, exception:bool=False)->dict:
-    """
-    Read content in file
-    :args:
-        file_name:str - file to extract content from
-    :params:
-        file_content:dict - content in autoexec file
-    :return:
-        file content
-    """
-    file_content = {}
-    try:
-        with open(file_name, 'r') as rf:
-            try:
-                file_content = json.load(rf)
-            except:
-                try:
-                    file_content = rf.read()
-                except Exception as e:
-                    if exception is True:
-                        print(f"Failed to read content in {file_name} (Error: {e})")
-    except Exception as e:
-        if exception is True:
-            print(f"Failed to open file {file_name} (Error: {e})")
 
-    return file_content

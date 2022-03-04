@@ -115,11 +115,10 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
             'loc': location
         }
 
-        blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
-                                                         company_name=anylog_dictionary['company_name'],
-                                                         policy_values=policy_values,
-                                                         master_node=anylog_dictionary['master_node'],
-                                                         exception=False)
+        policy = support.build_policy(policy_type=policy_type, company_name=anylog_dictionary['company_name'],
+                                      policy_values=policy_values)
+        blockchain_calls.declare_policy(anylog_conn=anylog_conn,  policy=policy,
+                                        master_node=anylog_dictionary['master_node'], exception=False)
 
     # Set MQTT client
     print("Run MQTT client")

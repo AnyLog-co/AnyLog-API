@@ -122,11 +122,10 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
             'loc': location
         }
 
-        blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
-                                                         company_name=anylog_dictionary['company_name'],
-                                                         policy_values=policy_values,
-                                                         master_node=anylog_dictionary['master_node'],
-                                                         exception=exception)
+        policy = support.build_policy(policy_type=policy_type, company_name=anylog_dictionary['company_name'],
+                                      policy_values=policy_values)
+        blockchain_calls.declare_policy(anylog_conn=anylog_conn,  policy=policy,
+                                        master_node=anylog_dictionary['master_node'], exception=False)
 
     # Cluster
     print('Declare Cluster')
@@ -141,10 +140,10 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
             "name": anylog_dictionary['cluster_name'],
             "master": anylog_dictionary['master_node']
         }
-        blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
-                                        company_name=anylog_dictionary['company_name'],
-                                        policy_values=policy_values, master_node=anylog_dictionary['master_node'],
-                                        exception=False)
+        policy = support.build_policy(policy_type=policy_type, company_name=anylog_dictionary['company_name'],
+                                      policy_values=policy_values)
+        blockchain_calls.declare_policy(anylog_conn=anylog_conn,  policy=policy,
+                                        master_node=anylog_dictionary['master_node'], exception=False)
 
     cluster_id = blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='cluster',
                                                  where_condition=f"name={anylog_dictionary['cluster_name']} and company={anylog_dictionary['company_name']}",
@@ -170,9 +169,10 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         if cluster_id is not None:
             policy_values['cluster'] = cluster_id
 
-        blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
-                                        company_name=anylog_dictionary['company_name'], policy_values=policy_values,
-                                        master_node=anylog_dictionary['master_node'], exception=exception)
+        policy = support.build_policy(policy_type=policy_type, company_name=anylog_dictionary['company_name'],
+                                      policy_values=policy_values)
+        blockchain_calls.declare_policy(anylog_conn=anylog_conn,  policy=policy,
+                                        master_node=anylog_dictionary['master_node'], exception=False)
 
 
     # set partitions
