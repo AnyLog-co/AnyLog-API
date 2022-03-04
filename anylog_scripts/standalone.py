@@ -189,11 +189,14 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
                                          name="Remove Old Partitions", task=drop_partition_task, exception=exception)
 
     # Set MQTT client
+    # Set MQTT client
     print("Run MQTT client")
     if anylog_dictionary['enable_mqtt'] == 'true':
         # if MQTT client with an identical topic name is already running code will return "Network Error 400" output
         deployment_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=anylog_dictionary['broker'],
-                                         port=anylog_dictionary['mqtt_port'],  mqtt_log=anylog_dictionary['mqtt_log'],
+                                         mqtt_user=anylog_dictionary['mqtt_user'],
+                                         mqtt_passwd=anylog_dictionary['mqtt_passwd'],
+                                         port=anylog_dictionary['mqtt_port'], mqtt_log=anylog_dictionary['mqtt_log'],
                                          topic_name=anylog_dictionary['mqtt_topic_name'],
                                          topic_dbms=anylog_dictionary['mqtt_topic_dbms'],
                                          topic_table=anylog_dictionary['mqtt_topic_table'],
@@ -210,13 +213,21 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
                                          exception=exception)
 
     # Start Operator
-    print("Start Operatorg")
+    print("Start Operator")
     deployment_calls.set_threshold(anylog_conn=anylog_conn, write_immediate=True, exception=exception)
     if get_process['Streamer'] == 'Not declared':
         deployment_calls.run_streamer(anylog_conn=anylog_conn, exception=exception)
+    if get_process['Distributor'] == 'Not declared':
+        deployment_calls.data_distributor(anylog_conn=anylog_conn, exception=exception)
     if get_process['Operator'] == 'Not declared':
-        deployment_calls.run_operator(anylog_conn=anylog_conn, create_table=True, update_tsd_info=True, archive=True,
-                                      distributor=True, master_node=anylog_dictionary['master_node'], exception=exception)
+        create_table = True
+        update_tsd_info = True
+        archive = True
+        distributor = True
+        deployment_calls.run_operator(anylog_conn=anylog_conn, create_table=create_table,
+                                      update_tsd_info=update_tsd_info,  archive=archive, distributor=distributor,
+                                      master_node=anylog_dictionary['master_node'], exception=exception)
+
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ import generic_post_calls
 
 def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     """
-    The following is intended as an example of deploying an Operator node.
+    The following is intended as an example of deploying an Publisher node.
     :args:
         conn:str - REST IP:PORT for communicating with AnyLog
         auth:tuple - authentication information
@@ -66,7 +66,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     connect to logical database(s) - if fails to connect reattempt using SQLite.
     """
     print("Connect to Databases")
-    for db_name in ['almgm', anylog_dictionary['default_dbms'], 'system_query']:
+    for db_name in ['almgm', 'system_query']:
         while db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception):
             database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=anylog_dictionary['db_type'],
                                         db_ip=anylog_dictionary['db_port'], db_port=anylog_dictionary['db_port'],
@@ -98,64 +98,28 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
     else:
         location = anylog_dictionary['loc']
 
-    # Cluster
-    print('Declare Cluster')
-    cluster_id = None
-    if not blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='cluster',
-                                           where_condition=f"name={anylog_dictionary['cluster_name']} and company={anylog_dictionary['company_name']}",
+    # publisher
+    print('Declare Publisher')
+    if not blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='publisher',
+                                           where_condition=f"name={anylog_dictionary['node_name']} and company={anylog_dictionary['company_name']} and ip={anylog_dictionary['external_ip']} and port={anylog_dictionary['anylog_server_port']}",
                                            bring_condition=None, separator=None, exception=exception):
-        policy_type = 'cluster'
-        policy_values = {
-            "company": anylog_dictionary['company_name'],
-            "dbms": anylog_dictionary['default_dbms'],
-            "name": anylog_dictionary['cluster_name'],
-            "master": anylog_dictionary['master_node']
-        }
-        blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
-                                        company_name=anylog_dictionary['company_name'],
-                                        policy_values=policy_values, master_node=anylog_dictionary['master_node'],
-                                        exception=False)
-
-    cluster_id = blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='cluster',
-                                                 where_condition=f"name={anylog_dictionary['cluster_name']} and company={anylog_dictionary['company_name']}",
-                                                 bring_param="first", bring_condition="[cluster][id]", separator=None,
-                                                 exception=exception)
-
-    # operator
-    print('Declare Operator')
-    if not blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='operator',
-                                           where_condition="name=!node_name and company=!company_name and ip=!external_ip and port=!anylog_server_port",
-                                           bring_condition=None, separator=None, exception=exception):
-        policy_type = 'operator'
+        policy_type = 'publisher'
         policy_values = {
             "hostname": anylog_dictionary['hostname'],
             "name": anylog_dictionary['node_name'],
-            "ip": anylog_dictionary['external_ip'],
+            "ip" : anylog_dictionary['external_ip'],
             "local_ip": anylog_dictionary['ip'],
             "company": anylog_dictionary['company_name'],
-            "port": int(anylog_dictionary['anylog_server_port']),
+            "port" : int(anylog_dictionary['anylog_server_port']),
             "rest_port": int(anylog_dictionary['anylog_rest_port']),
             'loc': location
         }
-        if cluster_id is not None:
-            policy_values['cluster'] = cluster_id
 
         blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy_type=policy_type,
-                                        company_name=anylog_dictionary['company_name'], policy_values=policy_values,
-                                        master_node=anylog_dictionary['master_node'], exception=False)
-
-
-    # set partitions
-    print("Set Partitions")
-    if database_calls.check_partitions(anylog_conn=anylog_conn, exception=exception) is False:
-        database_calls.set_partitions(anylog_conn=anylog_conn, db_name=anylog_dictionary['default_dbms'],
-                                      table=anylog_dictionary['partition_table'],
-                                      partition_column=anylog_dictionary['partition_column'],
-                                      partition_interval=anylog_dictionary['partition_interval'],
-                                      exception=exception)
-        drop_partition_task = f"drop partition where dbms={anylog_dictionary['default_dbms']} and table={anylog_dictionary['partition_table']} and keep={anylog_dictionary['partition_keep']}"
-        generic_post_calls.schedule_task(anylog_conn=anylog_conn, time=anylog_dictionary['partition_sync'],
-                                         name="Remove Old Partitions", task=drop_partition_task, exception=exception)
+                                                         company_name=anylog_dictionary['company_name'],
+                                                         policy_values=policy_values,
+                                                         master_node=anylog_dictionary['master_node'],
+                                                         exception=False)
 
     # Set MQTT client
     print("Run MQTT client")
@@ -164,7 +128,7 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
         deployment_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=anylog_dictionary['broker'],
                                          mqtt_user=anylog_dictionary['mqtt_user'],
                                          mqtt_passwd=anylog_dictionary['mqtt_passwd'],
-                                         port=anylog_dictionary['mqtt_port'], mqtt_log=anylog_dictionary['mqtt_log'],
+                                         port=anylog_dictionary['mqtt_port'],  mqtt_log=anylog_dictionary['mqtt_log'],
                                          topic_name=anylog_dictionary['mqtt_topic_name'],
                                          topic_dbms=anylog_dictionary['mqtt_topic_dbms'],
                                          topic_table=anylog_dictionary['mqtt_topic_table'],
@@ -180,21 +144,19 @@ def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
                                          },
                                          exception=exception)
 
-    # Start Operator
-    print("Start Operator")
+    # Start Publisher
+    print("Start Publisher")
     deployment_calls.set_threshold(anylog_conn=anylog_conn, write_immediate=True, exception=exception)
     if get_process['Streamer'] == 'Not declared':
         deployment_calls.run_streamer(anylog_conn=anylog_conn, exception=exception)
-    if get_process['Distributor'] == 'Not declared':
-        deployment_calls.data_distributor(anylog_conn=anylog_conn, exception=exception)
-    if get_process['Operator'] == 'Not declared':
-        create_table = True
-        update_tsd_info = True
-        archive = True
-        distributor = True
-        deployment_calls.run_operator(anylog_conn=anylog_conn, create_table=create_table,
-                                      update_tsd_info=update_tsd_info,  archive=archive, distributor=distributor,
-                                      master_node=anylog_dictionary['master_node'], exception=exception)
+    if get_process['Publisher'] == 'Not declared':
+        compress_json = True
+        move_json = True
+        db_name = "file_name[0]"
+        table_name="file_name[1]"
+        deployment_calls.run_publisher(anylog_conn=anylog_conn, compress_json=compress_json, move_json=move_json,
+                                       master_node=anylog_dictionary['master_node'], db_name=db_name,
+                                       table_name=table_name, exception=exception)
 
 
 if __name__ == '__main__':
