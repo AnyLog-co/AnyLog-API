@@ -124,3 +124,34 @@ def declare_policy(anylog_conn:AnyLogConnection, policy_type:str, company_name:s
                 print(f"Failed to insert '{payload}' (Error {e})")
 
     return status
+
+
+def drop_policy(anylog_conn:AnyLogConnection, policy:dict, exception:bool=False)->bool:
+    """
+    Execute drop policy
+    :command:
+        blockchain drop policy !drop_policy
+    :ars:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        policy:dict - policy to drop
+        exception:bool - whether the command failed & why
+    :params:
+        payload:str - drop policy payload
+        headers:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        r
+    """
+    if isinstance(policy, dict):
+        policy = json.dump(policy)
+
+    payload = f"<drop_policy={policy}>"
+
+    headers = {
+        "command": "blockchain drop policy !drop_policy",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    r, error = anylog_conn.post(headers=headers, payload=payload)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
