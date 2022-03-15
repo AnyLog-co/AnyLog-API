@@ -11,12 +11,43 @@ from anylog_connection import AnyLogConnection
 import blockchain_calls
 import generic_get_calls
 
+
 def main():
+    """
+    Create an ANMP for a given policy based on given parameters
+    :url:
+    
+    :positional arguments:
+        conn                  REST IP/Port connection to work against
+    :optional arguments:
+        -h, --help                              show this help message and exit
+        --policy-type       POLICY_TYPE         blockchain type that needs to be updated
+        --where-conditions  WHERE_CONDITIONS    condition to find relevant policy
+        --new-values        NEW_VALUES          comma separated list of values to update
+        --master-node       MASTER_NODE         master node TCP connection information
+        --auth              AUTH                Authentication (user, passwd) for node
+        --timeout           TIMEOUT             REST timeout
+        --exception         [EXCEPTION]         whether to print exception
+    :params:
+        anylog_conn:anylog_connection.AnyLogConnection - connection to AnyLog via REST
+        policy_id:str - policy ID based on blockchain get
+        new_policy:dict - ANMP policy to add
+    :sample policy:
+    {
+        "anmp": {
+            "48d5c6e224a92ee04756040128f6331f": {
+                "ip": "127.0.0.1",
+                "port": 2148
+            }
+        }
+    }
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('conn', type=str, default='127.0.0.1:2049', help='REST IP/Port connection to work against')
     parser.add_argument('--policy-type', type=str, default='operator', help='blockchain type that needs to be updated')
     parser.add_argument('--where-conditions', type=str, default='name=!node_name and company=!company_name', help='condition to find relevant policy')
     parser.add_argument('--new-values', type=str, default='ip=127.0.0.1,hostname=new-host', help='comma separated list of values to update')
+    parser.add_argument('--master-node', type=str, default='127.0.0.1:2048', help='master node TCP connection information')
     parser.add_argument('--auth', type=tuple, default=(), help='Authentication (user, passwd) for node')
     parser.add_argument('--timeout', type=int, default=30, help='REST timeout')
     parser.add_argument('--exception', type=bool, nargs='?', const=True, default=False, help='whether to print exception')
@@ -37,7 +68,7 @@ def main():
         new_policy[policy_id][key] = value
 
     blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy={"anmp": new_policy},
-                                    master_node="10.0.0.111:2148", exception=True)
+                                    master_node=args.master_node, exception=args.exception)
 
 
 if  __name__ == '__main__':
