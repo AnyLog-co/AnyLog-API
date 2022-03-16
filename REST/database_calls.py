@@ -45,7 +45,7 @@ def get_dbms(anylog_conn:AnyLogConnection, exception:bool=False)->list:
 
 def connect_dbms(anylog_conn:AnyLogConnection, db_name:str, db_type:str="sqlite", db_ip:str="!db_ip", db_port:str="!db_port",
                  db_user:str="!db_user", db_passwd:str="!db_passwd", exception:bool=False)->bool:
-    f"""
+    """
     Connect to logical database
     :command:
         connect dbms {db_name} where type={db_type} and user={db_user} and password={db_passwd} and ip={db_ip} and port={db_port}
@@ -213,7 +213,7 @@ def check_partitions(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     }
     r, error = anylog_conn.get(headers=headers)
     if exception is True and r is False:
-        print_error(error_type="POST", cmd=headers['command'], error=error)
+        print_error(error_type="GET", cmd=headers['command'], error=error)
     elif int(r.status_code) == 200:
         try:
             if r.text != 'No partitions declared':
@@ -222,4 +222,85 @@ def check_partitions(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
             if exception is True:
                 print(f'Failed to check whether partitions are set or not (Error {e})')
     return status
+
+
+def execute_post_command(anylog_conn:AnyLogConnection, db_name:str, command:str, exception:bool=False)->bool:
+    """
+    Execute a (POST) command against SQL database
+        - CREATE
+        - INSERT
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        db_name:str - logical database to execute against
+        command:str - SQL command to execute
+        exception:bool - whether to print exception
+    :params:
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        r
+    """
+    headers = {
+        "command": f'sql {db_name} "{command}"',
+        "User-Agent": "AnyLog/1.23"
+    }
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+
+    return r
+
+
+def execute_get_command(anylog_conn:AnyLogConnection, db_name:str, command:str, format:str='json', stat:bool=False,
+                        destination:str=None, exception:bool=False)->str:
+    """
+    Execute GET of a query
+    :list of query options:
+        https://github.com/AnyLog-co/documentation/blob/master/queries.md#query-options
+    :args:
+`       anylog_conn:AnyLogConnection - connection to AnyLog
+        db_name:str - logical database to execute against
+        command:str - SQL command to execute
+        format:str - whether to print results as JSON or Table format
+        stat:bool - whether to include query statistics
+        destination:str - whether to set destination to "network" or an IP/port address
+        exception:bool - whether to print exception
+    :params:
+        output:str - content to return
+        sql_cmd:str - full command to execute
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        query result(s)
+    """
+    output = None
+    if format not in ['json', 'table']:
+        format = 'json'
+    if not isinstance(stat, bool):
+        stat=False
+
+    sql_cmd = f'sql {db_name} format={format} and stat={str(stat).lower()} "{command}"'
+    headers = {
+        "command": sql_cmd,
+        "User-Agent": "AnyLog/1.23"
+    }
+    if destination is not None:
+        headers['destination'] = destination
+
+    r, error = anylog_conn.get(headers=headers)
+    if exception is True and r is False:
+        print_error(error_type="GET", cmd=headers['command'], error=error)
+    else:
+        try:
+            output = r.json()
+        except:
+            try:
+                output = r.text
+            except Exception as e:
+                if exception is True:
+                    print(f'Failed to extract results for query: "{command}" (Error: {e}')
+
+    return output
+
+
 
