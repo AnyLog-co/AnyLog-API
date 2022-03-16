@@ -67,16 +67,13 @@ def main():
 
     configs_support.create_table(anylog_conn=anylog_conn, db_type=args.db_type, table_name=table_name,
                                  db_name=db_name, exception=args.exception)
-    
+
     for value in dictionary_values:
         if value in DEFAULT_PARAMS:
             configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name,
                                         insert_data={value: dictionary_values[value]}, db_name=db_name,
                                         exception=args.exception)
 
-
-
-        
 
 if __name__ == '__main__':
     main()
