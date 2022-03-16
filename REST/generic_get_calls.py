@@ -85,7 +85,7 @@ def validate_status(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     }
     r, error = anylog_conn.get(headers=headers)
     if exception is True and r is False:
-        print_error(print_error='GET', cmd=headers['command'], error=error)
+        print_error(error_type='GET', cmd=headers['command'], error=error)
     elif 'running' in r.text and 'not' not in r.text:
         status = True
     return status
