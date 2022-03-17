@@ -30,11 +30,11 @@ PARAMS = {
         "db_type": "psql", # if db_type == sqlite then all other db params are not needed
         "db_ip": "127.0.0.1",
         "db_port": 5432,
-        "db_user": "aiops",
+        "db_user": "admin",
         "db_passwd": "passwd"
     },
     "anylog_blockchain": {
-        "master_node": "127.0.0.1:2148",
+        "master_node": "127.0.0.1:2048",
         "source": "master",
         "sync_time": "30 seconds",
         "dest": "dbms"

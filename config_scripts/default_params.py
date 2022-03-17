@@ -7,7 +7,7 @@ DEFAULT_PARAMS = ['ip', 'external_ip', 'anylog_server_port', 'anylog_rest_port',
                   'prep_dir', 'watch_dir', 'bkup_dir', 'err_dir', 'dbms_dir', 'archive_dir', 'distr_dir', 'pem_dir',
                   'test_dir', 'id_dir', 'input_thread']
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('configs')[0]
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('config_scripts')[0]
 REST_PATH = os.path.join(ROOT_PATH, 'REST')
 sys.path.insert(0, REST_PATH)
 
@@ -69,10 +69,9 @@ def main():
                                  db_name=db_name, exception=args.exception)
 
     for value in dictionary_values:
-        if value in DEFAULT_PARAMS:
-            configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name,
-                                        insert_data={value: dictionary_values[value]}, db_name=db_name,
-                                        exception=args.exception)
+        configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name,
+                                    insert_data={value: dictionary_values[value]}, db_name=db_name,
+                                    exception=args.exception)
 
 
 if __name__ == '__main__':
