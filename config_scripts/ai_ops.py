@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('configs')[0]
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('config_scripts')[0]
 REST_PATH = os.path.join(ROOT_PATH, 'REST')
 sys.path.insert(0, REST_PATH)
 
@@ -12,69 +12,205 @@ import generic_post_calls
 import database_calls
 
 
+""" 
+a "command" is an AnyLog command to be executed and stored in variable 
+a "variable" is a hardset value to be stored in a variable
+"""
 PARAMS = {
     "anylog_general": {
-        "hostname": "get hostname",
-        "company_name": "Company Name",
-        "node_name": "new-node",
-        "node_type": "operator" # master, operator, publisher, query, standalone (master+operator), standalone-publisher (master+publisher)
+        "anylog_path": {
+            "type": "variable",
+            "value": "",
+        },
+        "hostname": {
+            "type": "command",
+            "value": "get hostname"
+        },
+        "company_name": {
+            "type": "variable",
+            "value": "Company Name"
+        },
+        "node_name": {
+            "type": "variable",
+            "value": "new-node"
+        },
+        "node_type": { # master, operator, publisher, query, standalone (master+operator), standalone-publisher (master+publisher)
+            "type": "variable",
+            "value": "operator"
+        }
     },
     "anylog_network": {
         # A user should only change the external and (local) IPs if they don't want to use the defaults.
-        "external_ip": "",
-        "ip": "",
-        "anylog_server_port": 2148,
-        "anylog_rest_port": 2149
+        "external_ip": {
+            "type": "variable",
+            "value": ""
+        },
+        "ip": {
+            "type": "variable",
+            "value": ""
+        },
+        "anylog_server_port": {
+            "type": "variable",
+            "value": 2048
+        },
+        "anylog_rest_port": {
+            "type": "variable",
+            "value": 2049
+        }
     },
     "anylog_database": {
-        "db_type": "psql", # if db_type == sqlite then all other db params are not needed
-        "db_ip": "127.0.0.1",
-        "db_port": 5432,
-        "db_user": "admin",
-        "db_passwd": "passwd"
+        "db_type": { # if db_type == sqlite then all other db params are not needed
+            "type": "variable",
+            "value": "psql"
+        },
+        "db_ip": {
+            "type": "variable",
+            "value": "127.0.0.1"
+        },
+        "db_port": {
+            "type": "variable",
+            "value": 5432
+        },
+        "db_user": {
+            "type": "variable",
+            "value": "admin"
+        },
+        "db_passwd": {
+            "type": "variable",
+            "value": "passwd"
+        }
     },
     "anylog_blockchain": {
-        "master_node": "127.0.0.1:2048",
-        "source": "master",
-        "sync_time": "30 seconds",
-        "dest": "dbms"
+        "master_node": {
+            "type": "variable",
+            "value": "127.0.0.1:2048"
+        },
+        "source": {
+            "type": "variable",
+            "value": "master"
+        },
+        "sync_time": {
+            "type": "variable",
+            "value": "30 seconds"
+        },
+        "dest": {
+            "type": "variable",
+            "value": "dbms"
+        }
     },
     "anylog_operator": { # operator specific params
-        "default_dbms": "aiops",
-        "enable_partitions": "true",
-        "cluster_name": "aiops-cluster1",
-        "table_name": "*",
-        "partition_column": "timestamp",
-        "partition_interval": "14 days",
-        "partition_keep":  6, # keep about 3 months of data
-        "partition_sync": "1 day"
+        "default_dbms": {
+            "type": "variable",
+            "value": "aiops"
+        },
+        "enable_partitions": {
+            "type": "variable",
+            "value": "true"
+        },
+        "cluster_name": {
+            "type": "variable",
+            "value": "aiops-cluster1"
+        },
+        "table_name": {
+            "type": "variable",
+            "value": "*"
+        },
+        "partition_column": {
+            "type": "variable",
+            "value": "timestamp"
+        },
+        "partition_interval": {
+            "type": "variable",
+            "value": "14 days"
+        },
+        "partition_keep": { # keep about 3 months of data
+            "type": "variable",
+            "value": 6
+        },
+        "partition_sync": {
+            "type": "variable",
+            "value": "1 day"
+        }
     },
     "anylog_mqtt": { # mqtt params, not needed if deployment of type not master or query
-        "enable_mqtt": True,
-        "broker": "rest",
-        "mqtt_port": 32149,
-        "mqtt_log ": "false",
-        "mqtt_topic_name": "aiops",
-        "mqtt_topic_dbms": "bring [dbms]", # alternatively you can set the default to be [anylog_operator][default_dbms]
-        "mqtt_topic_table": "bring [table]",
-        "mqtt_column_timestamp": "bring [ts]",
-        "mqtt_column_value": "bring [value]",
-        "mqtt_column_value_type": "float"
+        "enable_mqtt": {
+            "type": "variable",
+            "value": True
+        },
+        "broker": {
+            "type": "variable",
+            "value": "rest"
+        },
+        "mqtt_port": {
+            "type": "variable",
+            "value": 2049
+        },
+        "mqtt_log": {
+            "type": "variable",
+            "value": False
+        },
+        "mqtt_topic_name": {
+            "type": "variable",
+            "value": "aiops"
+        },
+        "mqtt_topic_dbms": {  # alternatively you can set the default to be [anylog_operator][default_dbms]
+            "type": "variable",
+            "value": "bring [dbms]"
+        },
+        "mqtt_topic_table": {
+            "type": "variable",
+            "value": "bring [table]"
+        },
+        "mqtt_column_timestamp": {
+            "type": "variable",
+            "value": "bring [ts]"
+        },
+        "mqtt_column_value": {
+            "type": "variable",
+            "value": "bring [value]"
+        },
+        "mqtt_column_value_type": {
+            "type": "variable",
+            "value": "float"
+        }
     },
     "anylog_deployment": { # deployment params, not needed if deployment of type not master or query
         # file name format: [db_name].[table_name].[autogenerated_file_id].json
-        "dbms_name": "bring file_name[0]", # alternatively you can set the default to be [anylog_operator][default_dbms]
-        "table_name": "bring file_name[1]",
+        "dbms_name": {
+            "type": "variable",
+            "value": "bring file_name[0]"
+        }, # alternatively you can set the default to be [anylog_operator][default_dbms]
+        "table_name": {
+            "type": "variable",
+            "value": "bring file_name[1]"
+        },
 
         # run operator Params (needed for node_type == operator)
-        "create_table": True,
-        "update_tsd_info": True,
-        "archive": True,
-        "distributor": True,
+        "create_table": {
+            "type": "variable",
+            "value": True
+        },
+        "update_tsd_info": {
+            "type": "variable",
+            "value": True
+        },
+        "archive": {
+            "type": "variable",
+            "value": True
+        },
+        "distributor": {
+            "type": "variable",
+            "value": True
+        },
 
         # run publisher params (needed for node_type == publisher)
-        "compress_json": True,
-        "move_json": True,
+        "compress_json": {
+            "type": "variable",
+            "value": True
+        },
+        "move_json": {
+            "type": "variable",
+            "value": True},
     }
 }
 
@@ -132,7 +268,8 @@ def main():
                                      db_name=db_name, exception=args.exception)
         for param in PARAMS[table_name]:
             configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name,
-                                        insert_data={param: PARAMS[table_name][param]}, db_name=db_name,
+                                        variable_type=PARAMS[table_name][param]['type'],
+                                        insert_data={param: PARAMS[table_name][param]['value']}, db_name=db_name,
                                         exception=args.exception)
         generic_post_calls.convert_db_to_dict(anylog_conn=anylog_conn, db_name=db_name, table_name=table_name,
                                               condition=None, exception=args.exception)

@@ -255,6 +255,7 @@ def process_script(anylog_conn:AnyLogConnection, script_path:str, exception:bool
         print_error(error_type="POST", cmd=headers['command'], error=error)
     return r
 
+
 def convert_db_to_dict(anylog_conn:AnyLogConnection, db_name:str, table_name:str, condition:str=None,
                        exception:bool=False)->bool:
     """

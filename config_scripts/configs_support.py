@@ -42,33 +42,38 @@ def create_table(anylog_conn:AnyLogConnection, db_type:str, table_name:str, db_n
 
 
 
-def insert_data(anylog_conn:AnyLogConnection, table_name:str, insert_data:dict, db_name:str='configs',
+def insert_data(anylog_conn:AnyLogConnection, table_name:str, variable_type:str, insert_data:dict, db_name:str='configs',
                 exception:bool=False):
     """
     Insert data into configuration data
     :args:
         anylog_conn:anylog_connection.AnyLogConnection - Connection to AnyLog via REST
         table_name:str - table name
+        variable_type:str - whether the insert data value is a command or variable
         insert_data:dict - data to be inserted
         db_name:str - database name
         exception:bool - whether or not to print exceptions
     """
     # stmt = f"INSERT INTO {table_name}(al_value, alv_command) VALUES (%s, %s);"
-    select_stmt = f"SELECT COUNT(*) FROM {table_name} WHERE al_command='set %s=<>'"
     insert_stmt = f"INSERT INTO {table_name} (al_command, al_value) VALUES ('set %s=<>', '%s');"
     update_stmt = f"UPDATE {table_name} SET al_value='%s' WHERE al_command='set %s=<>'"
     
     for param in insert_data:
         if insert_data[param] != "":
+            select_stmt = f"SELECT COUNT(*) FROM {table_name} WHERE al_command LIKE '%{param.rstrip().lstrip()}=<>%'"
             row_count = database_calls.execute_get_command(anylog_conn=anylog_conn, db_name=db_name,
-                                                           command=select_stmt % param.rstrip().lstrip(),
+                                                           command=select_stmt,
                                                            format='json', stat=False, destination=None, exception=exception)
             if row_count['Query'][0]['COUNT(*)'] == 0:
-                database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name,
-                                                    command=insert_stmt % (param.rstrip().lstrip(), insert_data[param]),
+                stmt = insert_stmt % (param.rstrip().lstrip(), insert_data[param])
+                if variable_type == 'command':
+                    stmt = stmt.replace(f'set {param.rstrip().lstrip()}=<>', f'{param.rstrip().lstrip()}=<>')
+                database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name, command=stmt,
                                                     exception=exception)
             else:
-                database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name,
-                                                    command=update_stmt % (insert_data[param], param.rstrip().lstrip()),
+                stmt = update_stmt % (insert_data[param], param.rstrip().lstrip())
+                if variable_type == 'command':
+                    stmt = stmt.replace(f'set {param.rstrip().lstrip()}=<>', f'{param.rstrip().lstrip()}=<>')
+                database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name, command=stmt,
                                                     exception=exception)
 
