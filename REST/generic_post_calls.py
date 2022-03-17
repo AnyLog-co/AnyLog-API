@@ -240,7 +240,7 @@ def process_script(anylog_conn:AnyLogConnection, script_path:str, exception:bool
         anylog_conn:AnyLogConnection - connection to AnyLog
         script_path:str - script to execute
         exception:bool - whether to print exception
-    :params: 
+    :params:
         header:dict - REST header
         r:bool, error:str - whether the command failed & why
     :return: 
@@ -254,3 +254,36 @@ def process_script(anylog_conn:AnyLogConnection, script_path:str, exception:bool
     if exception is True and r is False:
         print_error(error_type="POST", cmd=headers['command'], error=error)
     return r
+
+def convert_db_to_dict(anylog_conn:AnyLogConnection, db_name:str, table_name:str, condition:str=None,
+                       exception:bool=False)->bool:
+    """
+    Process content from table into dictionary
+    :sample command:
+        process from table where name = my_config and dbms = config_dbms and value = al_value and command = al_command and condition = "order by command_id"
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        db_name:str - logical database name
+        table_name:str - table name
+        condition:str - query conditions (such as where and order by)
+        exception:bool - whether to print exception
+    :params:
+        command:str - AnyLog command to execute via REST
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        r
+    """
+    command = f"process from table where name={table_name} and dbms={db_name} and value=al_value and command=al_command"
+    if condition is not None:
+        command += f'condition="{condition}"'
+    headers = {
+        "command": command,
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if exception is True and r is False:
+        print_error(error_type="POST", cmd=headers['command'], error=error)
+    return r
+

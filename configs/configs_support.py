@@ -29,9 +29,9 @@ def create_table(anylog_conn:AnyLogConnection, db_type:str, table_name:str, db_n
     """
     create_table = (f"CREATE TABLE IF NOT EXISTS {table_name}("
                     +"command_id SERIAL PRIMARY KEY, "
-                    +"al_value VARCHAR NOT NULL, "
-                    +"al_command VARCHAR NOT NULL,"
-                    +"UNIQUE (al_value)"
+                    +"al_command VARCHAR NOT NULL, "
+                    +"al_value VARCHAR NOT NULL,"
+                    +"UNIQUE (al_command)"
                     +");")
     if db_type == 'sqlite':
         create_table = create_table.replace(" SERIAL PRIMARY KEY,", " INTEGER PRIMARY KEY AUTOINCREMENT,", 1)
@@ -54,20 +54,21 @@ def insert_data(anylog_conn:AnyLogConnection, table_name:str, insert_data:dict, 
         exception:bool - whether or not to print exceptions
     """
     # stmt = f"INSERT INTO {table_name}(al_value, alv_command) VALUES (%s, %s);"
-    select_stmt = f"SELECT COUNT(*) FROM {table_name} WHERE al_value='%s=<>'"
-    insert_stmt = f"INSERT INTO {table_name} (al_value, al_command) VALUES ('%s=<>', '%s');"
-    update_stmt = f"UPDATE {table_name} SET al_command='%s' WHERE al_value='%s=<>'"
+    select_stmt = f"SELECT COUNT(*) FROM {table_name} WHERE al_command='set %s=<>'"
+    insert_stmt = f"INSERT INTO {table_name} (al_command, al_value) VALUES ('set %s=<>', '%s');"
+    update_stmt = f"UPDATE {table_name} SET al_value='%s' WHERE al_command='set %s=<>'"
     
     for param in insert_data:
-        row_count = database_calls.execute_get_command(anylog_conn=anylog_conn, db_name=db_name,
-                                                       command=select_stmt % param.rstrip().lstrip(),
-                                                       format='json', stat=False, destination=None, exception=exception)
-        if row_count['Query'][0]['COUNT(*)'] == 0:
-            database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name,
-                                                command=insert_stmt % (param.rstrip().lstrip(), insert_data[param]),
-                                                exception=exception)
-        else:
-            database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name,
-                                                command=update_stmt % (insert_data[param], param.rstrip().lstrip()),
-                                                exception=exception)
+        if insert_data[param] != "":
+            row_count = database_calls.execute_get_command(anylog_conn=anylog_conn, db_name=db_name,
+                                                           command=select_stmt % param.rstrip().lstrip(),
+                                                           format='json', stat=False, destination=None, exception=exception)
+            if row_count['Query'][0]['COUNT(*)'] == 0:
+                database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name,
+                                                    command=insert_stmt % (param.rstrip().lstrip(), insert_data[param]),
+                                                    exception=exception)
+            else:
+                database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name,
+                                                    command=update_stmt % (insert_data[param], param.rstrip().lstrip()),
+                                                    exception=exception)
 

@@ -56,9 +56,9 @@ def main():
     table_name = 'default_params'
 
     anylog_conn = AnyLogConnection(conn=args.conn, auth=args.auth, timeout=args.timeout)
-    # if not generic_get_calls.validate_status(anylog_conn=anylog_conn, exception=args.exception):
-    #     print(f'Failed to validate connection to AnyLog on {anylog_conn.conn}')
-    #     exit(1)
+    if not generic_get_calls.validate_status(anylog_conn=anylog_conn, exception=args.exception):
+        print(f'Failed to validate connection to AnyLog on {anylog_conn.conn}')
+        exit(1)
 
     dictionary_values = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=args.exception)
     database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=args.db_type, db_ip=args.db_ip,
