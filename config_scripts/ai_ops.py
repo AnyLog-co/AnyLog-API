@@ -20,7 +20,7 @@ PARAMS = {
     "anylog_general": {
         "anylog_path": {
             "type": "variable",
-            "value": "",
+            "value": None,
         },
         "hostname": {
             "type": "command",
@@ -28,7 +28,7 @@ PARAMS = {
         },
         "company_name": {
             "type": "variable",
-            "value": "Company Name"
+            "value": "Ai-Ops"
         },
         "node_name": {
             "type": "variable",
@@ -37,17 +37,21 @@ PARAMS = {
         "node_type": { # master, operator, publisher, query, standalone (master+operator), standalone-publisher (master+publisher)
             "type": "variable",
             "value": "operator"
+        },
+        "location": { # location of the node
+            "type": "variable",
+            "value": generic_get_calls.get_location(exception=False)
         }
     },
     "anylog_network": {
         # A user should only change the external and (local) IPs if they don't want to use the defaults.
         "external_ip": {
             "type": "variable",
-            "value": ""
+            "value": None
         },
         "ip": {
             "type": "variable",
-            "value": ""
+            "value": None
         },
         "anylog_server_port": {
             "type": "variable",
@@ -95,7 +99,7 @@ PARAMS = {
         },
         "dest": {
             "type": "variable",
-            "value": "dbms"
+            "value": "file"
         }
     },
     "anylog_operator": { # operator specific params
@@ -267,10 +271,11 @@ def main():
         configs_support.create_table(anylog_conn=anylog_conn, db_type=args.db_type, table_name=table_name,
                                      db_name=db_name, exception=args.exception)
         for param in PARAMS[table_name]:
-            configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name,
-                                        variable_type=PARAMS[table_name][param]['type'],
-                                        insert_data={param: PARAMS[table_name][param]['value']}, db_name=db_name,
-                                        exception=args.exception)
+            if PARAMS[table_name][param]['value'] not in [None, ""]: # assert value is not empty
+                configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name,
+                                            variable_type=PARAMS[table_name][param]['type'],
+                                            insert_data={param: PARAMS[table_name][param]['value']}, db_name=db_name,
+                                            exception=args.exception)
         generic_post_calls.convert_db_to_dict(anylog_conn=anylog_conn, db_name=db_name, table_name=table_name,
                                               condition=None, exception=args.exception)
 

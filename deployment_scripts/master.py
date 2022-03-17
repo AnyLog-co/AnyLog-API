@@ -1,122 +1,123 @@
+import argparse
 import os
 import sys
 
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('anylog_scripts')[0]
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('deployment_scripts')[0]
 REST_PATH = os.path.join(ROOT_PATH, 'REST')
 sys.path.insert(0, REST_PATH)
 
 from anylog_connection import AnyLogConnection
 import authentication
+import blockchain_calls
 import database_calls
 import deployment_calls
 import generic_get_calls
 import generic_post_calls
+import support
 
-
-def main(conn:str, auth:tuple=(), timeout:int=30, exception:bool=False):
+def main():
     """
     The following is intended as an example of deploying Master Node with blockchain policy declaration(s).
-    :args:
-        conn:str - REST IP:PORT for communicating with AnyLog
-        auth:tuple - authentication information
-        timeout:int - REST timeout (in seconds)
-        exception:bool - whether to print exception
+    :positional arguments:
+        conn                  REST IP/Port connection to work against
+    :optional arguments:
+        -h, --help                  show this help message and exit
+        --auth      AUTH            Authentication (user, passwd) for node
+        --timeout   TIMEOUT         REST timeout
+        --exception [EXCEPTION]     whether to print exception
     :params:
         anylog_conn:AnyLogConnection - connection to AnyLog via REST
         anylog_dictionary:dict - dictionary of AnyLog params
-        drop_partition_task:str - command for dropping partition
-        # database creation specific params
-        db_status:bool - whether or not database exists
-        db_type:str - database type
+        hostname:str - node hostname (added if not in dictionary)
+        node_id:str - node ID
+        policy_values:dict - policy params
+
     """
-    anylog_conn = AnyLogConnection(conn=conn, auth=auth, timeout=timeout)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conn',         type=str,   default='127.0.0.1:2049', help='REST IP/Port connection to work against')
+    parser.add_argument('--auth',       type=tuple, default=(), help='Authentication (user, passwd) for node')
+    parser.add_argument('--timeout',    type=int,   default=30, help='REST timeout')
+    parser.add_argument('--exception',  type=bool,  nargs='?',  const=True, default=False, help='whether to print exception')
+    args = parser.parse_args()
+
+    anylog_conn = AnyLogConnection(conn=args.conn, auth=args.auth, timeout=args.timeout)
 
     # validate status
     print("Validate Connection")
-    if not generic_get_calls.validate_status(anylog_conn=anylog_conn, exception=exception):
+    if not generic_get_calls.validate_status(anylog_conn=anylog_conn, exception=args.exception):
         print(f'Failed to validate connection to AnyLog on {anylog_conn.conn}')
         exit(1)
 
-    anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
-    authentication.disable_authentication(anylog_conn=anylog_conn, exception=exception)
+    anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=args.exception)
+    authentication.disable_authentication(anylog_conn=anylog_conn, exception=args.exception)
 
     # set home path & create work dirs
     print("Set Directories")
-    generic_post_calls.set_home_path(anylog_conn=anylog_conn, anylog_root_dir=anylog_dictionary['anylog_root_dir'],
-                                     exception=exception)
-    generic_post_calls.create_work_dirs(anylog_conn=anylog_conn, exception=exception)
+    generic_post_calls.set_home_path(anylog_conn=anylog_conn, anylog_root_dir=anylog_dictionary['anylog_path'],
+                                     exception=args.exception)
+    generic_post_calls.create_work_dirs(anylog_conn=anylog_conn, exception=args.exception)
 
-    # Set AnyLog params & extract them
     print("Set Params & Extract Dictionary")
-    hostname = generic_get_calls.get_hostname(anylog_conn=anylog_conn, exception=exception)
-    if hostname != '':
-        generic_post_calls.set_variables(anylog_conn=anylog_conn, key='hostname', value=hostname, exception=exception)
+    if 'hostname' not in anylog_dictionary:
+        hostname = generic_get_calls.get_hostname(anylog_conn=anylog_conn, exception=args.exception)
+        if hostname != '':
+            generic_post_calls.set_variables(anylog_conn=anylog_conn, key='hostname', value=hostname,
+                                             exception=args.exception)
 
-    node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=exception)
+    node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=args.exception)
+
     if not isinstance(node_id, str):
-        while int(node_id.status_code) != 200:
-            authentication.create_public_key(anylog_conn=anylog_conn, password='passwd', exception=exception)
-            node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=exception)
-    generic_post_calls.set_variables(anylog_conn=anylog_conn, key='node_id', value=node_id, exception=exception)
+        authentication.create_public_key(anylog_conn=anylog_conn, password='passwd', exception=args.exception)
+        node_id = authentication.get_node_id(anylog_conn=anylog_conn, exception=args.exception)
+    generic_post_calls.set_variables(anylog_conn=anylog_conn, key='node_id', value=node_id, exception=args.exception)
 
-    anylog_dictionary = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
-
-    get_process = generic_get_calls.get_processes(anylog_conn=anylog_conn, exception=exception)
-    """
-    connect to logical database(s) - if fails to connect reattempt using SQLite.
-    """
-    print("Connect to Databases")
+    print("Connect Databases & Table(s)")
     for db_name in ['blockchain', 'system_query']:
-        while db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception):
-            database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=anylog_dictionary['db_type'],
-                                        db_ip=anylog_dictionary['db_port'], db_port=anylog_dictionary['db_port'],
-                                        db_user=anylog_dictionary['db_user'],
-                                        db_passwd=anylog_dictionary['default_dbms'], exception=exception)
-            if db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=exception):
+        while db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=args.exception):
+            if anylog_dictionary['db_type'] == 'sqlite':
+                database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type='sqlite')
+            else:
+                database_calls.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type="!db_type",
+                                            db_ip="!db_ip", db_port="!db_port", db_user="!db_user",
+                                            db_passwd="!db_passwd", exception=args.exception)
+            if db_name not in database_calls.get_dbms(anylog_conn=anylog_conn, exception=args.exception):
                 anylog_dictionary['db_type'] = 'sqlite'
             if db_name == 'blockchain' and not database_calls.check_table(anylog_conn=anylog_conn, db_name=db_name,
-                                                                          table_name='ledger', exception=exception):
+                                                                          table_name='ledger', exception=args.exception):
                 database_calls.create_table(anylog_conn=anylog_conn, db_name='blockchain', table_name='ledger',
-                                            exception=exception)
+                                            exception=args.exception)
 
-    # Set schedulers
-    print("Set Scheduler(s)")
-    if get_process['Scheduler'] == 'Not declared':
-        generic_post_calls.run_scheduler1(anylog_conn=anylog_conn, exception=exception)
-
-    if get_process['Blockchain Sync'] == 'Not declared':
+    print("Set Schedulers")
+    get_processes = generic_get_calls.get_processes(anylog_conn=anylog_conn, exception=args.exception)
+    if get_processes['Scheduler']['Status'] == 'Not declared':
+        generic_post_calls.run_scheduler1(anylog_conn=anylog_conn, exception=args.exception)
+    if get_processes['Blockchain Sync']['Status'] == 'Not declared':
         generic_post_calls.blockchain_sync_scheduler(anylog_conn=anylog_conn, source="master",
-                                                     time=anylog_dictionary['sync_time'], dest="file",
-                                                     connection=anylog_dictionary['master_node'], exception=exception)
+                                                     time="!sync_time", dest="!dest",
+                                                     connection="!master_node", exception=args.exception)
 
-    # declare policies
-    if 'loc' not in anylog_dictionary:
-        location = generic_get_calls.get_location(exception=exception)
-    else:
-        location = anylog_dictionary['loc']
-
-    # Master
     print('Declare Master')
     if not blockchain_calls.blockchain_get(anylog_conn=anylog_conn, policy_type='master',
-                                           where_condition=f"name={anylog_dictionary['node_name']} and company={anylog_dictionary['company_name']} and ip={anylog_dictionary['external_ip']} and port={anylog_dictionary['anylog_server_port']}",
-                                           bring_condition=None, separator=None, exception=exception):
-        policy_type = 'master'
+                                           where_condition=("name=!node_name and company=!company_name and "
+                                                   +"ip=!external_ip and port=!anylog_server_port"),
+                                           bring_condition=None, separator=None, exception=args.exception):
+
         policy_values = {
             "hostname": anylog_dictionary['hostname'],
             "name": anylog_dictionary['node_name'],
             "ip" : anylog_dictionary['external_ip'],
             "local_ip": anylog_dictionary['ip'],
             "company": anylog_dictionary['company_name'],
-            "port" : int(anylog_dictionary['anylog_server_port']),
+            "port": int(anylog_dictionary['anylog_server_port']),
             "rest_port": int(anylog_dictionary['anylog_rest_port']),
-            'loc': location
+            "loc": anylog_dictionary['location']
         }
 
-        policy = support.build_policy(policy_type=policy_type, company_name=anylog_dictionary['company_name'],
+        policy = support.build_policy(policy_type="master", company_name=anylog_dictionary['company_name'],
                                       policy_values=policy_values)
         blockchain_calls.declare_policy(anylog_conn=anylog_conn, policy=policy,
                                         master_node=anylog_dictionary['master_node'], exception=False)
 
 
 if __name__ == '__main__':
-    main(conn='10.0.0.111:2149', auth=(), timeout=30, exception=True)
+    main()

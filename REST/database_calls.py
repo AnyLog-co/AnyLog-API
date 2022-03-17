@@ -67,7 +67,8 @@ def connect_dbms(anylog_conn:AnyLogConnection, db_name:str, db_type:str="sqlite"
     cmd = f"connect dbms {db_name} where type={db_type}"
     if db_type != 'sqlite':
         cmd += f" and ip={db_ip} and port={db_port} and user={db_user} and password={db_passwd}"
-    headers ={
+
+    headers = {
         'command': cmd,
         'User-Agent': 'AnyLog/1.23'
     }

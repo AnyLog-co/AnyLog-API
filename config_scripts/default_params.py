@@ -69,7 +69,7 @@ def main():
                                  db_name=db_name, exception=args.exception)
 
     for value in dictionary_values:
-        configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name,
+        configs_support.insert_data(anylog_conn=anylog_conn, table_name=table_name, variable_type="variable",
                                     insert_data={value: dictionary_values[value]}, db_name=db_name,
                                     exception=args.exception)
 

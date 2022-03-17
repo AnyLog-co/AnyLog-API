@@ -24,6 +24,7 @@ def get_location(exception:bool=False)->str:
         try:
             location = r.json()['loc']
         except Exception as e:
+            location = "0.0, 0.0"
             if exception is True:
                 print(f'Failed to extract location (Error {e})')
     return location
