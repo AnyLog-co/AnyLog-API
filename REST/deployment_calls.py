@@ -57,7 +57,6 @@ def run_mqtt_client(anylog_conn:AnyLogConnection, broker:str, port:str, mqtt_use
         "User-Agent": "AnyLog/1.23"
     }
     r, error = anylog_conn.post(headers=headers, payload=None)
-    print(r, error) 
     if exception is True and r is False:
         print_error(error_type="POST", cmd=headers['command'], error=error)
     return r
