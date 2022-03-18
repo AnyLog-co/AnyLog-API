@@ -235,6 +235,5 @@ def main():
                                       master_node=anylog_dictionary['master_node'], exception=args.exception)
 
 
-
 if __name__ == '__main__':
     main()
