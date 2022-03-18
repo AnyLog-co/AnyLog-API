@@ -54,26 +54,22 @@ def insert_data(anylog_conn:AnyLogConnection, table_name:str, variable_type:str,
         db_name:str - database name
         exception:bool - whether or not to print exceptions
     """
-    # stmt = f"INSERT INTO {table_name}(al_value, alv_command) VALUES (%s, %s);"
-    insert_stmt = f"INSERT INTO {table_name} (al_command, al_value) VALUES ('set %s=<>', '%s');"
-    update_stmt = f"UPDATE {table_name} SET al_value='%s' WHERE al_command='set %s=<>'"
-    
     for param in insert_data:
-
-        select_stmt = f"SELECT COUNT(*) FROM {table_name} WHERE al_command LIKE '%{param.rstrip().lstrip()}=<>%'"
-        row_count = database_calls.execute_get_command(anylog_conn=anylog_conn, db_name=db_name,
-                                                       command=select_stmt,
+        param = param.rstrip().lstrip()
+        select_stmt = f"SELECT COUNT(*) FROM {table_name} WHERE al_command LIKE '%{param}=<>%'"
+        row_count = database_calls.execute_get_command(anylog_conn=anylog_conn, db_name=db_name,command=select_stmt,
                                                        format='json', stat=False, destination=None, exception=exception)
         if row_count['Query'][0]['COUNT(*)'] == 0:
-            stmt = insert_stmt % (param.rstrip().lstrip(), insert_data[param])
             if variable_type == 'command':
-                stmt = stmt.replace(f'set {param.rstrip().lstrip()}=<>', f'{param.rstrip().lstrip()}=<>')
-            database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name, command=stmt,
-                                                exception=exception)
+                stmt = f"INSERT INTO {table_name} (al_command, al_value) VALUES ('{param}=<>', '{insert_data[param]}');"
+            else:
+                stmt = f"INSERT INTO {table_name} (al_command, al_value) VALUES ('set {param}=<>', '{insert_data[param]}');"
         else:
-            stmt = update_stmt % (insert_data[param], param.rstrip().lstrip())
             if variable_type == 'command':
-                stmt = stmt.replace(f'set {param.rstrip().lstrip()}=<>', f'{param.rstrip().lstrip()}=<>')
-            database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name, command=stmt,
-                                                exception=exception)
+                stmt = f"UPDATE {table_name} SET al_value='{insert_data[param]}' WHERE al_command='{param}=<>'"
+            else:
+                stmt = f"UPDATE {table_name} SET al_value='{insert_data[param]}' WHERE al_command='set {param}=<>'"
+
+        database_calls.execute_post_command(anylog_conn=anylog_conn, db_name=db_name, command=stmt,
+                                            exception=exception)
 

@@ -164,7 +164,7 @@ def build_policy(policy_type:str, company_name:str, policy_values:dict={})->str:
     return policy
 
 
-def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', mqtt_log:bool=False,
+def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passwd:str='', mqtt_log:bool=False,
                       topic_name:str='*', topic_dbms:str='', topic_table:str='', columns:dict={})->str:
     """
     Given the params for an MQTT generate MQTT call
@@ -172,7 +172,7 @@ def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', m
         broker:str - broker connection information
         port:str - port correlated to broker
         mqtt_user:str - user for accessing MQTT
-        mqtt_passswd:str - password correlated to user
+        mqtt_passwd:str - password correlated to user
         mqtt_log:bool - whether to print MQTT logs or not
         topic_name:str - MQTT topic
         topic_dbms:str - database
@@ -189,8 +189,8 @@ def format_mqtt_cmd(broker:str, port:str, mqtt_user:str='', mqtt_passd:str='', m
         cmd
     """
     cmd = f"run mqtt client where broker={broker} and port={port}"
-    if mqtt_user != '' and mqtt_passd != '':
-        cmd += f" and user={mqtt_user} and password={mqtt_passd}"
+    if mqtt_user != '' and mqtt_passwd != '':
+        cmd += f" and user={mqtt_user} and password={mqtt_passwd}"
     if broker == 'rest':
         cmd += " and user-agent=anylog"
     cmd += " and log=false"

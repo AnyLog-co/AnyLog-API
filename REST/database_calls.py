@@ -242,7 +242,7 @@ def execute_post_command(anylog_conn:AnyLogConnection, db_name:str, command:str,
         r
     """
     headers = {
-        "command": f'sql {db_name} "{command}"',
+        "command": f'sql {db_name} {command}',
         "User-Agent": "AnyLog/1.23"
     }
     r, error = anylog_conn.post(headers=headers, payload=None)

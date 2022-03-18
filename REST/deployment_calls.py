@@ -52,7 +52,6 @@ def run_mqtt_client(anylog_conn:AnyLogConnection, broker:str, port:str, mqtt_use
     """
     cmd = format_mqtt_cmd(broker=broker, port=port, mqtt_user=mqtt_user, mqtt_passwd=mqtt_passwd, mqtt_log=mqtt_log,
                           topic_name=topic_name, topic_dbms=topic_dbms, topic_table=topic_table, columns=columns)
-    print(cmd) 
     headers = {
         "command": cmd,
         "User-Agent": "AnyLog/1.23"
@@ -64,14 +63,14 @@ def run_mqtt_client(anylog_conn:AnyLogConnection, broker:str, port:str, mqtt_use
     return r
 
 
-def set_threshold(anylog_conn:AnyLogConnection, write_immediate:bool=True, exception:bool=False)->bool:
+def set_threshold(anylog_conn:AnyLogConnection, write_immediate:str=True, exception:bool=False)->bool:
     """
     Set buffer threshold
     :command:
         set buffer threshold where write_immediate = true
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
-        write_immediate:bool - whether to set threshold to immediate
+        write_immediate:str - whether to set threshold to immediate
         exception:bool - whether to print exception
     :params:
         cmd:str - command to execute
@@ -80,9 +79,7 @@ def set_threshold(anylog_conn:AnyLogConnection, write_immediate:bool=True, excep
     :return:
         r
     """
-    cmd = "set buffer threshold"
-    if write_immediate is True:
-        cmd += " where write_immediate=true"
+    cmd = f"set buffer threshold where write_immediate={write_immediate}"
     headers = {
         "command": cmd,
         "User-Agent": "AnyLog/1.23"
@@ -141,14 +138,15 @@ def data_distributor(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     return r
 
 
-def run_operator(anylog_conn:AnyLogConnection, create_table:bool=True, update_tsd_info:bool=True, archive:bool=True,
+def run_operator(anylog_conn:AnyLogConnection, policy_id:str, create_table:bool=True, update_tsd_info:bool=True, archive:bool=True,
                  distributor:bool=True, master_node:str="!master_node", exception:bool=False)->bool:
     """
     Start Operator process
     :command:
-        run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and master_node={master_node}
+        run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and master_node=!master_node and policy=!policy_id
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
+        policy_id:str - Operator blockchain ID
         create_table:bool - Whether to create/declare table if DNE
         update_tsd_info:str - Whether to update tsd_info table
         archive:str - whether to archive (or backup) files
@@ -162,15 +160,8 @@ def run_operator(anylog_conn:AnyLogConnection, create_table:bool=True, update_ts
     :return:
         r
     """
-    cmd = f"run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and master_node={master_node}"
-    if create_table is False:
-        cmd = cmd.replace("create_table=true", "create_table=false")
-    if update_tsd_info is False:
-        cmd = cmd.replace("update_tsd_info=true", "update_tsd_info=false")
-    if archive is False:
-        cmd = cmd.replace("archive=true", "archive=false")
-    if distributor is False:
-        cmd = cmd.replace("distributor=true", "distributor=false")
+    cmd = (f"run operator where create_table={create_table} and update_tsd_info={update_tsd_info} and archive={archive} "
+           +f"and distributor={distributor} and master_node={master_node} and policy={policy_id}")
 
     headers = {
         "command": cmd,

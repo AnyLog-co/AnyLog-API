@@ -54,6 +54,7 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
             except Exception as e:
                 if exception is True:
                     print(f"Failed to execute command {cmd} (Error: {e})")
+    
     return blockchain_data
 
 
@@ -99,6 +100,7 @@ def declare_policy(anylog_conn:AnyLogConnection, policy:str, master_node:str="!m
             status = False
             if exception is True:
                 print(f"Failed to prepare '{payload}' (Error {e})")
+
 
     if status is True: # insert policy
         headers = {
