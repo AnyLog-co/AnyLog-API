@@ -32,11 +32,11 @@ PARAMS = {
         },
         "node_name": {
             "type": "variable",
-            "value": "new-node"
+            "value": "al-aiops-node1"
         },
         "node_type": { # master, operator, publisher, query, standalone (master+operator), standalone-publisher (master+publisher)
             "type": "variable",
-            "value": "operator"
+            "value": "standalone"
         },
         "location": { # location of the node
             "type": "variable",
@@ -55,11 +55,11 @@ PARAMS = {
         },
         "anylog_server_port": {
             "type": "variable",
-            "value": 2048
+            "value": 2148
         },
         "anylog_rest_port": {
             "type": "variable",
-            "value": 2049
+            "value": 2149
         }
     },
     "anylog_database": {
@@ -77,17 +77,17 @@ PARAMS = {
         },
         "db_user": {
             "type": "variable",
-            "value": "admin"
+            "value": "aladmin"
         },
         "db_passwd": {
             "type": "variable",
-            "value": "passwd"
+            "value": "AnyLogTemp1!"
         }
     },
     "anylog_blockchain": {
         "master_node": {
             "type": "variable",
-            "value": "127.0.0.1:2048"
+            "value": "10.01.2.10:2148"
         },
         "source": {
             "type": "variable",
@@ -125,11 +125,11 @@ PARAMS = {
         },
         "partition_interval": {
             "type": "variable",
-            "value": '14 days'
+            "value": '7 days'
         },
         "partition_keep": { # keep about 3 months of data
             "type": "variable",
-            "value": 6
+            "value": 12
         },
         "partition_sync": {
             "type": "variable",
@@ -147,7 +147,7 @@ PARAMS = {
         },
         "mqtt_port": {
             "type": "variable",
-            "value": 2049
+            "value": 2149
         },
         "mqtt_log": {
             "type": "variable",
