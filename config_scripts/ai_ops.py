@@ -87,7 +87,7 @@ PARAMS = {
     "anylog_blockchain": {
         "master_node": {
             "type": "variable",
-            "value": "10.01.2.10:2148"
+            "value": "10.1.2.10:2148"
         },
         "source": {
             "type": "variable",
@@ -125,7 +125,7 @@ PARAMS = {
         },
         "partition_interval": {
             "type": "variable",
-            "value": '7 days'
+            "value": '"7 days"'
         },
         "partition_keep": { # keep about 3 months of data
             "type": "variable",
@@ -133,7 +133,7 @@ PARAMS = {
         },
         "partition_sync": {
             "type": "variable",
-            "value": '1 day'
+            "value": '"1 day"'
         }
     },
     "anylog_mqtt": { # mqtt params, not needed if deployment of type not master or query
