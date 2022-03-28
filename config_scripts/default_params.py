@@ -2,10 +2,6 @@ import argparse
 import os
 import sys
 
-DEFAULT_PARAMS = ['ip', 'external_ip', 'anylog_server_port', 'anylog_rest_port', 'io_buff_size', 'anylog_path',
-                  'blockchain_sql', 'blockchain_file', 'blockchain_new', 'blockchain_dir', 'local_scripts', 'data_dir',
-                  'prep_dir', 'watch_dir', 'bkup_dir', 'err_dir', 'dbms_dir', 'archive_dir', 'distr_dir', 'pem_dir',
-                  'test_dir', 'id_dir', 'input_thread']
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('config_scripts')[0]
 REST_PATH = os.path.join(ROOT_PATH, 'REST')
