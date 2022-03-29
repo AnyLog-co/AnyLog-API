@@ -4,7 +4,7 @@ import sys
 
 
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__)).split('config_scripts')[0]
-REST_PATH = os.path.join(ROOT_PATH, 'REST')
+REST_PATH = os.path.join(ROOT_PATH, 'anylog_pyrest')
 sys.path.insert(0, REST_PATH)
 
 from anylog_connection import AnyLogConnection
