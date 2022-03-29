@@ -8,7 +8,7 @@ python3.9 setup.py bdist_wheel
 import os
 from setuptools import setup
 
-__NAME__ = 'AnyLog API'
+__NAME__ = 'anylog_api'
 __VERSION__ = 'beta'
 __DESCRIPTION__ = 'Connection to AnyLog via python REST connection'
 __URL__ = 'https://github.com/AnyLog-co/AnyLog-API'
