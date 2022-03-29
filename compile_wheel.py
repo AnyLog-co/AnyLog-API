@@ -9,7 +9,7 @@ import os
 from setuptools import setup
 
 __NAME__ = 'anylogapi'
-__VERSION__ = 'beta'
+__VERSION__ = '1.0'
 __DESCRIPTION__ = 'Connection to AnyLog via python REST connection'
 __URL__ = 'https://github.com/AnyLog-co/AnyLog-API'
 __AUTHOR__ = 'Ori Shadmon'
@@ -39,7 +39,7 @@ try:
         author=__AUTHOR__,
         author_email=__EMAIL__,
         license='BSD 2-clause',
-        packages=[PACKAGE_DIR],
+        packages=['anylog_pyrest'],
         install_requires=__INSTALL_REQUIRES__,
         classifiers=__CLASSIFIERS__
     )
