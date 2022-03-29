@@ -1,3 +1,10 @@
+"""
+The following is based on: https://github.com/shuds13/pyexample
+
+To run:
+python3.9 setup.py bdist_wheel
+"""
+
 import os
 from setuptools import setup
 
