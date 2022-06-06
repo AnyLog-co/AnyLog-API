@@ -58,7 +58,7 @@ def blockchain_get(anylog_conn:str, policy_type:str='*', where_condition:str=Non
     return blockchain_data
 
 
-def declare_policy(anylog_conn:AnyLogConnection, policy:str, master_node:str="!master_node", exception:bool=False)->bool:
+def declare_policy(anylog_conn:AnyLogConnection, policy:str, ledger_conn:str="!master_node", exception:bool=False)->bool:
     """
     Process to declare policy in (blockchain) ledger
     :steps:
@@ -66,11 +66,11 @@ def declare_policy(anylog_conn:AnyLogConnection, policy:str, master_node:str="!m
         2. insert policy - Add a new policy to the ledger in one or more blockchain platform.s
     :commands:
         blockchain prepare policy !new_policy
-        blockchain insert where policy=!new_policy and local=true and master=!master_node
+        blockchain insert where policy=!new_policy and local=true and master=!ledger_conn
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         policy:str - policy to store in blockchain
-        master_node:str - master node to send policy to
+        ledger_conn:str - master node to send policy to
         exception:bool - whether the command failed & why
     :params:
         status:bool
@@ -104,7 +104,7 @@ def declare_policy(anylog_conn:AnyLogConnection, policy:str, master_node:str="!m
 
     if status is True: # insert policy
         headers = {
-            "command": f"blockchain insert where policy=!new_policy and local=true and master={master_node}",
+            "command": f"blockchain insert where policy=!new_policy and local=true and master={ledger_conn}",
             "User-Agent": "AnyLog/1.23"
         }
         r, error = anylog_conn.post(headers=headers, payload=payload)

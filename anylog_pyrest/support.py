@@ -38,8 +38,8 @@ def validate_dictionary(anylog_dict:dict={})->dict:
         anylog_dict['sync_time'] = '30 seconds'
     if 'blockchain_destination' not in anylog_dict:
         anylog_dict['blockchain_destination'] = 'file'
-    if 'master_node' not in anylog_dict:
-        anylog_dict['master_node'] = f"127.0.0.1:{anylog_dict['anylog_server_port']}"
+    if 'ledger_conn' not in anylog_dict:
+        anylog_dict['ledger_conn'] = f"127.0.0.1:{anylog_dict['anylog_server_port']}"
 
     # partitioning
     if 'enable_partitions' in anylog_dict and anylog_dict['enable_partitions'] == 'true':

@@ -109,11 +109,11 @@ def run_scheduler1(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
 
 
 def blockchain_sync_scheduler(anylog_conn:AnyLogConnection, source:str="master", time:str="!sync_time", dest:str="file",
-                              connection:str="!master_node", exception:bool=False)->bool:
+                              connection:str="!ledger_conn", exception:bool=False)->bool:
     """
     Set blockchain sync process
     :command:
-        run blockchain sync where source=master and time=!sync_time and dest=file and connection=!master_node
+        run blockchain sync where source=master and time=!sync_time and dest=file and connection=!ledger_conn
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         source:str - blockchain source

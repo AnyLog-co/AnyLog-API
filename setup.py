@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-	name="anylog-api",
+	name="anylog-pyrest",
 	version="0.0.1",
 	author="Ori Shadmon",
 	author_email="info@anylog.co",

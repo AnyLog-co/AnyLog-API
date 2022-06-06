@@ -138,11 +138,11 @@ def data_distributor(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
 
 
 def run_operator(anylog_conn:AnyLogConnection, policy_id:str, create_table:bool=True, update_tsd_info:bool=True, archive:bool=True,
-                 distributor:bool=True, master_node:str="!master_node", exception:bool=False)->bool:
+                 distributor:bool=True, ledger_conn:str="!master_node", exception:bool=False)->bool:
     """
     Start Operator process
     :command:
-        run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and master_node=!master_node and policy=!policy_id
+        run operator where create_table=true and update_tsd_info=true and archive=true and distributor=true and ledger_conn=!master_node and policy=!policy_id
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         policy_id:str - Operator blockchain ID
@@ -150,7 +150,7 @@ def run_operator(anylog_conn:AnyLogConnection, policy_id:str, create_table:bool=
         update_tsd_info:str - Whether to update tsd_info table
         archive:str - whether to archive (or backup) files
         distributor:str - whether to distribute data among other operators in the cluster
-         master_node:str - which master to work against
+         ledger_conn:str - which master to work against
         exception:bool - whether to print exception
     :params:
         cmd:str - command to execute
@@ -160,7 +160,7 @@ def run_operator(anylog_conn:AnyLogConnection, policy_id:str, create_table:bool=
         r
     """
     cmd = (f"run operator where create_table={create_table} and update_tsd_info={update_tsd_info} and archive={archive} "
-           +f"and distributor={distributor} and master_node={master_node} and policy={policy_id}")
+           +f"and distributor={distributor} and ledger_conn={master_node} and policy={policy_id}")
 
     headers = {
         "command": cmd,
@@ -172,17 +172,17 @@ def run_operator(anylog_conn:AnyLogConnection, policy_id:str, create_table:bool=
     return r
 
 
-def run_publisher(anylog_conn:AnyLogConnection, compress_json:bool=True, move_json:bool=True, master_node="!master_node",
+def run_publisher(anylog_conn:AnyLogConnection, compress_json:bool=True, move_json:bool=True, ledger_conn="!master_node",
                   db_name:str="file_name[0]", table_name="file_name[1]", exception:bool=False)->bool:
     """
     Start AnyLog publisher process
     :command:
-        run publisher where compress_json = true and move_json = true and master_node = !master_node and dbms_name = file_name[0] and table_name = file_name[1]
+        run publisher where compress_json = true and move_json = true and ledger_conn = !master_node and dbms_name = file_name[0] and table_name = file_name[1]
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         compress_json:bool - whether or not to compress JSON file
         move_json:bool - whether or not to backup the JSON file
-        master_node:str - which master to work against
+        ledger_conn:str - which master to work against
         db_name:str - database name (file name: db_name.table_name.0.0.json)
         table_name:str - table name (file name: db_name.table_name.0.0.json)
         exception:bool - whether to print exception
@@ -193,7 +193,7 @@ def run_publisher(anylog_conn:AnyLogConnection, compress_json:bool=True, move_js
     :return:
         r
     """
-    cmd = f"run publisher where compress_json=true and move_json=true and master_node={master_node} and dbms_name={db_name} and table_name={table_name}"
+    cmd = f"run publisher where compress_json=true and move_json=true and ledger_conn={master_node} and dbms_name={db_name} and table_name={table_name}"
     if compress_json is False:
         cmd = cmd.replace("compress_json=true", "compress_json=false")
     if move_json is False:
