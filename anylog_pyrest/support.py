@@ -1,5 +1,28 @@
 import json
-import yaml
+import dotenv
+
+
+def __read_dotenv(config_file:str, exception:bool=False)->dict:
+    """
+    Read configs from .env file
+    :args:
+        config_file:str - .env file to read configs from
+        exception:bool - whether or not to write exceptions
+    :params:
+        configs:dict - configs read from .env file
+    :return:
+        configs
+    """
+    configs = {}
+
+    try:
+        configs = dict(dotenv.dotenv_values(config_file))
+    except Exception as error:
+        if exception is True:
+            print(f'Failed to read configs from {config_file} (Error: {error})')
+            
+    return configs
+
 
 def print_error(error_type:str, cmd:str, error:str):
     """
@@ -19,26 +42,31 @@ def print_error(error_type:str, cmd:str, error:str):
 
 def read_configs(config_file:str, exception:bool=False)->dict:
     """
-    Given a configuration file (YAML format) convert to be useable
+    Given a configuration file, extract configurations
+    :supports:
+        - .env
+        - .yml (to be developed)
     :args:
-        config_filee:str - YAML file
+        config_file:str - YAML file
         exception:bool - whether to write exception
     :params:
-        content:dict - content in YAML file
+        file_extension:str - file extension
+        configs:dict - content in YAML file
     :return:
-        content
+        configs
     """
-    content = {}
-    try:
-        with open(config_file, 'r') as f:
-            try:
-                content = yaml.safe_load(f)
-            except Exception as e:
-                if exception is True:
-                    print(f'Failed to read content in {config_file} (Error: {e}')
-    except Exception as e:
-        print(f'Failed to open {config_file} (Error: {e})')
-    return content
+    file_extension = config_file.rsplit('.', 1)[-1]
+    configs = {}
+
+    if file_extension == 'env':
+        configs = __read_dotenv(config_file=config_file, exception=exception)
+    elif file_extension in ['.yml', '.yaml']:
+        pass
+    else:
+        if exception is True:
+            print(f'Invalid extension type: {file_extenson}')
+
+    return configs
 
 
 def dictionary_merge(yaml_config:dict, anylog_dictionary:dict)->dict:

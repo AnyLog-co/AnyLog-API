@@ -65,16 +65,15 @@ def create_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, exce
     :return:
         status
     """
-    status = False
+    status = True
     headers ={
         "command": f"create table {table_name} where dbms={db_name}",
         "User-Agent": "AnyLog/1.23"
     }
 
-    r, error = anylog_conn.post(headers=headers)
-    if exception is True and r is False:
+    status, error = anylog_conn.post(headers=headers)
+    if exception is True and status is False:
         print_error(error_type='POST', cmd=headers['command'], error=error)
-        status = False
 
     return status
 
@@ -107,6 +106,8 @@ def get_db(anylog_conn:AnyLogConnection, exception:bool=False):
                     databases_list.append(row.split()[0])
 
     return databases_list
+
+
 
 
 

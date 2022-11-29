@@ -107,7 +107,7 @@ def get_dictionary(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
     return anylog_dictionary
 
 
-def get_hostname(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
+def get_hostname(anylog_conn:AnyLogConnection, exception:bool=False)->str:
     """
     Extract Hostname
     :args:
