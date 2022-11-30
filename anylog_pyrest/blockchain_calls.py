@@ -36,10 +36,10 @@ def blockchain_sync(anylog_conn:AnyLogConnection, blockchain_source:str, blockch
     return status
 
 
-def check_policy_exists(anylog_conn:AnyLogConnection, policy_type:str, name:str, company:str, local_ip:str="",
-                        anylog_server_port:int="", exception:bool=False)->bool:
+def get_policy(anylog_conn:AnyLogConnection, policy_type:str, name:str, company:str, local_ip:str="",
+                        anylog_server_port:int="", exception:bool=False)->dict:
     """
-    check whether policy exists
+    check whether policy exists, if exists then returns policy else returns empty dict
     :args:
         anylog_conn:AnyLogConnection - connection to AnyLog
         policy_type:str - policy type
@@ -49,11 +49,12 @@ def check_policy_exists(anylog_conn:AnyLogConnection, policy_type:str, name:str,
         anylog_server_port:int - AnyLog TCP port
         exception:bool - Whether or not to print exceptions
     :params:
-        status:bool
+        policy:dict - policy to return
         headers:dict - REST headers
         r:bool, error:str - whether the command failed & why
+    :return:
+        if succcess returns policy, else returns {} 
     """
-    status = False
     headers = {
         'command': f"blockchain get {policy_type} where name={name} and company={company}",
         "User-Agent": "AnyLog/1.23"
@@ -69,21 +70,17 @@ def check_policy_exists(anylog_conn:AnyLogConnection, policy_type:str, name:str,
     if exception is True and r is False:
         print_error(error_type='GET', cmd=headers['command'], error=error)
     else:
-        print(r.text)
-        if r.text != "None":
-            status = True
-            try:
-                print(r.json())
-            except:
-                print(r.text)
+        try:
+            policy = r.json()
+        except:
+            policy = {}
 
-    return status
+    return policy
 
 
-def create_anylog_policy(policy_type:str, name:str, company:str, db_name:str=None, hostname:str="", external_ip:str="",
-                         local_ip:str="", anylog_server_port:int="", anylog_rest_port:int="", location:str="",
-                         country:str="", state:str="", city="", cluster_id:str="", member:int="",
-                         exception:bool=False)->dict:
+def create_policy(policy_type:str, name:str, company:str, db_name:str=None, hostname:str="", external_ip:str="",
+                  local_ip:str="", anylog_server_port:int="", anylog_rest_port:int="", location:str="", country:str="", 
+                  state:str="", city="", cluster_id:str="", member:int="", exception:bool=False)->dict:
     """
     create AnyLog policy
     :sample policy: 

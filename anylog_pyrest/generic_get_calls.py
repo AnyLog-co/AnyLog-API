@@ -137,4 +137,33 @@ def get_hostname(anylog_conn:AnyLogConnection, exception:bool=False)->str:
     return hostname
 
 
+def get_scheduler(anylog_conn:AnyLogConnection, name:str, exception:bool=False)->bool:
+    """
+    Check if scheduler is running based on ID
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        name:str - schedule ID value
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        header:dict - REST header
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - if scheduler is running
+        False - if scheduler is not running
+    """
+    status = True
+    headers = {
+        'command': f'get scheduler {name}',
+        'User-Agent': 'AnyLog/1.23'
+    }
+    r, error = anylog_conn.get(headers=headers)
+    if exception is True and r is False:
+        print_error(error_type='GET', cmd=headers['command'], error=error)
+    else:
+        if r.text == f'Scheduler {name} not declared':
+            status = False
+    return status
+
+
 

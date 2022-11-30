@@ -8,10 +8,12 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'anylog_pyrest'))
 
 from anylog_connection import AnyLogConnection
 from deploy_dbms import deploy_dbms
+from declare_policy import declare_policy
 
-import blockchain_calls as blockchain_calls
+
 import generic_get_calls as generic_get_calls
 import generic_post_calls as generic_post_calls
+import blockchain_calls
 import support
 
 def __set_configs(rest_conn:str, config_file:str, auth:str=None, timeout:int=30, exception:bool=False)->(AnyLogConnection, dict):
@@ -56,12 +58,23 @@ def __set_configs(rest_conn:str, config_file:str, auth:str=None, timeout:int=30,
 
     # merge configs in default_configs that are not found in configs
     for param in default_configs:
+        upper_param = param.upper()
+        if upper_param not in configs:
+            configs[upper_param] = default_configs[param]
+
+    # missing configs
+    if 'HOSTNAME' not in configs:
+        configs['HOSTNAME'] = generic_get_calls.get_hostname(anylog_conn=anylog_conn, exception=exception)
+
+    for param in ['MEMBER', 'CLUSTER_NAME', 'LOCATION', 'COUNTRY', 'STATE', 'CITY']:
         if param not in configs:
-            configs[param] = default_configs[param]
-    if 'hostname' not in configs:
-        configs['hostname'] = generic_get_calls.get_hostname(anylog_conn=anylog_conn, exception=exception)
+            configs[param] = None
+
+    if configs['NODE_TYPE'] == 'operator' and configs['CLUSTER_NAME'] is None:
+        configs['CLUSTER_NAE'] = 'new-cluster'
 
     return anylog_conn, configs
+
 
 def main():
     """
@@ -80,6 +93,14 @@ def main():
 
     anylog_conn, configs = __set_configs(rest_conn=args.rest_conn, config_file=args.config_file, auth=args.auth,
                                          timeout=args.timeout, exception=args.exception)
+    # run scheduler
+    if generic_get_calls.get_scheduler(anylog_conn=anylog_conn, name=1, exception=args.exception) is False:
+        generic_post_calls.schedule_task(anylog_conn=anylog_conn, name=1, exception=args.exception)
+
+    # if REST then exit
+    if configs['NODE_TYPE'] == 'rest':
+        print('For node type rest - no other changes are needed for deployment')
+        exit(1)
 
     # connect dbms
     db_name = None
@@ -94,10 +115,20 @@ def main():
                     host=configs['DB_IP'], port=configs['DB_PORT'], user=configs['DB_USER'], passwd=configs['DB_PASSWD'],
                     system_query=configs['SYSTEM_QUERY'], memory=configs['MEMORY'], exception=args.exception)
 
-    # run scheduler
-    generic_post_calls.schedule_task(anylog_conn=anylog_conn, name=1, exception=args.exception)
+    # declare blockchain sync
+    blockchain_calls.blockchain_sync(anylog_conn=anylog_conn, blockchain_source=configs['BLOCKCHAIN_SOURCE'],
+                                     blockchain_destination=configs['BLOCKCHAIN_DESTINATION'],
+                                     sync_time=configs['SYNC_TIME'], ledger_conn=configs['LEDGER_CONN'],
+                                     exception=args.exception)
 
-        
+    # declare policy
+    declare_policy(anylog_conn=anylog_conn, node_type=configs['NODE_TYPE'], node_name=configs['NODE_NAME'],
+                   hostname=configs['HOSTNAME'], company_name=configs['COMPANY_NAME'], external_ip=configs['EXTERNAL_IP'],
+                   local_ip=configs['IP'], server_port=configs['ANYLOG_SERVER_PORT'],
+                   rest_port=configs['ANYLOG_REST_PORT'], member=configs['MEMBER'], cluster_name=configs['CLUSTER_NAME'],
+                   location=configs['LOCATION'], country=configs['COUNTRY'], state=configs['STATE'],
+                   city=configs['CITY'], exception=args.exception)
+
 
 
 
