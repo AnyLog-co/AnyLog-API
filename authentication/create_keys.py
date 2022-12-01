@@ -36,6 +36,7 @@ def main(anylog_conn:AnyLogConnection, password:str, keys_file:str='root', local
                                                                    exception=exception)
 
     while private_key_path == "" and public_key_path == "":
+        # create keys if DNE
         if authenticaton_keys.declare_keys(anylog_conn=anylog_conn, password=password, keys_file=keys_file,
                                          exception=exception) is True:
             print(f'Failed to declare authentication keys against {anylog_conn.conn}')
@@ -44,7 +45,7 @@ def main(anylog_conn:AnyLogConnection, password:str, keys_file:str='root', local
         private_key_path, public_key_path = authenticaton_keys.get_key(anylog_conn=anylog_conn, password=password,
                                                                         keys_file=keys_file, local_dir=local_dir,
                                                                         exception=exception)
-        
+
     __print_file_info(key_path=private_key_path, key_type='private')
     __print_file_info(key_path=public_key_path, key_type='public')
 
