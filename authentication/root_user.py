@@ -11,6 +11,7 @@ import create_keys
 
 def main():
     """
+    The following demonstrates using 
     ;process:
         1. set keys
         2. create member policy
@@ -35,9 +36,15 @@ def main():
         
     anylog_conn = AnyLogConnection(conn=args.conn, auth=auth, timeout=args.timeout)
 
-    # set authentication keys
+    # set authentication keys & store them locally
     create_keys.main(anylog_conn=anylog_conn, password=args.root_password, keys_file=args.keys_file,
                      local_dir=args.local_dir, exception=args.exception)
+
+    # declare member policy
+
+    # sign policy
+
+    # post policy
 
 if __name__ == '__main__':
     main()

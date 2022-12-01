@@ -10,6 +10,7 @@ from anylog_connection import AnyLogConnection
 import authentication
 import authenticaton_keys
 
+
 def __print_file_info(key_path:str, key_type:str):
     output = f"{key_type.title()} Key location: {key_path}"
     if key_path == "":
@@ -35,11 +36,11 @@ def main(anylog_conn:AnyLogConnection, password:str, keys_file:str='root', local
                                      exception=exception) is True:
         print(f'Failed to declare authentication keys against {anylog_conn.conn}')
     
-
+    # store authentication keys locally
     private_key_path, public_key_path = authenticaton_keys.get_key(anylog_conn=anylog_conn, password=password,
                                                                     keys_file=keys_file, local_dir=local_dir,
                                                                     exception=exception)
-
+    
     __print_file_info(key_path=private_key_path, key_type='private')
     __print_file_info(key_path=public_key_path, key_type='public')
 
