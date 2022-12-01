@@ -17,9 +17,35 @@ def __print_file_info(key_path:str, key_type:str):
     print(output)
 
 
-def main():
+def main(anylog_conn:AnyLogConnection, password:str, keys_file:str='root', local_dir:str=DIR_NAME, exception:bool=False):
     """
     Sample code to create private and public key, storing it both on node (in AnyLog-Network/anylog) and locally
+    :args:
+        anylog_conn:AnyLogConnection - REST connection to AnyLog
+        password        RSA keys password
+        keys_file           file to store keys on AnyLog node (name only) (default: root)
+        local_dir           local directory to store root keys (default: /Users/orishadmon/AnyLog-API/authentication)
+        exception           Whether to print errors (default: False)
+    :params:
+        private_key_path:str - path of private key
+        public_key_path:str - path of public key
+    """
+    # set authentication keys
+    if authenticaton_keys.declare_keys(anylog_conn=anylog_conn, password=password, keys_file=keys_file,
+                                     exception=exception) is True:
+        print(f'Failed to declare authentication keys against {anylog_conn.conn}')
+    
+
+    private_key_path, public_key_path = authenticaton_keys.get_key(anylog_conn=anylog_conn, password=password,
+                                                                    keys_file=keys_file, local_dir=local_dir,
+                                                                    exception=exception)
+
+    __print_file_info(key_path=private_key_path, key_type='private')
+    __print_file_info(key_path=public_key_path, key_type='public')
+
+
+if __name__ == '__main__':
+    """
     :positional arguments:
         conn                  REST connection information
         root_password         RSA keys password
@@ -31,10 +57,8 @@ def main():
         --timeout       TIMEOUT     REST timeout (default: 30)
         -e, --exception [EXCEPTION] Whether to print errors (default: False)
     :params: 
-        auth:tuple - Authentication 
-        anylog_conn:AnyLogConnection - REST connection to AnyLog 
-        private_key_path:str - path of private key
-        public_key_path:str - path of public key
+        auth:tuple - Authentication
+        anylog_conn:AnyLogConnection - REST connection to AnyLog
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('conn', type=str, default='127.0.0.1:32048', help='REST connection information')
@@ -52,21 +76,6 @@ def main():
 
     anylog_conn = AnyLogConnection(conn=args.conn, auth=auth, timeout=args.timeout)
 
-    # set authentication keys
-    if authenticaton_keys.declare_keys(anylog_conn=anylog_conn, password=args.password, keys_file=args.keys_file,
-                                     exception=args.exception) is True:
-        print(f'Failed to declare authentication keys against {anylog_conn.conn}')
-    
-
-    private_key_path, public_key_path = authenticaton_keys.get_key(anylog_conn=anylog_conn, password=args.password,
-                                                                    keys_file=args.keys_file, local_dir=args.local_dir,
-                                                                    exception=args.exception)
-
-    __print_file_info(key_path=private_key_path, key_type='private')
-    __print_file_info(key_path=public_key_path, key_type='public')
-
-
-if __name__ == '__main__': 
-    main()
+    main(anylog_conn=anylog_conn, password=args.password, keys_file=args.keys_file, local_dir=args.local_dir, exception=args.exception)
     
 
