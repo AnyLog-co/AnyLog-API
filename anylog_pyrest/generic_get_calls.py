@@ -92,18 +92,22 @@ def get_dictionary(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
         'command': 'get dictionary where format=json',
         'User-Agent': 'AnyLog/1.23'
     }
-    r, error = anylog_conn.get(headers=headers)
-    if exception is True and r is False:
-        print_error(error_type='GET', cmd=headers['command'], error=error)
-    else:
+    r, error = anylog_conn.get(headers=headers) 
+    
+    if r is False: 
+        if exception is True:
+            print_error(error_type='GET', cmd=headers['command'], error=error)
+        return anylog_dictionary 
+    
+    try:
+        anylog_dictionary = r.json()
+    except Exception as e:
         try:
-            anylog_dictionary =  r.json()
+            anylog_dictionary = r.text
         except Exception as e:
-            try:
-                anylog_dictionary = r.text
-            except Exception as e:
-                if exception is True:
-                    print(f'Failed to return dictionary results against {anylog_conn.conn} (Error: {e})')
+            if exception is True:
+                print(f'Failed to return dictionary results against {anylog_conn.conn} (Error: {e})')
+    
     return anylog_dictionary
 
 

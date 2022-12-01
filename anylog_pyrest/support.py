@@ -1,5 +1,33 @@
 import json
 import dotenv
+import os
+
+
+def generic_write(file_path:str, content:str, exception:bool=False)->bool:
+    status = True
+    if not os.path.isfile(file_path):
+        try:
+            open(file_path, 'w').close()
+        except Exception as error:
+            status = False
+            if exception is True:
+                print(f'Failed to create file: {file_path} (Error: {error})')
+
+    if status is True:
+        try:
+            with open(file_path, 'a') as f:
+                try:
+                    f.write(content)
+                except Exception as error:
+                    status = False
+                    if exception is True:
+                        print(f'Failed to write content in file {file_path} (Error: {error})')
+        except Exception as error:
+            status = False
+            if exception is True:
+                print(f'Failed to open file {file_path} to append content (Error: {error})')
+
+    return status
 
 
 def __read_dotenv(config_file:str, exception:bool=False)->dict:

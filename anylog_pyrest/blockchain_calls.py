@@ -29,9 +29,10 @@ def blockchain_sync(anylog_conn:AnyLogConnection, blockchain_source:str, blockch
         "User-Agent": "AnyLog/1.23"
     }
     r, error = anylog_conn.post(headers=headers)
-    if exception is True and r is False:
-        print_error(error_type='POST', cmd=headers['command'], error=error)
+    if r is False:
         status = False
+        if exception is True and r is False:
+            print_error(error_type='POST', cmd=headers['command'], error=error)
 
     return status
 
