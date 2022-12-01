@@ -83,7 +83,12 @@ def create_policy(policy_type:str, name:str, company:str, db_name:str=None, host
                   local_ip:str="", anylog_server_port:int="", anylog_rest_port:int="", location:str="", country:str="", 
                   state:str="", city="", cluster_id:str="", member:int="", exception:bool=False)->dict:
     """
-    create AnyLog policy
+    Create AnyLog Network policies
+        - master
+        - query
+        - publisher
+        - operator
+        - (generic) cluster
     :sample policy: 
     cluster - 
         {'cluster': {
@@ -163,3 +168,6 @@ def create_policy(policy_type:str, name:str, company:str, db_name:str=None, host
             policy[policy_type]['member'] = int(member)
 
     return policy
+
+
+def create_member_policy(policy_type:str, )
