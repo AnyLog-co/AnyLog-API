@@ -92,6 +92,8 @@ def main():
 
     if generic_get_calls.get_status(anylog_conn=anylog_conn, exception=args.exception) is False or anylog_conn is not AnyLogConnection:
         print(f'Failed to connect to AnyLog instance against {args.rest_conn}')
+        exit(1)
+
 
 
 if __name__ == '__main__':
