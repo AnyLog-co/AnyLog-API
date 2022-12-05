@@ -65,7 +65,7 @@ class AnyLogConnection:
 
         return r, error
 
-    def post(self, headers:dict, payload:dict=None):
+    def post(self, headers:dict, payload:str=None):
         """
         Execute POST command against AnyLog. payload is required under the following conditions:
             1. payload can be data that you want to add into AnyLog, in which case you should also have an
@@ -75,7 +75,7 @@ class AnyLogConnection:
                 note only works with Master, cannot remove a policy on a real blockchain like Ethereum.
         :args:
             headers:dict - request headers
-            payloads:dict - data to post
+            payloads:str - data to post
         :params:
             r:requests.response - response from requests
             error:str - If exception during error

@@ -3,6 +3,40 @@ import dotenv
 import os
 
 
+def json_dumps(content:dict, exception:bool=False)->str:
+    """
+    Convert dict to JSON string
+    :args:
+        content:dict - content to convert
+        exception:bool - whether or not to print error message if fails to convert
+    :return:
+        content
+    """
+    try:
+        content = json.dumps(content)
+    except Exception as error:
+        if exception is True:
+            print(f'Failed to convert content into JSON string')
+    return content
+
+
+def json_loads(content:str, exception:bool=False)->dict:
+    """
+    Convert JSON-string to dict
+    :args:
+        content:dict - content to convert
+        exception:bool - whether or not to print error message if fails to convert
+    :return:
+        content
+    """
+    try:
+        content = json.load(content)
+    except Exception as error:
+        if exception is True:
+            print(f'Failed to convert content into JSON string')
+    return content
+
+
 def generic_write(file_path:str, content:str, exception:bool=False)->bool:
     status = True
     if not os.path.isfile(file_path):

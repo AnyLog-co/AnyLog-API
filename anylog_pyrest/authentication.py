@@ -1,4 +1,5 @@
 from anylog_connection import AnyLogConnection
+import blockchain_calls
 from support import print_error
 
 
@@ -115,3 +116,51 @@ def basic_add_user(anylog_conn:AnyLogConnection, name:str, password:str, user_ty
             print_error(error_type='POST', cmd=headers['command'], error=error)
 
     return status
+
+
+def sign_message(anylog_conn:AnyLogConnection, message:str, password:str=None, private_key:bool=False,
+                 exception:bool=False)->bool:
+    """
+    Send signed messages
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        message:str - message to send
+        password:str - password to authenticate with
+        private_key:bool - whether private key exists or not
+        exception:bool -
+    :params:
+         status:bool
+        headers:dict - REST headers
+        r:bool, error:str - whether the command failed & why
+    """
+    security_opitons = "where"
+    headers = {
+        'command': f'id sign !message',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if password is not None:
+        if security_opitons == "where":
+            security_opitons +=  f' password={password}'
+        else:
+            security_opitons += f' and password={password}'
+    if private_key is True:
+        if security_opitons == "where":
+            security_opitons += f' private_key=!private_key'
+        else:
+            security_opitons += f' and private_key=!private_key'
+
+    if security_opitons != "where":
+        headers['command'] += f' {security_opitons}'
+
+
+    r, error = anylog_conn.post(headers=headers, payload=message)
+    if r is False:
+        status = False
+        if exception is True:
+            print_error(error_type='POST', cmd=headers['command'], error=error)
+    print(status)
+    return status
+
+
+
