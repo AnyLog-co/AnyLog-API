@@ -86,7 +86,7 @@ def __read_dotenv(config_file:str, exception:bool=False)->dict:
     return configs
 
 
-def print_error(error_type:str, cmd:str, error:str):
+def print_rest_error(error_type:str, cmd:str, error:str):
     """
     Print Error message
     :args:

@@ -37,6 +37,9 @@ class AnyLogConnection:
         except Exception as e:
             error = str(e)
             r = False
+        else:
+            if int(r.status_code) != 200:
+                error = int(r.status_code)
 
         return r, error
 
