@@ -57,7 +57,11 @@ def __format_configs(anylog_conn:AnyLogConnection, config_file:str, exception:bo
     for param in ['MEMORY', 'SYSTEM_QUERY']:
         if param not in configs:
             configs[param] = False
-    for param in ['DB_IP', 'DB_PORT', 'DB_USER', 'DB_PASSWD']:
+    for param in ['DEFAULT_DBMS', 'DB_IP', 'DB_PORT', 'DB_USER', 'DB_PASSWD']:
+        if param not in configs:
+            configs[param] = None
+
+    for param in ['NOSQL_IP', 'NOSQL_PORT', 'NOSQL_USER', 'NOSQL_PASSWD']:
         if param not in configs:
             configs[param] = None
 

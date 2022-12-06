@@ -48,36 +48,16 @@ def main():
         exit(1)
 
     # connect databases
-    if configs['NODE_TYPE'] in ['ledger', 'standalone', 'standalone-publisher']:
-        declare_dbms.declare_database(anylog_conn=anylog_conn, db_name='blockchain', db_type=configs['DB_TYPE'],
-                                      enable_nosql=False, host=configs['DB_IP'],
-                                      port=configs['DB_PORT'], user=configs['DB_USER'], password=configs['DB_PASSWD'],
-                                      memory=False, exception=args.exception)
-    if configs['NODE_TYPE'] == 'query' or configs['SYSTEM_QUERY'] is True:
-        declare_dbms.declare_database(anylog_conn=anylog_conn, db_name='system_query', db_type='sqlite',
-                                      memory=configs['MEMORY'], exception=args.exception)
-
-    if configs['NODE_TYPE'] in ['publisher', 'operator', 'standalone', 'standalone-publisher']:
-        declare_dbms.declare_database(anylog_conn=anylog_conn, db_name='almgm', db_type=configs['DB_TYPE'],
-                                      enable_nosql=False, host=configs['DB_IP'], port=configs['DB_PORT'],
-                                      user=configs['DB_USER'], password=configs['DB_PASSWD'], memory=False,
-                                      exception=args.exception)
-
-    if configs['NODE_TYPE'] in ['operator', 'standalone']:
-        if 'DEFAULT_DBMS' not in configs:
-            print('An operator node requires a default database, but is missing in configs')
-        else:
-            declare_dbms.declare_database(anylog_conn=anylog_conn, db_name=configs['DEFAULT_DBMS'],
-                                          db_type=configs['DB_TYPE'], enable_nosql=False, host=configs['DB_IP'],
-                                          port=configs['DB_PORT'], user=configs['DB_USER'],
-                                          password=configs['DB_PASSWD'], memory=False,
-                                          exception=args.exception)
-            if configs['NOSQL_ENABLE'] is True:
-                declare_dbms.declare_database(anylog_conn=anylog_conn, db_name=configs['DEFAULT_DBMS'],
-                                              db_type=configs['NOSQL_TYPE'], enable_nosql=True, host=configs['NOSQL_IP'],
-                                              port=configs['NOSQL_PORT'], user=configs['NOSQL_USER'],
-                                              password=configs['NOSQL_PASSWD'], memory=configs['MEMORY'],
-                                              exception=args.exception)
+    declare_dbms.declare_database(anylog_conn=anylog_conn, node_type=configs['NODE_TYPE'], enable_nosql=False,
+                                  db_name=configs['DEFAULT_DBMS'], db_type=configs['DB_TYPE'], host=configs['DB_IP'],
+                                  port=configs['DB_PORT'], user=configs['DB_USER'], password=configs['DB_PASSWD'],
+                                  system_query=configs['SYSTEM_QUERY'], memory=configs['MEMORY'],
+                                  exception=args.exception)
+    if configs['NOSQL_ENABLE'] is True:
+        declare_dbms.declare_database(anylog_conn=anylog_conn, node_type=configs['NODE_TYPE'], enable_nosql=True,
+                                      db_name=configs['DEFAULT_DBMS'], db_type=configs['NOSQL_TYPE'],
+                                      host=configs['NOSQL_IP'], port=configs['NOSQL_PORT'], user=configs['NOSQL_USER'],
+                                      password=configs['NOSQL_PASSWD'], exception=args.exception)
 
     # run scheduler
     run_scheduler.run_scheduler(anylog_conn=anylog_conn, blockchain_source=configs['BLOCKCHAIN_SOURCE'],

@@ -47,11 +47,11 @@ def create_table_by_dbms(anylog_conn:AnyLogConnection, db_name:str, table_name:s
             print(f'Unknown table {db_name}.{table_name}, cannot execute create.')
 
 
-def declare_database(anylog_conn:str, db_name:str, db_type:str='sqlite', enable_nosql:bool=False,
-                     host:str=None, port:int=None, user:str=None, password:str=None, memory:bool=False,
-                     exception:bool=False):
+def declare_database(anylog_conn:str, node_type:str, db_name:str, enable_nosql:bool=False, db_type:str='sqlite', 
+                     host:str=None, port:int=None, user:str=None, password:str=None, system_query:bool=False, 
+                     memory:bool=False, exception:bool=False):
     """
-    validate whether database exists, if not - connect
+    validate whether (SQL) database exists, if not - connect
     :process:
         1. check if database exists
         2. connect to database - if fails (and not MongoDB) connect to SQLite
@@ -60,7 +60,6 @@ def declare_database(anylog_conn:str, db_name:str, db_type:str='sqlite', enable_
         anylog_conn:AnyLogConnection - AnyLog REST connection information
         db_name:str - logical database to check if exists
         db_type:str - database type
-        enable_nosql:str - whether connection is against a NoSQL database
         host:int - database connection host
         port:str - database connection port
         user:str - database connection user
@@ -71,10 +70,27 @@ def declare_database(anylog_conn:str, db_name:str, db_type:str='sqlite', enable_
         status:bool
     """
     status = True
-    if not database_calls.check_database(anylog_conn=anylog_conn, db_name=db_name, exception=exception) is True:
-        status = database_calls.connect_database(anylog_conn=anylog_conn, db_name=db_name, db_type=db_type,
-                                                 enable_nosql=enable_nosql, host=host, port=port, user=user,
-                                                 password=password, memory=str(memory).lower(), exception=exception)
+    if node_type in ['ledger', 'standalone', 'standalone-publisher']:
+        if database_calls.check_database(anylog_conn=anylog_conn, db_name='blockchain', exception=exception) is False:
+            if database_calls.connect_database(anylog_conn=anylog_conn, db_name='blockchain', db_type=db_type,
+                                               enable_nosql=enable_nosql, host=host, port=port, user=user,
+                                               password=password, memory=False, exception=exception) is True:
+                create_table_by_dbms(anylog_conn=anylog_conn, db_name='blockchain', exception=exception)
 
-    if status is True and db_name in ['blockchain', 'almgm']:
-        create_table_by_dbms(anylog_conn=anylog_conn, db_name=db_name, exception=exception)
+    if node_type in ['operator', 'publisher', 'standalone', 'standalone-publisher']:
+        if database_calls.connect_database(anylog_conn=anylog_conn, db_name='almgm', db_type=db_type,
+                                           enable_nosql=enable_nosql, host=host, port=port, user=user,
+                                           password=password, memory=False, exception=exception) is True:
+            create_table_by_dbms(anylog_conn=anylog_conn, db_name='almgm', exception=exception)
+
+    if node_type in ['operator', 'standalone']:
+        database_calls.connect_database(anylog_conn=anylog_conn, db_name=db_name, db_type=db_type, enable_nosql=enable_nosql,
+                                        host=host, port=port, user=user, password=password, memory=False,
+                                        exception=exception)
+    if system_query is True:
+        database_calls.connect_database(anylog_conn=anylog_conn, db_name='system_query', db_type=db_type,
+                                        enable_nosql=enable_nosql, host=host, port=port, user=user, password=password,
+                                        memory=str(memory).lower(), exception=exception)
+
+
+
