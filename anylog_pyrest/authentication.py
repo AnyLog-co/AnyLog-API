@@ -107,4 +107,16 @@ def get_keys(anylog_conn:AnyLogConnection, password:str=None, keys_file:str=None
     return private_key, public_key
 
 
+def sign_policy(anylog_conn:AnyLogConnection, policy:str, password:str=None, exception:bool=False)->bool:
+    status = True
+    param_key = 'signed_policy'
+    param_cmd = 'id sign !new_policy where key=!private_key'
+    if password is not None:
+        param_cmd += f' and password={password}'
+    payload=f'<new_policy={policy}>'
+    generic_post_calls.add_param(anylog_conn=anylog_conn, key=param_key, value=param_cmd, payload=payload,
+                                 exception=exception)
+
+
+
 

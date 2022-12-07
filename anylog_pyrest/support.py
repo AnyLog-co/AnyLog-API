@@ -9,7 +9,7 @@ def json_dumps(content:dict, exception:bool=False)->str:
     Convert dict to JSON string
     :args:
         content:dict - content to convert
-        exception:bool - whether or not to print error message if fails to convert
+        exception:bool - whether to print error message if fails to convert
     :return:
         content
     """

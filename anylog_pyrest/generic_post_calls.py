@@ -40,7 +40,7 @@ def declare_schedule_process(anylog_conn:AnyLogConnection, time:str, task:str, n
     return status
 
 
-def add_param(anylog_conn:AnyLogConnection, key:str, value, exception:bool=False)->bool:
+def add_param(anylog_conn:AnyLogConnection, key:str, value, payload:str=None, exception:bool=False)->bool:
     """
     Add parameter to AnyLog dictionary
     :args:
@@ -62,7 +62,7 @@ def add_param(anylog_conn:AnyLogConnection, key:str, value, exception:bool=False
         'User-Agent': 'AnyLog/1.23'
     }
 
-    r, error = anylog_conn.post(headers=headers, payload=None)
+    r, error = anylog_conn.post(headers=headers, payload=payload)
     if r is False or int(r.status_code) != 200:
         status = False
         if exception is True:

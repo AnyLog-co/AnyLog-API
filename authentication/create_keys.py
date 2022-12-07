@@ -28,21 +28,29 @@ def generate_keys(anylog_conn:AnyLogConnection, password:str=None, keys_file:str
     :params:
         private_key:str - path of local private key
         public_key:str - path of local public key
+        file_name:str - file to store credentials in
     """
-    private_key, public_key = authentication.get_keys(anylog_conn=anylog_conn, password=password,
-                                                                keys_file=keys_file, exception=exception)
+    # check if keys exist
+    private_key, public_key = authentication.get_keys(anylog_conn=anylog_conn, password=password, keys_file=keys_file,
+                                                      exception=exception)
 
+    # create keys if DNE
     while private_key is None or public_key is None:
         if authentication.create_keys(anylog_conn=anylog_conn, password=password, keys_file=keys_file, exception=exception) is True:
             private_key, public_key = authentication.get_keys(anylog_conn=anylog_conn, password=password,
                                                                         keys_file=keys_file, exception=exception)
 
+    # store keys locally
     if local_dir is not None:
         if private_key is not None:
             file_name = os.path.join(local_dir, 'private_key.pem')
+            if keys_file is not None:
+                file_name = os.path.join(local_dir, f'{keys_file.replace(" ", "_")}_private.pem')
             support.generic_write(file_path=file_name, content=private_key, exception=exception)
         if public_key is not None:
             file_name = os.path.join(local_dir, 'public_key.pem')
+            if keys_file is not None:
+                file_name = os.path.join(local_dir, f'{keys_file.replace(" ", "_")}_public.pem')
             support.generic_write(file_path=file_name, content=public_key, exception=exception)
 
 
