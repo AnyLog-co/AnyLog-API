@@ -58,7 +58,7 @@ def add_param(anylog_conn:AnyLogConnection, key:str, value, exception:bool=False
     """
     status = True
     headers = {
-        'command': f'set {key}={value}',
+        'command': f'{key}={value}',
         'User-Agent': 'AnyLog/1.23'
     }
 
