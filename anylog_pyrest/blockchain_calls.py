@@ -55,6 +55,8 @@ def get_policy(anylog_conn:AnyLogConnection, policy_type:str, name:str, company:
     :return:
         if success returns policy, else returns {}
     """
+    if len(company.split(' ')) > 1:
+        company = f'"{company}"'
     headers = {
         'command': f"blockchain get {policy_type} where name={name} and company={company}",
         "User-Agent": "AnyLog/1.23"
@@ -73,7 +75,7 @@ def get_policy(anylog_conn:AnyLogConnection, policy_type:str, name:str, company:
             support.print_rest_error(error_type='GET', cmd=headers['command'], error=error)
     else:
         try:
-            policy = r.json()
+            policy = r.json()[0]
         except:
             policy = {}
 

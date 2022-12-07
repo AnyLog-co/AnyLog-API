@@ -7,15 +7,36 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'anylog_pyrest'))
 from anylog_connection import AnyLogConnection
 import support
 import generic_get_calls
+import generic_post_calls
 
 
 def __read_configs(config_file:str, exception:bool=False)->dict:
+    """
+    configs for .env file
+    :args:
+        configs_file:str - configuration file
+        exception:bool - whether to print exceptions
+    :params:
+        configs:dict - configs from .env file
+    :params:
+        configs
+    """
+    configs = {}
     config_file = os.path.expanduser(os.path.expandvars(config_file))
-    configs = support.read_configs(config_file=config_file, exception=exception)
+    if os.path.isfile(config_file):
+        configs = support.read_configs(config_file=config_file, exception=exception)
     return configs
 
 
 def __connect_anylog(rest_conn:str, auth:str=None, timeout:int=30, exception:bool=False)->AnyLogConnection:
+    """
+    Connect to AnyLog node
+    :args:
+        rest_conn:str - REST IP:PORT
+        auth:str - authentication username, password
+        timeout:int - REST timeout
+        exception:bool - whether to print exceptions
+    """
     if auth is not None and not isinstance(auth, tuple):
         auth = tuple(auth.split(','))
 
@@ -27,6 +48,19 @@ def __connect_anylog(rest_conn:str, auth:str=None, timeout:int=30, exception:boo
 
 
 def __format_configs(anylog_conn:AnyLogConnection, config_file:str, exception:bool=False)->dict:
+    """
+    Read .env file + merge with default AnyLog configurations
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog node
+        config_file:str - configuration files
+        exception:bool - whether to print exceptions
+    :params:
+        configs:dict - merged configs
+        env_configs:dict - configs from .env file
+        default_configs:dict - default AnyLog configs
+    :return:
+        configs
+    """
     configs = {}
 
     env_configs = __read_configs(config_file=config_file, exception=exception)
@@ -72,7 +106,8 @@ def __format_configs(anylog_conn:AnyLogConnection, config_file:str, exception:bo
     return configs
 
 
-def config_node(rest_conn:str, config_file:str, auth:str=None, timeout:int=30, exception:bool=False)->(AnyLogConnection, dict):
+def config_node(rest_conn:str, config_file:str, auth:str=None, timeout:int=30,
+                exception:bool=False)->(AnyLogConnection, dict):
     """
     Prepare basic configurations to utilize with AnyLog API
     :args:
@@ -96,4 +131,7 @@ def config_node(rest_conn:str, config_file:str, auth:str=None, timeout:int=30, e
     # read configs & update with missing configs
     configs = __format_configs(anylog_conn=anylog_conn, config_file=config_file, exception=exception)
 
+    if 'LEDGER_CONN' in configs: # add ledger_conn to AnyLog dictionary
+        generic_post_calls.add_param(anylog_conn=anylog_conn, key='ledger_conn', value=configs['LEDGER_CONN'],
+                                       exception=exception)
     return anylog_conn, configs

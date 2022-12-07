@@ -40,6 +40,36 @@ def declare_schedule_process(anylog_conn:AnyLogConnection, time:str, task:str, n
     return status
 
 
+def add_param(anylog_conn:AnyLogConnection, key:str, value, exception:bool=False)->bool:
+    """
+    Add parameter to AnyLog dictionary
+    :args:
+        anylog_conn:AnyLogConnection - AnyLog REST connection information
+        key:str - AnyLog dictionary key
+        value - value associated with key
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - Success
+        False - Fails
+    """
+    status = True
+    headers = {
+        'command': f'set {key}={value}',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if r is False or int(r.status_code) != 200:
+        status = False
+        if exception is True:
+            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
 def run_scheduler(anylog_conn:AnyLogConnection, schedule_number:int=None, exception:bool=False)->bool:
     """
     Execute `run scheduler`
@@ -48,6 +78,12 @@ def run_scheduler(anylog_conn:AnyLogConnection, schedule_number:int=None, except
         schedule_number:int - schedule number (ex `run schedule 1`
         exception:bool - whether to print exceptions
     :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - Success
+        False - Fails
     """
     status=True
     headers = {

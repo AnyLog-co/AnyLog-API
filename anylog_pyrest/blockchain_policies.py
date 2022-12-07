@@ -92,6 +92,24 @@ def create_operator_policy(name:str, company:str, hostname:str, external_ip:str,
                            country:str="Unknown", state:str="Unknown", city:str="Unknown")->dict:
     """
     Create an Operator policy
+    :sample-policy:
+        {
+            'operator' : {
+              'hostname' : 'al-live-operator1',
+              'name' : 'anylog-cluster1-operator1',
+              'ip' : '139.162.126.241',
+              'local_ip' : '139.162.126.241',
+              'company' : 'Lit San Leandro',
+              'port' : 32148,
+              'rest_port' : 32149,
+              'cluster' : '0015392622f3eaac70eafa4311fc2338',
+              'member' : 12,
+              'loc' : '35.6895,139.6917',
+              'country' : 'JP',
+              'state' : 'Tokyo',
+              'city' : 'Tokyo',
+            }
+        }
     :args:
         policy_type:str - policy type (master, publisher or query)
         name:str - policy name

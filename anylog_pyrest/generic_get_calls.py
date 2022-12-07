@@ -104,6 +104,18 @@ def get_processes(anylog_conn:AnyLogConnection, exception:bool=False)->dict:
 
 
 def get_hostname(anylog_conn:AnyLogConnection, exception:bool=False)->str:
+    """
+    Get hostname
+    :args:
+        anylog_conn:AnyLogConnection - AnyLog REST connection information
+        exception:bool - whether to print exceptions
+    :params:
+        hostname:str - hostname
+        processes_dict - dict of AnyLog processes
+        r:bool, error:str - whether the command failed & why
+    :return:
+        hostname
+    """
     hostname = ""
     headers = {
         'command': 'get hostname',

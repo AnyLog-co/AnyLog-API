@@ -9,8 +9,21 @@ import generic_get_calls
 import generic_post_calls
 import blockchain_calls
 
+
 def run_scheduler(anylog_conn:AnyLogConnection, blockchain_source:str, blockchain_destination:str, sync_time:str,
                     ledger_conn:str, exception:bool=False):
+    """
+    Execute scheduled processes (`run schedule 1` `run blockchain sync`)
+    :args:
+        anylog_conn:AnyLogConnection - Connection to AnyLog
+        blockchain_source:str - blockchain source
+        blockchain_destination:str - blockchain destination
+        sync_time:str - how often to sync against blockchain
+        ledger_conn:str - connection to ledger
+        exception:bool - whether to print exceptions
+    :params:
+        processes:dict - list of processes + whether they are active
+    """
     processes = generic_get_calls.get_processes(anylog_conn=anylog_conn, exception=exception)
     if processes['Scheduler']['Status'] == 'Not declared':
         generic_post_calls.run_scheduler(anylog_conn=anylog_conn, exception=exception)
