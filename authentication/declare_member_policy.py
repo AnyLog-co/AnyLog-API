@@ -34,9 +34,6 @@ def declare_member(anylog_conn:AnyLogConnection, member_type:str, name:str, comp
         local_dir:str - directory to store keys locally
         exception:bool - whether to print exceptions
     """
-    create_keys.generate_keys(anylog_conn=anylog_conn, password=password, keys_file=keys_file, local_dir=local_dir,
-                              exception=exception)
-
     if blockchain_calls.get_policy(anylog_conn=anylog_conn, policy_type='member', name=name, company=company,
                                    member_type=member_type, exception=exception) == {}:
 

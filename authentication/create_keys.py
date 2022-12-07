@@ -11,8 +11,8 @@ import anylog_pyrest.authentication as authentication
 import support
 
 
-def generate_keys(anylog_conn:AnyLogConnection, password:str=None, keys_file:str=None, local_dir:str=KEYS_DIR,
-                  exception:bool=False):
+def generate_keys(anylog_conn:AnyLogConnection, password:str=None, keys_file:str=None,
+                  local_dir: str = KEYS_DIR, exception:bool=False):
     """
     Generate keys and store them locally
     :steps;
@@ -43,15 +43,19 @@ def generate_keys(anylog_conn:AnyLogConnection, password:str=None, keys_file:str
     # store keys locally
     if local_dir is not None:
         if private_key is not None:
-            file_name = os.path.join(local_dir, 'private_key.pem')
+            key_name = 'private_key.pem'
             if keys_file is not None:
-                file_name = os.path.join(local_dir, f'{keys_file.replace(" ", "_")}_private.pem')
-            support.generic_write(file_path=file_name, content=private_key, exception=exception)
+                key_name = f'{keys_file.strip().replace(" ", "_")}_private_key.pem'
+            if local_dir is not None:
+                file_name = os.path.join(local_dir, key_name)
+                support.generic_write(file_path=file_name, content=private_key, exception=exception)
         if public_key is not None:
-            file_name = os.path.join(local_dir, 'public_key.pem')
+            key_name = 'public_key.pem'
             if keys_file is not None:
-                file_name = os.path.join(local_dir, f'{keys_file.replace(" ", "_")}_public.pem')
-            support.generic_write(file_path=file_name, content=public_key, exception=exception)
+                key_name = f'{keys_file.strip().replace(" ", "_")}_public_key.pem'
+            if local_dir is not None:
+                file_name = os.path.join(local_dir, key_name)
+                support.generic_write(file_path=file_name, content=public_key, exception=exception)
 
 
 if __name__ == '__main__':

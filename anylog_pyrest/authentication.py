@@ -43,6 +43,67 @@ def __key_vars(anylog_conn:AnyLogConnection, key_type:str, password:str=None, ke
             return configs[param_name]
 
 
+def enable_authentication(anylog_conn:AnyLogConnection, authentication_type:str, enable:bool=True, exception:bool=False)->bool:
+    """
+    Set authentication on/off for either node or user
+    :args:
+        anylog_conn:AnyLogConnection - connect to AnyLog node
+        authentication_type:str - authentication type (node or user)
+        enable:bool - whether to enable/disable authentication
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST headers
+        r:bool, error:str - whether the command failed & why
+    :return:
+        status
+    """
+    status = True
+    headers = {
+        'command': f'set {authentication_type} authentication',
+        'User-Agent': 'AnyLog/1.23'
+    }
+    if enable is True:
+        headers['command'] += ' on'
+    elif enable is False:
+        headers['command'] += ' off'
+
+    r, error = anylog_conn.post(headers=headers)
+    if r is False:
+        status = False
+        if exception is True:
+            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
+
+def set_local_password(anylog_conn:AnyLogConnection, password:str, exception:bool=False)->bool:
+    """
+    Declare local password
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog node
+        password:str - local password
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        headers:dict - REST headers
+        r:bool, error:str - whether the command failed & why
+    :return:
+        status
+    """
+    status = True
+    headers = {
+        'command': f'set local password={password}',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    r, error = anylog_conn.post(headers=headers)
+    if r is False:
+        status = False
+        if exception is True:
+            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
+
+    return status
 
 
 def create_keys(anylog_conn:AnyLogConnection, password:str=None, keys_file:str=None, exception:bool=False)->bool:
@@ -57,6 +118,8 @@ def create_keys(anylog_conn:AnyLogConnection, password:str=None, keys_file:str=N
         status:bool
         headers:dict - REST headers
         r:bool, error:str - whether the command failed & why
+    :return:
+        status
     """
     status=False
     headers = {
@@ -116,7 +179,4 @@ def sign_policy(anylog_conn:AnyLogConnection, policy:str, password:str=None, exc
     payload=f'<new_policy={policy}>'
     generic_post_calls.add_param(anylog_conn=anylog_conn, key=param_key, value=param_cmd, payload=payload,
                                  exception=exception)
-
-
-
 
