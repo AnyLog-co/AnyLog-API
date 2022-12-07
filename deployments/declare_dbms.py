@@ -6,7 +6,6 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'anylog_pyrest'))
 
 from anylog_connection import AnyLogConnection
 import database_calls
-import support
 
 
 def create_table_by_dbms(anylog_conn:AnyLogConnection, db_name:str, table_name:str=None, exception:bool=False):

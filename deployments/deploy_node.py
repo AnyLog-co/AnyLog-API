@@ -12,6 +12,7 @@ import generic_get_calls
 import declare_dbms
 import run_scheduler
 import config_node
+import declare_policies
 
 def main():
     """
@@ -64,8 +65,15 @@ def main():
                                 blockchain_destination=configs['BLOCKCHAIN_DESTINATION'], sync_time=configs['SYNC_TIME'],
                                 ledger_conn=configs['LEDGER_CONN'], exception=args.exception)
 
-
-
+    # declare policy
+    declare_policies.declare_policies(anylog_conn=anylog_conn, node_type=configs['NODE_TYPE'], name=configs['NODE_NAME'],
+                                      company=configs['COMPANY_NAME'].replace('"', ''), hostname=configs['HOSTNAME'],
+                                      external_ip=configs['EXTERNAL_IP'], local_ip=configs['IP'],
+                                      anylog_server_port=configs['ANYLOG_SERVER_PORT'],
+                                      anylog_rest_port=configs['ANYLOG_REST_PORT'], db_name=configs['DEFAULT_DBMS'],
+                                      cluster_name=configs['CLUSTER_NAME'], member=configs['MEMBER'],
+                                      location=configs['LOCATION'], country=configs['COUNTRY'],
+                                      state=configs['STATE'], city=configs['CITY'], exception=args.exception)
 
 
 if __name__ == '__main__':

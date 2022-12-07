@@ -8,6 +8,7 @@ from anylog_connection import AnyLogConnection
 import support
 import generic_get_calls
 
+
 def __read_configs(config_file:str, exception:bool=False)->dict:
     config_file = os.path.expanduser(os.path.expandvars(config_file))
     configs = support.read_configs(config_file=config_file, exception=exception)
@@ -27,15 +28,18 @@ def __connect_anylog(rest_conn:str, auth:str=None, timeout:int=30, exception:boo
 
 def __format_configs(anylog_conn:AnyLogConnection, config_file:str, exception:bool=False)->dict:
     configs = {}
+
     env_configs = __read_configs(config_file=config_file, exception=exception)
     default_configs = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
+
     if env_configs == {} and default_configs == {}:
         return configs
+
     if env_configs != {}:
         for param in env_configs:
             configs[param] = env_configs[param]
 
-    elif default_configs != {}:
+    if default_configs != {}:
         for param in default_configs:
             if param not in env_configs:
                 configs[param.upper()] = default_configs[param]

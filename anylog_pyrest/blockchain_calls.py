@@ -1,4 +1,5 @@
 from anylog_connection import AnyLogConnection
+import generic_get_calls
 import support
 
 def blockchain_sync(anylog_conn:AnyLogConnection, blockchain_source:str, blockchain_destination:str, sync_time:str,
@@ -30,21 +31,118 @@ def blockchain_sync(anylog_conn:AnyLogConnection, blockchain_source:str, blockch
     if r is False:
         status = False
         if exception is True and r is False:
-            support.print_error(error_type='POST', cmd=headers['command'], error=error)
+            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
 
     return status
 
-def create_generic_policy(policy_type:str, name:str, company:str, hostname:str, external_ip:str, local_ip:str,
-                          anylog_server_port:int, anylog_rest_port:int, location:str="Unknown", country:str="Unknown",
-                          state:str="Unknown", city:str="Unknown", exception:bool=False)->str:
-    """
-    Create policy for Master, Publisher or Query
-    """
-    policy = {
-        policy_type: {
-            "name": name,
-            "company": company,
-            "hostname": hostname,
 
-        }
+def get_policy(anylog_conn:AnyLogConnection, policy_type:str, name:str, company:str, local_ip:str="",
+               anylog_server_port:int="", exception:bool=False)->dict:
+    """
+    check whether policy exists, if exists then returns policy else returns empty dict
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog
+        policy_type:str - policy type
+        name:str - policy name
+        company:str - Company which owns this policy
+        local_ip:str - local IP
+        anylog_server_port:int - AnyLog TCP port
+        exception:bool - Whether or not to print exceptions
+    :params:
+        policy:dict - policy to return
+        headers:dict - REST headers
+        r:bool, error:str - whether the command failed & why
+    :return:
+        if success returns policy, else returns {}
+    """
+    headers = {
+        'command': f"blockchain get {policy_type} where name={name} and company={company}",
+        "User-Agent": "AnyLog/1.23"
     }
+    if local_ip != "":
+        headers["command"] += f" and local_ip={local_ip}"
+    if anylog_server_port != "":
+        headers["command"] += f" and port={anylog_server_port}"
+    if policy_type == "cluster":
+        headers['command'] += " bring.first"
+
+    r, error = anylog_conn.get(headers=headers)
+    if r is False:
+        policy = {}
+        if exception is True:
+            support.print_rest_error(error_type='GET', cmd=headers['command'], error=error)
+    else:
+        try:
+            policy = r.json()
+        except:
+            policy = {}
+
+    return policy
+
+
+def prepare_policy(anylog_conn:AnyLogConnection, policy:str, exception:bool=False)->str:
+    """
+    Prepare a policy for deploying on blockchain
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog node
+        policy:str - policy to store on blockchain
+        exception:bool - Whether to print exceptions
+    :params:
+        output:str - "validation" that policy is ready to be deployed
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+        payload:str  - deceleration of policy
+        anylog_configs:dict - AnyLog dictionary
+    :return:
+        if 'new_policy' in AnyLog dictionary then return it, else ""
+    """
+    headers = {
+        'command': 'blockchain prepare policy !new_policy',
+        'User-Agent': 'AnyLog/1.23'
+    }
+    payload = f'<new_policy={policy}>'
+    r, error = anylog_conn.post(headers=headers, payload=payload)
+    if r is False:
+        output = {}
+        if exception is True and r is False:
+            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
+    else:
+        anylog_configs = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
+        if 'new_policy' in anylog_configs:
+            output = anylog_configs['new_policy']
+
+    return output
+
+
+def post_policy(anylog_conn:AnyLogConnection, policy:str, exception:bool=False)->bool:
+    """
+    POST policy to blockchain
+    :args:
+        anylog_conn:AnyLogConnection - connection to AnyLog node
+        policy:str - policy to store on blockchain
+        exception:bool - Whether to print exceptions
+    :params:
+        output:str - "validation" that policy is ready to be deployed
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+        payload:str  - deceleration of policy
+        anylog_configs:dict - AnyLog dictionary
+    :return:
+        True - if success
+        False - if fails
+    """
+    status = True
+    headers = {
+        'command': 'blockchain insert where policy=!new_policy and local=true and master=!ledger_conn',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    payload = f'<new_policy={policy}>'
+
+    r, error = anylog_conn.post(headers=headers, payload=payload)
+    if r is False:
+        status = False
+        if exception is True and r is False:
+            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
+
+    return status
