@@ -1,11 +1,11 @@
 import ast
-import json
 
-from anylog_connection import AnyLogConnection
+from anylog_connector import AnyLogConnector
 import generic_get_calls
-import support
+import rest_support
 
-def __set_location(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
+
+def __set_location(anylog_conn:AnyLogConnector, exception:bool=False)->bool:
     """
     Using `https://ipinfo.io/json` store location of node on node
     :sample:
@@ -23,7 +23,7 @@ def __set_location(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
          "readme": "https://ipinfo.io/missingauth"
         }
     :args:
-        anylog_conn:AnyLogConnection - connection to AnyLog
+        anylog_conn:AnyLogConnector - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         status:bool
@@ -39,19 +39,21 @@ def __set_location(anylog_conn:AnyLogConnection, exception:bool=False)->bool:
     }
 
     r, error = anylog_conn.post(headers=headers)
-    if exception is True and r is False:
-        support.print_error(error_type='POST', cmd=headers['command'], error=error)
+    if r is False:
         status = False
+        if exception is True:
+            rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
-def __get_location(anylog_conn:AnyLogConnection, exception:bool=False)->(str, str, str, str):
+
+def __get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str, str, str):
     """
     Extract information from `location_info` AnyLog parameter
     :args:
     :params:
         configs:dict - AnyLog dictionary values
-        location_configs:dict - fromatted location information as dictionary from configs
+        location_configs:dict - formatted location information as dictionary from configs
         location:str - coordinates
         country:str
         state:str
@@ -59,7 +61,8 @@ def __get_location(anylog_conn:AnyLogConnection, exception:bool=False)->(str, st
     :return:
         location, country, state, city
     """
-    configs = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, exception=exception)
+    configs = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, json_format=True, view_help=False,
+                                               exception=exception)
     location = '0.0, 0.0'
     country='Unknown'
     state='Unknown'
@@ -83,11 +86,11 @@ def __get_location(anylog_conn:AnyLogConnection, exception:bool=False)->(str, st
     return location, country, state, city
 
 
-def get_location(anylog_conn:AnyLogConnection, exception:bool=False)->(str, str, str, str):
+def get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str, str, str):
     """
     Process to get location information
     :args:
-        anylog_conn:AnyLogConnection - connection to AnyLog
+        anylog_conn:AnyLogConnector - connection to AnyLog
         exception:bool - whether to print exception
     :params:
         location:str - coordinates
