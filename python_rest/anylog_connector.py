@@ -1,7 +1,7 @@
 import requests
 
 
-class AnyLogConnection:
+class AnyLogConnector:
     def __init__(self, conn:str, auth:tuple=None, timeout:int=30):
         """
         The following are the base support for AnyLog via REST
