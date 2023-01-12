@@ -2,7 +2,7 @@ import os
 import sys
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
-sys.path.insert(0, os.path.join(ROOT_DIR, 'anylog_pyrest'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
 
 from anylog_connection import AnyLogConnection
 import blockchain_calls
