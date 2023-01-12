@@ -2,17 +2,18 @@ import ast
 import json
 
 
-def json_dumps(content:dict, exception:bool=False)->str:
+def json_dumps(content:dict, indent:int=4, exception:bool=False)->str:
     """
     Convert dict to JSON string
     :args:
         content:dict - content to convert
+        indent:int - JSON indentation
         exception:bool - whether to print error message if fails to convert
     :return:
         content
     """
     try:
-        content = json.dumps(content)
+        content = json.dumps(content, indent=indent)
     except Exception as error:
         if exception is True:
             print(f'Failed to convert content into JSON string')
