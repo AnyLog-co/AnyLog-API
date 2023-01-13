@@ -13,10 +13,13 @@ def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_c
         separator:str - how to separate values (if using new-line then \\n)
     :params:
         command:str - generated blockchain get command
+        policy_type:list - converted policy_type to list of policy types
+        where_stmt:str - built where condition based on where_conditions
+        bring_stmt:str - built bring conditions
     :return:
         command
     """
-    command = "blockchain get "
+    command = "blockchain get ("
     policy_type = policy_type.strip().split(",")
     for policy in policy_type:
         command += policy.strip()
@@ -46,6 +49,36 @@ def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_c
 
     if separator is not None:
         command += f" separator={separator}"
+
+    return command
+
+
+def generate_blockchain_insert(local_publish:bool=True, platform:str=None, ledger_conn:str=None)->str:
+    """
+    Generate blockchain insert statement
+    :sample command:
+        blockchain insert where policy = !policy and local = true and master = !master_node
+        blockchain insert where policy = !policy and local = true and blockchain = ethereum
+    :args:
+        local_publish:bool - A true/false value to determine an update to the local copy of the ledger
+        platform:str - connected blockchain platform
+        ledger_conn:str - The IP and Port value of a master node
+    :params:
+        command:str - generated blockchain insert command
+    :return:
+        command
+    """
+    command = 'blockchain insert where policy=!new_policy'
+    if local_publish is False:
+        command += " and local=false"
+    else:
+        command += " and local=true"
+
+    if platform in ['ethereum', 'eos', 'jasmy']:
+        command += f" and blockchain={platform}"
+
+    if ledger_conn is not None:
+        command += f' master={ledger_conn}'
 
     return command
 
