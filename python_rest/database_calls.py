@@ -1,94 +1,97 @@
-from anylog_connection import AnyLogConnection
-import support
+from anylog_connector import AnyLogConnector
+import generic_get_calls
+import database_support
+import rest_support
 
 
-def check_database(anylog_conn:AnyLogConnection, db_name:str, exception:bool=False)->bool:
+def get_databases(anylog_conn:AnyLogConnector, json_format:bool=False, view_help:bool=False, exception:bool=False)->str:
     """
-    Check if a database exists
+    Get list of databases
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/sql%20setup.md#the-get-databases-command
     :args:
-        anylog_conn:AnyLogConnection - AnyLog REST connection information
-        db_name:str - logical database to check if exists
-        exception:bool - whether to print exceptions
+        anylog_conn:AnyLogConnector - connection to AnyLog
+        json_format:bool - whether to get results in JSON dictionary
+        view_help:bool - whether to view help for command
+        exception:bool - whether to print error messages
     :params:
-        status:bool
-        headers:dict - REST header information
-        r:bool, error:str - whether the command failed & why
+        output:str - results from REST request
+        headers:dict - REST header requests
+        r:request.get, error:str - REST request results
     :return:
-        True if exists, else False
+        if success returns content (output), else None
     """
-    status=False
+    output = None
     headers = {
         'command': 'get databases',
         'User-Agent': 'AnyLog/1.23'
     }
 
-    r, error = anylog_conn.get(headers=headers)
-    if r is False or int(r.status_code) != 200:
-        if exception is True:
-            support.print_rest_error(error_type='GET', cmd=headers['command'], error=error)
+    if json_format is True:
+        headers['command'] += ' where format=json'
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
-        if db_name in r.text:
-            status = True
+        r, error = anylog_conn.get(headers=headers)
+        if r is False and exception is True:
+            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+        elif not isinstance(r, bool):
+            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
-    return status
+    return output
 
 
-def check_tables(anylog_conn:AnyLogConnection, db_name:str, table_name:str, local:bool=True,
-                 exception:bool=False)->bool:
+def get_tables(anylog_conn:AnyLogConnector, db_name:str='*', json_format:bool=True, view_help:bool=False,
+               exception:bool=False)->str:
     """
-    check whether table exists
+    View list of tables in database (if set)
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/sql%20setup.md#the-get-tables-command
     :args:
-        anylog_conn:AnyLogConnection - AnyLog REST connection information
-        db_name:str - logical database
-        table_name:str - table associated with logical table
-        local:bool - check against local table if True, else against blockchain
-        exception:bool - whether to print exceptions
+        anylog_conn:AnyLogConnector - connection to AnyLog
+        db_name:str - logical database to get tables for (if not set, then get all tables)
+        json_format:bool - whether to get results in JSON dictionary
+        view_help:bool - whether to view help for command
+        exception:bool - whether to print error messages
     :params:
-        status:bool
-        headers:dict - REST header information
-        r:bool, error:str - whether the command failed & why
-    :return :
-        True if exists, else False
+        output:str - results from REST request
+        headers:dict - REST header requests
+        r:request.get, error:str - REST request results
+    :return:
+        if success returns content (output), else None
     """
-    status = False
-    table_source = 'blockchain'
-    if local is True:
-        table_source = 'local'
-
+    output = None
     headers = {
-        'command': f'get tables where dbms={db_name} and format=json',
+        'command': f'get tables where dbms={db_name}',
         'User-Agent': 'AnyLog/1.23'
     }
 
-    r, error = anylog_conn.get(headers=headers)
-    if r is False or int(r.status_code) != 200:
-        if exception is True:
-            support.print_rest_error(error_type='GET', cmd=headers['command'], error=error)
+    if json_format is True:
+        headers['command'] += ' and format=json'
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
-        try:
-            tables = r.json()
-        except Exception as json_error:
-            try:
-                tables = r.json()
-            except Exception as txt_error:
-                print(f'Failed to extract results for `{headers["cmd"]}` (JSON Error: {json_error} | Text Error: {txt_error})')
-    if isinstance(tables, dict) and db_name in tables and db_name != '*':
-        if table_name in tables[db_name]:
-            status = tables[db_name][table_name][table_source]
+        r, error = anylog_conn.get(headers=headers)
+        if r is False and exception is True:
+            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+        elif not isinstance(r, bool):
+            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
-    return status
+    return output
 
 
-def connect_database(anylog_conn:AnyLogConnection, db_name:str, db_type:str='sqlite', enable_nosql:bool=False,
-                     host:str=None, port:int=None, user:str=None, password:str=None, memory:bool=False,
-                     exception:bool=False)->bool:
+def connect_database(anylog_conn:AnyLogConnector, db_name:str, db_type:str='sqlite', host:str=None, port:int=None,
+                     user:str=None, password:str=None, memory:bool=False, view_help:bool=False, exception:bool=False)->bool:
     """
     connect to logical database
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/sql%20setup.md#connecting-to-a-local-database
     :args:
-        anylog_conn:AnyLogConnection - AnyLog REST connection information
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
         db_name:str - logical database to check if exists
         db_type:str - database type
-        enable_nosql:str - whether connection is against a NoSQL database
         port:int - database connection host
         host:str - database connection port
         user:str - database connection user
@@ -102,43 +105,34 @@ def connect_database(anylog_conn:AnyLogConnection, db_name:str, db_type:str='sql
     :return:
         whether database was connected successfully or not
     """
-    status = False
+    status = None
     headers = {
-        'command': f'connect dbms {db_name} where type={db_type}',
+        'command': database_support.connect_dbms_call(db_name=db_name, db_type=db_type, ip=host, port=port,
+                                                      username=user, password=password, memory=memory),
         'User-Agent': 'AnyLog/1.23'
     }
-    if db_type != 'sqlite':
-        if host is not None:
-            headers['command'] += f' and ip={host}'
-        if port is not None:
-            headers['command'] += f' and port={port}'
-        if user is not None:
-            headers['command'] += f' and user={user}'
-        if password is not None:
-            headers['command'] += f' and password={password}'
-    headers['command'] += f' and memory={memory}'
 
-    r, error = anylog_conn.post(headers=headers, payload=None)
-    if r is False or int(r.status_code) != 200:
-        if exception is True:
-            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
-        if enable_nosql is True:
-            db_name = f'{db_name.strip()}_blobs'
-        if check_database(anylog_conn=anylog_conn, db_name=db_name) is True:
-            status = True
-    if status is False and enable_nosql is False:
-        status = connect_database(anylog_conn=anylog_conn, db_name=db_name, db_type='sqlite', memory=memory)
+        status = True
+        r, error = anylog_conn.post(headers=headers, payload=None)
+        if r is False:
+            status = False
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], exception=exception)
 
     return status
 
 
-def create_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, exception:bool=False)->bool:
+def create_table(anylog_conn:AnyLogConnector, db_name:str, table_name:str, view_help:bool=False,
+                 exception:bool=False)->bool:
     """
-    create table within a given database
+    create table within a given database - as long as the `CREATE TABLE` statement exists in the blockchain
     :args:
-        anylog_conn:AnyLogConnection - AnyLog REST connection information
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
         db_name:str - logical database to check if exists
+        view_help:bool - whether to print information regarding function
         exception:bool - whether to print exceptions
     :params:
         status:bool
@@ -147,16 +141,19 @@ def create_table(anylog_conn:AnyLogConnection, db_name:str, table_name:str, exce
     :return:
         True if table was created, False if fails
     """
-    status = True
+    status = None
     headers = {
         'command': f'create table {table_name} where dbms={db_name}',
         'User-Agent': 'AnyLog/1.23'
     }
-
-    r, error = anylog_conn.post(headers=headers, payload=None)
-    if r is False or int(r.status_code) != 200:
-        status = False
-        if exception is True:
-            support.print_rest_error(error_type='POST', cmd=headers['command'], error=error)
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = True
+        r, error = anylog_conn.post(headers=headers, payload=None)
+        if r is False:
+            status = False
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
