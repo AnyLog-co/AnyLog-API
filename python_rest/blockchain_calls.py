@@ -85,7 +85,7 @@ def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:di
         if r is False:
             if exception is True:
                 rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        else:
+        elif not isinstance(r, bool):
             policies = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return policies
@@ -125,7 +125,7 @@ def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False
             status = False
             if exception is True:
                 rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
-        else:
+        elif not isinstance(r, bool):
             status = True
 
     return status
