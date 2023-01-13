@@ -1,12 +1,90 @@
-from anylog_connection import AnyLogConnection
-import support
+from anylog_connector import AnyLogConnector
+import generic_get_calls
+import rest_support
 
 
-def declare_schedule_process(anylog_conn:AnyLogConnection, time:str, task:str, name:str=None, exception:bool=False)->bool:
+def add_dict_params(anylog_conn:AnyLogConnector, content:dict, exception:bool=False):
+    """
+    Add parameters to dictionary
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog
+        content:dict - key/value pairs to add to dic
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool - initially used as a list of True/False, but ultimately becomes True/False based on which has more
+        headers:dict - REST header information
+    :return:
+        if (at least 1) fails to POST then returns False, else True
+    """
+    status = []
+    headers = {
+        'command': 'set %s = %s',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    for key in content:
+        headers['command'] = headers['command'] % (key, content[key])
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            status.append(False)
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], exception=exception)
+        elif not isinstance(r, bool):
+            status.append(True)
+
+    num_false = status.count(False)
+    num_true = status.count(True)
+
+    status = True
+    if False in status:
+        status = False
+
+    return status
+
+
+def run_scheduler_1(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->bool:
+    """
+    Execute `run scheduler 1` command
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/alerts%20and%20monitoring.md#invoking-a-scheduler
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog Node
+        view_help:bool - whether to print info about command
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+    :return:
+        True - success
+        False - fails
+        None - execute `help` command
+    """
+    status = None
+    headers = {
+        'command': 'run scheduler 1',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = True
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            status = False
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
+
+
+
+def declare_schedule_process(anylog_conn:AnyLogConnector, time:str, task:str, name:str=None, exception:bool=False)->bool:
     """
     Declare new scheduled process
     :args:
-        anylog_conn:AnyLogConnection - AnyLog REST connection information
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
         time:str - how often to run the scheduled process
         task:str - process (cmd) to run
         name:str - name of the scheduled task
@@ -40,11 +118,11 @@ def declare_schedule_process(anylog_conn:AnyLogConnection, time:str, task:str, n
     return status
 
 
-def add_param(anylog_conn:AnyLogConnection, key:str, value, payload:str=None, exception:bool=False)->bool:
+def add_param(anylog_conn:AnyLogConnector, key:str, value, payload:str=None, exception:bool=False)->bool:
     """
     Add parameter to AnyLog dictionary
     :args:
-        anylog_conn:AnyLogConnection - AnyLog REST connection information
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
         key:str - AnyLog dictionary key
         value - value associated with key
         exception:bool - whether to print exception
@@ -70,11 +148,11 @@ def add_param(anylog_conn:AnyLogConnection, key:str, value, payload:str=None, ex
 
     return status
 
-def run_scheduler(anylog_conn:AnyLogConnection, schedule_number:int=None, exception:bool=False)->bool:
+def run_scheduler(anylog_conn:AnyLogConnector, schedule_number:int=None, exception:bool=False)->bool:
     """
     Execute `run scheduler`
     :args:
-        anylog_conn:AnyLogConnection - AnyLog REST connection information
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
         schedule_number:int - schedule number (ex `run schedule 1`
         exception:bool - whether to print exceptions
     :params:

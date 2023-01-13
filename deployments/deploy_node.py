@@ -5,13 +5,6 @@ import sys
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
 sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
 
-import generic_get_calls
-
-import declare_dbms
-import run_scheduler
-import config_node
-import declare_policies
-
 
 def main():
     """
@@ -40,60 +33,12 @@ def main():
     """
     config_file=os.path.join(ROOT_DIR, 'deployments/sample_configs.env')
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('rest_conn', type=str, default='127.0.0.1:2049', help='REST connection information')
+    # parser.add_argument('rest_conn', type=str, default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument('config_file', type=str, default=config_file, help='Configuration file to be utilized')
-    parser.add_argument('--auth', type=str, default=None, help='Authentication information (comma separated) [ex. username,password]')
-    parser.add_argument('--timeout', type=int, default=30, help='REST timeout')
-    parser.add_argument('-e', '--exception', type=bool, nargs='?', const=True, default=False, help='Whether to print errors')
+    # parser.add_argument('--auth', type=str, default=None, help='Authentication information (comma separated) [ex. username,password]')
+    # parser.add_argument('--timeout', type=int, default=30, help='REST timeout')
+    # parser.add_argument('-e', '--exception', type=bool, nargs='?', const=True, default=False, help='Whether to print errors')
     args = parser.parse_args()
-
-    # set configs
-    config_file_path = os.path.expanduser(os.path.expandvars(args.config_file))
-    if not os.path.isfile(config_file_path):
-        print(f'Failed to locate file {args.config_file}')
-        exit(1)
-    anylog_conn, configs = config_node.config_node(rest_conn=args.rest_conn, config_file=config_file_path,
-                                                   auth=args.auth, timeout=args.timeout, exception=args.exception)
-
-    # validate connection
-    if generic_get_calls.get_status(anylog_conn=anylog_conn, exception=args.exception) is False:
-        print(f'Failed to connect to AnyLog instance against {args.rest_conn}')
-        exit(1)
-
-    # connect databases
-    declare_dbms.declare_database(anylog_conn=anylog_conn, node_type=configs['NODE_TYPE'], enable_nosql=False,
-                                  db_name=configs['DEFAULT_DBMS'], db_type=configs['DB_TYPE'], host=configs['DB_IP'],
-                                  port=configs['DB_PORT'], user=configs['DB_USER'], password=configs['DB_PASSWD'],
-                                  system_query=configs['SYSTEM_QUERY'], memory=configs['MEMORY'],
-                                  exception=args.exception)
-    if configs['NOSQL_ENABLE'] is True:
-        declare_dbms.declare_database(anylog_conn=anylog_conn, node_type=configs['NODE_TYPE'], enable_nosql=True,
-                                      db_name=configs['DEFAULT_DBMS'], db_type=configs['NOSQL_TYPE'],
-                                      host=configs['NOSQL_IP'], port=configs['NOSQL_PORT'], user=configs['NOSQL_USER'],
-                                      password=configs['NOSQL_PASSWD'], exception=args.exception)
-
-    # run scheduler
-    run_scheduler.run_scheduler(anylog_conn=anylog_conn, blockchain_source=configs['BLOCKCHAIN_SOURCE'],
-                                blockchain_destination=configs['BLOCKCHAIN_DESTINATION'], sync_time=configs['SYNC_TIME'],
-                                ledger_conn=configs['LEDGER_CONN'], exception=args.exception)
-
-    # declare policy
-    declare_policies.declare_policies(anylog_conn=anylog_conn, node_type=configs['NODE_TYPE'], name=configs['NODE_NAME'],
-                                      company=configs['COMPANY_NAME'].replace('"', ''), hostname=configs['HOSTNAME'],
-                                      external_ip=configs['EXTERNAL_IP'], local_ip=configs['IP'],
-                                      anylog_server_port=configs['ANYLOG_SERVER_PORT'],
-                                      anylog_rest_port=configs['ANYLOG_REST_PORT'], db_name=configs['DEFAULT_DBMS'],
-                                      cluster_name=configs['CLUSTER_NAME'], member=configs['MEMBER'],
-                                      location=configs['LOCATION'], country=configs['COUNTRY'],
-                                      state=configs['STATE'], city=configs['CITY'], exception=args.exception)
-
-    # set partitions (operator only)
-
-    # buffer & streaming
-
-    # publisher / operator `run` command
-
-    # run mqtt client
 
 
 
