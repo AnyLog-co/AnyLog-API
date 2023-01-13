@@ -24,7 +24,6 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
         help - None
     """
     status = None
-    output = None
     headers = {
         'command': 'get status',
         'User-Agent': 'AnyLog/1.23'
@@ -41,7 +40,7 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
             status = False
             if exception is True:
                 rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif r is not False:
+        elif not isinstance(r, bool):
             output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
             if isinstance(output, dict):
                 output = output['status']
@@ -85,7 +84,7 @@ def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
             rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif r is not False:
+        elif not isinstance(r, bool):
             anylog_dict = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return anylog_dict
@@ -123,7 +122,7 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
             rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif r is not False:
+        elif not isinstance(r, bool):
             processes_dict = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return processes_dict
@@ -155,7 +154,7 @@ def get_hostname(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bo
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
             rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif r is not False:
+        elif not isinstance(r, bool):
             hostname = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return hostname
@@ -189,7 +188,7 @@ def help_command(anylog_conn:AnyLogConnector, command:str=None, exception:bool=F
     if r is False:
         if exception is True:
             rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-    else:
+    elif not isinstance(r, bool):
         output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
     if output is not None:
