@@ -11,6 +11,7 @@ import generic_get_calls
 import support
 
 import run_master
+import run_query
 
 def __connect_anylog(conn:str, auth:str, timeout:int, exception:bool=False)->AnyLogConnector:
     """
@@ -123,11 +124,10 @@ def main():
     if anylog_configs['node_type'] in ['publisher', 'standalone-publisher']:
         pass
     if anylog_configs['node_type'] in ['query']:
-        pass
-
-
-
-
+        if run_query.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=args.exception) is False:
+            print(f'Failed to start query node against - {args.rest_conn}')
+        else:
+            print(f'Query node started against - {args.rest_conn}')
 
 
 if __name__ == '__main__':
