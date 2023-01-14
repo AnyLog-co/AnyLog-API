@@ -63,10 +63,10 @@ def __get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str
     """
     configs = generic_get_calls.get_dictionary(anylog_conn=anylog_conn, json_format=True, view_help=False,
                                                exception=exception)
-    location = '0.0, 0.0'
-    country='Unknown'
-    state='Unknown'
-    city = 'Unknown'
+    location = None
+    country = None
+    state = None
+    city = None
 
     try:
         location_configs = ast.literal_eval(configs['location_info'])
@@ -79,14 +79,14 @@ def __get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str
         if 'country' in location_configs:
             country = location_configs['country']
         if 'state' in location_configs:
-            state = location_configs['state']
+            state = location_configs['region']
         if 'city' in location_configs:
             city = location_configs['city']
 
     return location, country, state, city
 
 
-def get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str, str, str):
+def get_location(anylog_conn:AnyLogConnector, exception:bool=False)->dict:
     """
     Process to get location information
     :args:
@@ -100,12 +100,18 @@ def get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str, 
     :return:
         location, country, state, city
     """
-    location="0.0, 0.0"
-    country="Unknown"
-    state="Unknown"
-    city="Unknown"
+    location = None
+    country = None
+    state = None
+    city = None
 
     if __set_location(anylog_conn=anylog_conn, exception=exception) is True:
         location, country, state, city = __get_location(anylog_conn=anylog_conn, exception=exception)
 
-    return location, country, state, city
+    return {
+        'location': location,
+        'country': country,
+        'state': state,
+        'city': city
+    }
+

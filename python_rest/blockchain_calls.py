@@ -157,8 +157,8 @@ def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool
         generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
-        headers=blockchain_support.generate_blockchain_insert(local_publish=local_publish, platform=platform,
-                                                              ledger_conn=ledger_conn)
+        headers['command']=blockchain_support.generate_blockchain_insert(local_publish=local_publish, platform=platform,
+                                                                         ledger_conn=ledger_conn)
 
         if policy is not None:
             payload = f'<new_policy={policy}>'

@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
 from anylog_connector import AnyLogConnector
 import database_deployment
 import scheduler_deployment
+import blockchain_deployment
 
 def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False):
     """
@@ -40,6 +41,9 @@ def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)
     scheduler_deployment.run_blockchain_sync(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=exception)
 
     # declare policy
-    pass
+    if blockchain_deployment.validate_node_policy(anylog_conn=anylog_conn, policy_type='master',
+                                                  anylog_configs=anylog_configs, exception=exception) is False:
+        blockchain_deployment.declare_node_policy(anylog_conn=anylog_conn, policy_type='master',
+                                                  anylog_configs=anylog_configs, exception=exception)
 
     return True

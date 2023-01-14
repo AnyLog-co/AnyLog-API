@@ -31,7 +31,7 @@ def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_c
     if where_conditions is not None:
         where_stmt = "where"
         for key in where_conditions:
-            if " " in where_conditions[key]:
+            if isinstance(where_conditions[key], str) and " " in where_conditions[key]:
                 where_stmt += f' {key}="{where_conditions[key]}"'
             else:
                 where_stmt += f" {key}={where_conditions[key]}"
@@ -78,15 +78,15 @@ def generate_blockchain_insert(local_publish:bool=True, platform:str=None, ledge
         command += f" and blockchain={platform}"
 
     if ledger_conn is not None:
-        command += f' master={ledger_conn}'
+        command += f' and master={ledger_conn}'
 
     return command
 
 
 def node_policy(policy_type:str, name:str, company:str, external_ip:str, local_ip:str, anylog_server_port:int,
-                       anylog_rest_port:int, hostname:str=None, member:int=None, cluster_id:str=None,
-                       anylog_broker_port:int=None, location:str="Unknown", country:str="Unknown", state:str="Unknown",
-                       city:str="Unknown", exception:bool=False)->str:
+                anylog_rest_port:int, hostname:str=None, member:int=None, cluster_id:str=None,
+                anylog_broker_port:int=None, location:str="Unknown", country:str="Unknown", state:str="Unknown",
+                city:str="Unknown", exception:bool=False)->str:
     """
     Generate policy for:
         - master
