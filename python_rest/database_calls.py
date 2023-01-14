@@ -107,7 +107,7 @@ def connect_database(anylog_conn:AnyLogConnector, db_name:str, db_type:str='sqli
     """
     status = None
     headers = {
-        'command': database_support.connect_dbms_call(db_name=db_name, db_type=db_type, ip=host, port=port,
+        'command': database_support.connect_dbms_call(db_name=db_name, db_type=db_type, host=host, port=port,
                                                       username=user, password=password, memory=memory),
         'User-Agent': 'AnyLog/1.23'
     }
@@ -120,7 +120,7 @@ def connect_database(anylog_conn:AnyLogConnector, db_name:str, db_type:str='sqli
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], exception=exception)
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 

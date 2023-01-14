@@ -42,6 +42,62 @@ def add_dict_params(anylog_conn:AnyLogConnector, content:dict, exception:bool=Fa
     return status
 
 
+def network_connect(anylog_conn:AnyLogConnector, conn_type:str, internal_ip:str, internal_port:int,
+                    external_ip:str=None, external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30,
+                    view_help:bool=False, exception:bool=False)->bool:
+    """
+    Connect to a network
+    :args: 
+        anylog_conn:AnyLogConnector - connecton to AnyLog 
+        conn_type:str - connection type (TCP, REST, broker)
+        internal_ip:str - internal/local  ip
+        internal_port  - internal/local ip
+        external_ip:str - external ip
+        external_port:str - external port
+        bind:bool - whether to bind or not
+        threads:int - number of threads 
+        rest_timeout:bool - REST timeout 
+        view_help:bool - whether to print help information
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - Success
+        False - Fails
+        None - print help information
+    """
+    # validate
+    status = False
+    if conn_type.upper() == 'TCP' or conn_type.upper() == 'REST' or  conn_type.lower() == 'broker':
+        status = None
+    else:
+        if exception is True:
+            print(f'Invalid connection type: {conn_type}. Cannot execute connection')
+        return status
+
+    headers = {
+        'command': rest_support.generate_connection_command(conn_type=conn_type, internal_ip=internal_ip,
+                                                       internal_port=internal_port, external_ip=external_ip,
+                                                       external_port=external_port, bind=bind, threads=threads,
+                                                       rest_timeout=rest_timeout),
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = True
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            status = False
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+    return status
+
+
+
 def run_scheduler_1(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->bool:
     """
     Execute `run scheduler 1` command

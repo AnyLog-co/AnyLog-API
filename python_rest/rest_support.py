@@ -81,7 +81,11 @@ def print_rest_error(call_type:str, cmd:str, error:str):
     :print:
         error message
     """
-    error_msg = f'Failed to execute {call_type} for "{cmd}"'
+    error_msg = f'Failed to execute {call_type} for "{cmd}" '
+    try:
+        error = int(error)
+    except:
+        pass
     if isinstance(error, int):
         if error in NETWORK_ERRORS:
             error_msg += f'(Network Error {error} - {NETWORK_ERRORS[error]})'
@@ -120,6 +124,48 @@ def extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
     return output
 
 
+def generate_connection_command(conn_type:str, internal_ip:str, internal_port:int, external_ip:str=None,
+                                external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30)->str:
+    """
+    Generate connection to network command
+    :args:
+        conn_type:str - connection type (TCP, REST, broker)
+        internal_ip:str - internal/local  ip
+        internal_port  - internal/local ip
+        external_ip:str - external ip
+        external_port:str - external port
+        bind:bool - whether to bind or not
+        threads:int - number of threads
+        rest_timeout:bool - REST timeout
+    :params:
+        command:str - generatedd command
+    :return:
+        command
+    """
+    if conn_type.upper() == 'TCP':
+        command = 'run tcp server where'
+    elif conn_type.upper() == 'REST':
+        command = 'run rest server where '
+    elif conn_type.lower() == 'broker':
+        command = 'run message broker where '
 
+    if external_ip is not None:
+        command += f'external_ip={external_ip} and '
+    else:
+        command += f'external_ip={internal_ip} and '
+    if external_port is not None:
+        command += f'external_ip={external_port} and '
+    else:
+        command += f'external_ip={internal_port} and '
+    command += f'internal_ip={internal_ip} and internal_port={internal_port} and '
 
+    if bind is True:
+        command += ' bind=true and '
+    else:
+        command += ' bind=false and '
+    command += f'threads={threads}'
 
+    if conn_type.upper() == 'REST':
+        command += f' timeout={rest_timeout}'
+
+    return command
