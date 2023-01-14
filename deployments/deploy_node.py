@@ -114,7 +114,10 @@ def main():
 
 
     if anylog_configs['node_type'] in ['ledger', 'standalone', 'standalone-publisher']:
-        run_master.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=args.exception)
+        if run_master.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=args.exception) is False:
+            print(f'Failed to start master node against - {args.rest_conn}')
+        else:
+            print(f'Master node started against - {args.rest_conn}')
     if anylog_configs['node_type'] in ['operator', 'standalone']:
         pass
     if anylog_configs['node_type'] in ['publisher', 'standalone-publisher']:
