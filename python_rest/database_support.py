@@ -19,8 +19,7 @@ def check_db_exists(anylog_conn:AnyLogConnector, db_name:str, view_help:bool=Fal
     """
     status = False
     output = database_calls.get_databases(anylog_conn=anylog_conn, json_format=True, view_help=view_help, exception=exception)
-
-    if output is not None:
+    if 'No DBMS connections found' not in output and output is not None:
         if db_name in list(output.keys()):
             status = True
 

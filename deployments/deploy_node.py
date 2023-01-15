@@ -5,12 +5,14 @@ import sys
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
 sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
 
+
 from anylog_connector import AnyLogConnector
 import file_io
 import generic_get_calls
 import support
 
 import run_master
+import run_publisher
 import run_query
 
 def __connect_anylog(conn:str, auth:str, timeout:int, exception:bool=False)->AnyLogConnector:
@@ -97,7 +99,7 @@ def main():
         anylog_conn:AnyLogConnection - connection to AnyLog node
         configs:str - configuration file
     """
-    config_file=os.path.join(ROOT_DIR, 'deployments/sample_configs.env')
+    config_file=os.path.join(ROOT_DIR, 'configurations/master_configs.env')
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('rest_conn', type=str, default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument('config_file', type=str, default=config_file, help='Configuration file to be utilized')
@@ -113,6 +115,10 @@ def main():
 
     anylog_configs = __read_configs(anylog_conn=anylog_conn, config_file=args.config_file, exception=args.exception)
 
+    if 'node_type' not in anylog_configs:
+        print('Unable to get node type, cannot continue.')
+        exit(1)
+
 
     if anylog_configs['node_type'] in ['ledger', 'standalone', 'standalone-publisher']:
         if run_master.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=args.exception) is False:
@@ -122,7 +128,10 @@ def main():
     if anylog_configs['node_type'] in ['operator', 'standalone']:
         pass
     if anylog_configs['node_type'] in ['publisher', 'standalone-publisher']:
-        pass
+        if run_publisher.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=args.exception) is False:
+            print(f'Failed to start publisher node against - {args.rest_conn}')
+        else:
+            print(f'Publisher node started against - {args.rest_conn}')
     if anylog_configs['node_type'] in ['query']:
         if run_query.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=args.exception) is False:
             print(f'Failed to start query node against - {args.rest_conn}')

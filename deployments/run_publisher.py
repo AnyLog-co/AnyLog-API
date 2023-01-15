@@ -8,6 +8,7 @@ from anylog_connector import AnyLogConnector
 import database_deployment
 import scheduler_deployment
 import blockchain_deployment
+import publisher_operator_deployment
 
 def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False):
     """
@@ -44,4 +45,14 @@ def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)
         blockchain_deployment.declare_node_policy(anylog_conn=anylog_conn, policy_type='publisher',
                                                   anylog_configs=anylog_configs, exception=exception)
 
-    return True
+
+    # set buffer threshold  and streamer
+    publisher_operator_deployment.declare_buffer_threshold(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                           exception=exception)
+
+    publisher_operator_deployment.enable_streaming(anylog_conn=anylog_conn, exception=exception)
+
+
+    # start publisher
+    return publisher_operator_deployment.run_publisher(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                       exception=exception)
