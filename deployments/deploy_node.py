@@ -148,6 +148,8 @@ def main():
         generic_deployment.run_mqtt_client(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
                                            exception=args.exception)
 
+    print(generic_get_calls.get_processes(anylog_conn=anylog_conn, json_format=False, exception=args.exception))
+
 
 if __name__ == '__main__':
     main()
