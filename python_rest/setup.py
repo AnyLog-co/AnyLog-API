@@ -11,7 +11,7 @@ def __get_requirements()->dict:
 
 
 setup(
-    name='anylog',
+    name='anylog-network',
     version='1.0',
     license=None,
     author='AnyLog Co.',
