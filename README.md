@@ -6,9 +6,9 @@ The configuration file can be either _.env_ or _YAML_; as generated when creatin
 
 
 ### Code Breakdown
-* [anylog_connector](python_rest/srcanylog_connector.py) - Class that declares connection to AnyLog, used for
+* [anylog_connector](python_rest/src/anylog_connector.py) - Class that declares connection to AnyLog, used for
 _GET_, _PUT_ and _POST_.
-* [generic get](python_rest/srcgeneric_get_calls.py)
+* [generic get](python_rest/src/generic_get_calls.py)
   * check status
   * get (AnyLog) dictionary
   * view event log 
@@ -17,29 +17,29 @@ _GET_, _PUT_ and _POST_.
   * `get hostname` 
   * `get processes`
   * `help`
-* [generic post](python_rest/srcgeneric_post_calls.py)
+* [generic post](python_rest/src/generic_post_calls.py)
   * add param to (AnyLog) dictionary 
   * network connectivity connect
   * run scheduler 
   * setting buffer / streamer 
   * `run operator` 
   * `run publisher`
-* [generic data](python_rest/srcgeneric_data_calls.py)
+* [generic data](python_rest/src/generic_data_calls.py)
   * `run mqtt client`
   * data partitioning
   * insert data via _POST_ or _PUT_
   * query data 
-* [blockchain calls](python_rest/srcblockchain_calls.py)
+* [blockchain calls](python_rest/src/blockchain_calls.py)
   * blockchain syncing
   * `blockchain get`
   * prepare policy
   * post policy 
-* [database calls](python_rest/srcdatabase_calls.py)
+* [database calls](python_rest/src/database_calls.py)
   * `get databases`
   * `get tables`
   * connect to database 
   * create table
-* [find location](python_rest/srcfind_location.py) - code to get the geolocation of the node being accesseed 
+* [find location](python_rest/src/find_location.py) - code to get the geolocation of the node being accesseed 
 
 
 
