@@ -2,8 +2,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='anylog-network',
-    version='0.1.0',
+    name='anylog-rest',
+    version='0.0.0',
     license=None,
     author='AnyLog Co.',
     author_email='info@anylog.co',
