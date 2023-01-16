@@ -1,0 +1,8 @@
+README.md
+setup.cfg
+setup.py
+src/anylog.egg-info/PKG-INFO
+src/anylog.egg-info/SOURCES.txt
+src/anylog.egg-info/dependency_links.txt
+src/anylog.egg-info/requires.txt
+src/anylog.egg-info/top_level.txt
