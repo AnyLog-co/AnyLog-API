@@ -18,12 +18,12 @@ def add_dict_params(anylog_conn:AnyLogConnector, content:dict, exception:bool=Fa
     """
     status = []
     headers = {
-        'command': 'set %s = %s',
+        'command':  None,
         'User-Agent': 'AnyLog/1.23'
     }
 
     for key in content:
-        headers['command'] = headers['command'] % (key, content[key])
+        headers['command'] = f'set {key} = {content[key]}'
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             status.append(False)
@@ -438,5 +438,43 @@ def run_operator(anylog_conn:AnyLogConnector, operator_id:str, create_table:bool
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
+
+def execute_process(anylog_conn:AnyLogConnector, file_path:str, view_help:bool=False, exception:bool=False)->bool:
+    """
+    Execute an AnyLog file via REST - file must be accessible on the AnyLog instance
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/node%20configuration.md#the-configuration-process
+    :args:
+        anylog_conn:AnyLogConnector - AnyLog connection information
+        file_path:str - file (on the AnyLog instance) to be executed
+        view_help:bool - whether to print help
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - Success
+        False - Fails
+        None - print help information
+    """
+    status = None
+    headers = {
+        'command': 'process',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = True
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            status = False
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status

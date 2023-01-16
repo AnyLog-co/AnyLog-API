@@ -44,6 +44,43 @@ def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:
     return status
 
 
+def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, view_help:bool=False,
+                   exception:bool=False)->str:
+    """
+    View data coming in for message client
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/monitoring%20calls.md#get-msg-clients
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog node via REST
+        message_client_id:int - specific message client to view
+        view_help:bool - whether to print help or not
+        exception:bool - whether to print exception
+    :params:
+        output:str - `get msg client results`
+        headers:dict - REST header information
+        r:requests.get, error:str - results from REST GET request
+    :return:
+        if view_hep is True - None
+        else - output from command
+    """
+    output = None
+    headers = {
+        'command': 'get msg client',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        r, error = anylog_conn.get(headers=headers)
+        if r is False and exception is True:
+            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+        elif not isinstance(r, bool):
+            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+
+    return output
+
+
 def put_data(anylog_conn:AnyLogConnector, db_name:str, table_name:str, payloads:list, exception:bool=False)->bool:
     """
     Store data in AnyLog via PUT command
