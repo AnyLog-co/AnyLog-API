@@ -5,6 +5,43 @@ The AnyLog API is intended to act an easy-to-use interface between AnyLog and th
 The configuration file can be either _.env_ or _YAML_; as generated when creating it with [deployment scripts](https://github.com/AnyLog-co/deployments/tree/master/deployment_scripts). 
 
 
+### Code Breakdown
+* [anylog_connector](python_rest/anylog_connector.py) - Class that declares connection to AnyLog, used for
+_GET_, _PUT_ and _POST_.
+* [generic get](python_rest/generic_get_calls.py)
+  * check status
+  * get (AnyLog) dictionary
+  * view event log 
+  * view error log 
+  * view network information
+  * `get hostname` 
+  * `get processes`
+  * `help`
+* [generic post](python_rest/generic_post_calls.py)
+  * add param to (AnyLog) dictionary 
+  * network connectivity connect
+  * run scheduler 
+  * setting buffer / streamer 
+  * `run operator` 
+  * `run publisher`
+* [generic data](python_rest/generic_data_calls.py)
+  * `run mqtt client`
+  * data partitioning
+  * insert data via _POST_ or _PUT_
+  * query data 
+* [blockchain calls](python_rest/blockchain_calls.py)
+  * blockchain syncing
+  * `blockchain get`
+  * prepare policy
+  * post policy 
+* [database calls](python_rest/database_calls.py)
+  * `get databases`
+  * `get tables`
+  * connect to database 
+  * create table
+* [find location](python_rest/find_location.py) - code to get the geolocation of the node being accesseed 
+
+
 
 ## Node Setup
 1. Download AnyLog-API

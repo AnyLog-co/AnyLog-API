@@ -11,7 +11,7 @@ def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockcha
     """
     Enable automatic blockchain sync process
     :url:
-        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20configuration.md#synchronize-the-blockchain-data-with-a-local-copy-every-30-seconds
+        https://github.com/AnyLog-co/documentation/blob/master/background%20processes.md#blockchain-synchronizer
     :args:
         anylog_conn:AnyLogConnector - connection to AnyLog node
         blockchain_source:str - source where data is coming from (default: master node)
@@ -167,47 +167,6 @@ def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool
             r, error = anylog_conn.post(headers=headers)
 
         if r is False:
-            status = False
-            if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
-
-    return status
-
-
-def blockchain_synchronizer(anylog_conn:AnyLogConnector, ledger_conn:str, source:str='master', dest:str='file',
-                            time:str='30 seconds', view_help:bool=False, exception:bool=False)->bool:
-    """
-    Declare blockchain synchronizer
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/background%20processes.md#blockchain-synchronizer
-    :args:
-        anylog_conn:AnyLogConnector - connection to AnyLog node
-        ledger_conn:str - The connection information that is needed to retrieve the data. For a Master, the IP and Port of the master node.
-        source:str - The source of the metadata (blockchain or a Master Node).
-        dest:str - The destination of the blockchain data such as a file (a local file) or a DBMS (a local DBMS).
-        time:str - The frequency of updates.
-        view_help:bool - whether to print information regarding command
-        exception:bool - whether to print error messages
-    :params:
-        status:bool
-        headers:dict - REST header information
-    :return:
-        True - success
-        False - fails
-        None - printed help information
-    """
-    status = None
-    headers = {
-        'command': f'run blockchain sync where source={source} and dest={dest} and time={time} and connection={ledger_conn}',
-        'User-Agent': 'AnyLog/1.23'
-    }
-
-    if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
-    else:
-        status = True
-        r, error = anylog_conn.post(headers=headers, payload=None)
-        if not isinstance(r, bool):
             status = False
             if exception is True:
                 rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)

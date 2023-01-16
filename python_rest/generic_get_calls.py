@@ -52,7 +52,7 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
     return status
 
 
-def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->dict:
+def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
     """
     Extract AnyLog dictionary
     :url:
@@ -90,7 +90,7 @@ def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help
     return anylog_dict
 
 
-def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->dict:
+def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
     """
     view running / not declared processes
     :url:
@@ -126,6 +126,44 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
             processes_dict = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return processes_dict
+
+
+def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->sr:
+    """
+    Get network information
+    :args:
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
+        json_format:bool - whether to get results in JSON format
+        view_help:bool - whether to get help info for command
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        connections:dict - dict of AnyLog processes
+        r:bool, error:str - whether the command failed & why
+    :return:
+        connections
+    """
+    connections = {}
+    header={
+        'command': 'get connections',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if json_format is True:
+        header['command'] += ' where format=json'
+
+    if view_help is True:
+        help_command(anylog_conn=anylog_conn, command=header['command'], exception=exception)
+        connections = None
+    else:
+        r, error = anylog_conn.get(header=header)
+        if r is False:
+            if exception is True:
+                rest_support.print_rest_error(call_type='GET', cmd=header['command'], error=error)
+        elif not isinstance(r, bool):
+            connections = rest_support.extract_results(cmd=header['command'], r=r, exception=exception)
+
+    return connections
 
 
 def get_hostname(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->str:
