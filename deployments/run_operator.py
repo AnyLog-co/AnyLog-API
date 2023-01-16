@@ -12,12 +12,25 @@ import publisher_operator_deployment
 
 def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False):
     """
-    Main for deploying a publisher node
+    Main for deploying a operator node
     :args:
         anylog_conn:AnyLogConnector - connection to AnyLog
         anylog_configs:dict - configurations
         exception:bool - whether to print exceptions
     """
+    # connect to logical databasebase
+    status = True
+    if 'default_dbms' in anylog_configs:
+        if database_deployment.declare_database(anylog_conn=anylog_conn, db_name=anylog_configs['default_dbms'],
+                                                anylog_configs=anylog_configs, exception=exception) is False:
+            status = False
+    else:
+        status = False
+    if status is False:
+        print(f"Error: Failed to connect to default dbms `{anylog_configs['default_dbms']}` "
+                +"logical database. Cannot continue")
+        return status
+
     # connect to almgm database and create tsd_info (if DNE)
     if database_deployment.declare_database(anylog_conn=anylog_conn, db_name='almgm',
                                             anylog_configs=anylog_configs, exception=exception) is False:
@@ -54,5 +67,4 @@ def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)
 
 
     # start publisher
-    return publisher_operator_deployment.run_publisher(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
-                                                       exception=exception)
+
