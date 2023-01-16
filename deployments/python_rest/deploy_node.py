@@ -3,7 +3,7 @@ import os
 import sys
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
-sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest', 'src'))
 
 
 from anylog_connector import AnyLogConnector
@@ -129,7 +129,7 @@ def main():
             print(f'Master node started against - {args.rest_conn}')
     if anylog_configs['node_type'] in ['operator', 'standalone']:
         if run_operator.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
-                              exception=args.exception) is False:
+                             exception=args.exception) is False:
             print(f'Failed to start operator node against - {args.rest_conn}')
         else:
             print(f'Operator node started against - {args.rest_conn}')

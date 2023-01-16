@@ -2,7 +2,7 @@ import os
 import sys
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
-sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest', 'src'))
 
 from anylog_connector import AnyLogConnector
 import blockchain_calls

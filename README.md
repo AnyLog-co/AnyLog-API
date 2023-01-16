@@ -1,14 +1,14 @@
 # AnyLog-API
 The AnyLog API is intended to act an easy-to-use interface between AnyLog and third-party applications via REST.
 
-[deploy_node.py](deployments/deploy_node.py) provides code to deploy AnyLog via REST when given a [configuration file](configurations/). 
+[deploy_node.py](deployments/python_rest/deploy_node.py) provides code to deploy AnyLog via REST when given a [configuration file](configurations/). 
 The configuration file can be either _.env_ or _YAML_; as generated when creating it with [deployment scripts](https://github.com/AnyLog-co/deployments/tree/master/deployment_scripts). 
 
 
 ### Code Breakdown
-* [anylog_connector](python_rest/anylog_connector.py) - Class that declares connection to AnyLog, used for
+* [anylog_connector](python_rest/srcanylog_connector.py) - Class that declares connection to AnyLog, used for
 _GET_, _PUT_ and _POST_.
-* [generic get](python_rest/generic_get_calls.py)
+* [generic get](python_rest/srcgeneric_get_calls.py)
   * check status
   * get (AnyLog) dictionary
   * view event log 
@@ -17,29 +17,29 @@ _GET_, _PUT_ and _POST_.
   * `get hostname` 
   * `get processes`
   * `help`
-* [generic post](python_rest/generic_post_calls.py)
+* [generic post](python_rest/srcgeneric_post_calls.py)
   * add param to (AnyLog) dictionary 
   * network connectivity connect
   * run scheduler 
   * setting buffer / streamer 
   * `run operator` 
   * `run publisher`
-* [generic data](python_rest/generic_data_calls.py)
+* [generic data](python_rest/srcgeneric_data_calls.py)
   * `run mqtt client`
   * data partitioning
   * insert data via _POST_ or _PUT_
   * query data 
-* [blockchain calls](python_rest/blockchain_calls.py)
+* [blockchain calls](python_rest/srcblockchain_calls.py)
   * blockchain syncing
   * `blockchain get`
   * prepare policy
   * post policy 
-* [database calls](python_rest/database_calls.py)
+* [database calls](python_rest/srcdatabase_calls.py)
   * `get databases`
   * `get tables`
   * connect to database 
   * create table
-* [find location](python_rest/find_location.py) - code to get the geolocation of the node being accesseed 
+* [find location](python_rest/srcfind_location.py) - code to get the geolocation of the node being accesseed 
 
 
 
@@ -67,7 +67,7 @@ import os
 import sys
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('README.md')[0]
-sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest', 'src'))
 
 from anylog_connector import AnyLogConnector
 

@@ -2,7 +2,7 @@ import os
 import sys
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
-sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest', 'src'))
 
 from anylog_connector import AnyLogConnector
 import generic_data_calls
@@ -70,12 +70,12 @@ def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)
     if 'enable_partitions' in anylog_configs and anylog_configs['enable_partitions'] is True:
         if generic_data_calls.get_partitions(anylog_conn=anylog_conn, view_help=False, exception=exception) is False:
             if database_deployment.set_partions(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
-                                                 exception=exception) is False:
+                                                exception=exception) is False:
 
                 print('Notice: Failed to set partitions')
             else:
                 if scheduler_deployment.enable_delete_partitions(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
-                                                              exception=exception) is False:
+                                                                 exception=exception) is False:
                     print('Notice: Failed to declare scheduled process for cleaning partitions')
 
     # set buffer threshold  and streamer
