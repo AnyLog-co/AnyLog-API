@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='anylog-network',
-    version='1.0',
+    version='0.1.0',
     license=None,
     author='AnyLog Co.',
     author_email='info@anylog.co',
