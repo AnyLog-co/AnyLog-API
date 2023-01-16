@@ -58,7 +58,7 @@ def generate_run_mqtt_client(broker:str, port:int, username:str=None, password:s
             else:
                 value = values[column_name]
             if value is not None:
-                command += f' and column.{column_name}=(typee={column_type} and value={value})'
+                command += f' and column.{column_name}=(type={column_type} and value={value})'
 
     command += ')'
 

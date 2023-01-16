@@ -117,7 +117,7 @@ def run_operator(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:boo
 
     processes = generic_get_calls.get_processes(anylog_conn=anylog_conn, json_format=True, exception=exception)
 
-    if processes['Publisher']['Status'] == 'Not declared':
+    if processes['Operator']['Status'] == 'Not declared':
         where_conditions = blockchain_deployment.__build_full_info(anylog_configs=anylog_configs)
         policy_id = blockchain_calls.get_policy(anylog_conn=anylog_conn, policy_type='operator',
                                                 where_conditions=where_conditions, bring_conditions='first',

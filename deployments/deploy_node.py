@@ -15,6 +15,7 @@ import run_master
 import run_operator
 import run_publisher
 import run_query
+import generic_deployment
 
 def __connect_anylog(conn:str, auth:str, timeout:int, exception:bool=False)->AnyLogConnector:
     """
@@ -142,6 +143,10 @@ def main():
             print(f'Failed to start query node against - {args.rest_conn}')
         else:
             print(f'Query node started against - {args.rest_conn}')
+
+    if 'enable_mqtt' in anylog_configs and anylog_configs['enable_mqtt'] is True:
+        generic_deployment.run_mqtt_client(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                           exception=args.exception)
 
 
 if __name__ == '__main__':
