@@ -5,6 +5,7 @@ ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')
 sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
 
 from anylog_connector import AnyLogConnector
+import generic_data_calls
 import database_deployment
 import scheduler_deployment
 import blockchain_deployment
@@ -53,11 +54,29 @@ def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)
     scheduler_deployment.run_blockchain_sync(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=exception)
 
     # declare policy
-    if blockchain_deployment.validate_node_policy(anylog_conn=anylog_conn, policy_type='publisher',
+    policy_id = blockchain_deployment.validate_cluster_policy(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                              exception=exception)
+    if policy_id == '':
+        blockchain_deployment.declare_cluster_policy(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                     exception=exception)
+        policy_id = blockchain_deployment.validate_cluster_policy(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                                  exception=exception)
+    anylog_configs['cluster_id'] = policy_id
+    if blockchain_deployment.validate_node_policy(anylog_conn=anylog_conn, policy_type='operator',
                                                   anylog_configs=anylog_configs, exception=exception) is False:
-        blockchain_deployment.declare_node_policy(anylog_conn=anylog_conn, policy_type='publisher',
+        blockchain_deployment.declare_node_policy(anylog_conn=anylog_conn, policy_type='operator',
                                                   anylog_configs=anylog_configs, exception=exception)
 
+    if 'enable_partitions' in anylog_configs and anylog_configs['enable_partitions'] is True:
+        if generic_data_calls.get_partitions(anylog_conn=anylog_conn, view_help=False, exception=exception) is False:
+            if database_deployment.set_partions(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                 exception=exception) is False:
+
+                print('Notice: Failed to set partitions')
+            else:
+                if scheduler_deployment.enable_delete_partitions(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                              exception=exception) is False:
+                    print('Notice: Failed to declare scheduled process for cleaning partitions')
 
     # set buffer threshold  and streamer
     publisher_operator_deployment.declare_buffer_threshold(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
@@ -65,6 +84,7 @@ def main(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)
 
     publisher_operator_deployment.enable_streaming(anylog_conn=anylog_conn, exception=exception)
 
-
-    # start publisher
+    # start operator
+    return publisher_operator_deployment.run_operator(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                                                      exception=exception)
 

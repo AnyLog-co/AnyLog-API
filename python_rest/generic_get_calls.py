@@ -128,7 +128,7 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
     return processes_dict
 
 
-def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->sr:
+def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
     """
     Get network information
     :args:

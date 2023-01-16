@@ -270,4 +270,75 @@ def declare_node_policy(anylog_conn:AnyLogConnector, policy_type:str, anylog_con
     return status
 
 
+def validate_cluster_policy(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)->str:
+    """
+    Validate whether a cluster policy already exists
+    :args:
+        anylg_conn:AnyLogConnector - connection to AnyLog via REST
+        anylog_configs:dict - AnyLog configurations
+        exception:bool - whether to print exceptions
+    :params:
+        policy_id:str - ID of the policy
+        where_conditions:dict - where conditions
+    :return:
+        if success returns policy ID, else ''
+    """
+    policy_id = ''
+    where_conditions = {}
 
+    if 'cluster_name' in anylog_configs:
+        where_conditions['name'] = anylog_configs['cluster_name']
+    if 'company_name' in where_conditions:
+        where_conditions['company'] = anylog_configs['company_name']
+
+    policy_id = blockchain_calls.get_policy(anylog_conn=anylog_conn, policy_type='cluster',
+                                            where_conditions=where_conditions, bring_conditions='first',
+                                            bring_values='[*][id]', separator=',', view_help=False,
+                                            exception=exception)
+
+    return policy_id
+
+
+def declare_cluster_policy(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool)->bool:
+    """
+    Declare cluster polciy
+    :args:
+        anylg_conn:AnyLogConnector - connection to AnyLog via REST
+        anylog_configs:dict - AnyLog configurations
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        name:Str - cluster name
+        company:str - company cluster s assoccated to
+        db_name:str - logical database name
+    """
+    status = True
+    if 'cluster_name' not in anylog_configs or 'company_name' not in anylog_configs:
+        print('Failed to find cluster name and/or company name. Cannot declare cluster policy')
+        status = False
+    else:
+        name = anylog_configs['cluster_name']
+        company = anylog_configs['company_name']
+        parent_cluster=None
+        db_name=None
+        if 'default_dbms' in anylog_configs:
+            db_name = anylog_configs['default_dbms']
+
+        policy = blockchain_support.cluster_policy(name=name, company=company, parent_cluster=None,
+                                                   db_name=db_name, table_name=None, exception=exception)
+
+        if blockchain_calls.prepare_policy(anylog_conn=anylog_conn, policy=policy, view_help=False, exception=exception):
+            policy = __extract_policy(anylog_conn=anylog_conn, exception=exception)
+            if 'platform' not in anylog_configs:
+                anylog_configs['platform'] = None
+            if 'ledger_conn' not in anylog_configs:
+                anylog_configs['ledger_conn'] = None
+
+            if not blockchain_calls.post_policy(anylog_conn=anylog_conn, policy=policy, local_publish=True,
+                                                platform=anylog_configs['platform'],
+                                                ledger_conn=anylog_configs['ledger_conn'], view_help=False,
+                                                exception=exception):
+                status = False
+                print(f'Failed to POST policy in blockchain')
+
+    return status

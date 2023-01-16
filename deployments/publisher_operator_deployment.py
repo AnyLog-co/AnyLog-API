@@ -7,7 +7,9 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
 from anylog_connector import AnyLogConnector
 import generic_get_calls
 import generic_post_calls
+import blockchain_calls
 
+import blockchain_deployment
 
 def declare_buffer_threshold(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False):
     """
@@ -87,3 +89,46 @@ def run_publisher(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bo
             print(f'Failed to start publisher node')
 
     return status
+
+
+def run_operator(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)->bool:
+    status = True
+    create_table = True
+    update_tsd_info = True
+    archive=True
+    compress_json = True
+    compress_sql = True
+    threads = 1
+    ledger_conn = None
+
+    if 'create_table' in anylog_configs:
+        create_table = anylog_configs['create_table']
+    if 'updae_tsd_info' in anylog_configs:
+        updae_tsd_info = anylog_configs['updae_tsd_info']
+    if 'archive' in anylog_configs:
+        archive = anylog_configs['archive']
+    if 'compress_file' in anylog_configs:
+        compress_json = anylog_configs['compress_file']
+        compress_sql = anylog_configs['compress_file']
+    if 'operator_threads' in anylog_configs:
+        threads = anylog_configs['operator_threads']
+    if 'ledger_conn' in anylog_configs:
+        ledger_conn = anylog_configs['ledger_conn']
+
+    processes = generic_get_calls.get_processes(anylog_conn=anylog_conn, json_format=True, exception=exception)
+
+    if processes['Publisher']['Status'] == 'Not declared':
+        where_conditions = blockchain_deployment.__build_full_info(anylog_configs=anylog_configs)
+        policy_id = blockchain_calls.get_policy(anylog_conn=anylog_conn, policy_type='operator',
+                                                where_conditions=where_conditions, bring_conditions='first',
+                                                bring_values='[*][id]', separator=',', view_help=False,
+                                                exception=exception)
+        if not policy_id:
+            print('Error: Failed to get Operator policy ID. Cannot start `run operator` process.')
+            status = False
+        else:
+            return generic_post_calls.run_operator(anylog_conn=anylog_conn, operator_id=policy_id, archive=archive,
+                                                   create_table=create_table, update_tsd_info=update_tsd_info,
+                                                   compress_json=compress_json, compress_sql=compress_sql,
+                                                   threads=threads, ledger_conn=ledger_conn, view_help=False,
+                                                   exception=exception)

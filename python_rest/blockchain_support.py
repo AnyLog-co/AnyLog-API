@@ -168,7 +168,7 @@ def node_policy(policy_type:str, name:str, company:str, external_ip:str, local_i
 
 
 def cluster_policy(name:str, company:str, parent_cluster:str=None, db_name:str=None, table_name:str=None,
-                          exception:bool=False)->str:
+                   exception:bool=False)->str:
     """
     Generate a cluster policy
     :sample cluster:

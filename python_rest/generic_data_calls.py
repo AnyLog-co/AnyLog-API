@@ -5,13 +5,52 @@ import rest_support
 import support
 
 
+def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->bool:
+    """
+    Check whether partitions exist
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog va RESt
+        view_help:bool - whether to print help meessage
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST headers
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True -  if partitions are set
+        None - if print help
+        False - if no partitions
+    """
+    status = None
+    headers = {
+        'command': 'get partitions',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = False
+        r, error = anylog_conn.get(headers=headers)
+        if r is False and exception is True:
+            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+        elif not isinstance(r, bool):
+            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            if output != 'No partitions declared':
+                status = True
+
+    return status
+
+
 def put_data(anylog_conn:AnyLogConnector, db_name:str, table_name:str, payloads:list, exception:bool=False)->bool:
     """
     Store data in AnyLog via PUT command
     :url:
         https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-put-command
     :args:
-        anylog_conn:AnyLogConnector - connecton to AnyLog va RESt
+        anylog_conn:AnyLogConnector - connection to AnyLog va RESt
         db_name:str - logical database to store data in
         table_name:str - table to store data in (within logical database)
         payloads:lst - content to store in AnyLog (content will be converted from JSON dict to JSON string)
@@ -102,7 +141,11 @@ def run_mqtt_client(anylog_conn:AnyLogConnector, broker:str, port:int, username:
         view_help:bool - whether to print help information
         exception:bool - whether to print exception information
     :params:
-
+        status:bool
+        headers:dict - REST headers
+        r:bool, error:str - whether the command failed & why
+    :return:
+        status
     """
     status = None
     headers = {
@@ -119,6 +162,47 @@ def run_mqtt_client(anylog_conn:AnyLogConnector, broker:str, port:int, username:
                                                                            db_name=db_name, table_name=table_name,
                                                                            timestamp=timestamp, values=values,
                                                                            logs=logs, user_agent=user_agent)
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            status = False
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
+
+def set_partitions(anylog_conn:AnyLogConnector, db_name:str, table_name:str='*', partition_column:str='timestamp',
+                   partition_interval:str='day', view_help:bool=False, exception:bool=False)->bool:
+    """
+    Set partitions
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#partition-command
+    :args:
+        anylog_conn:AnyLogConnection - connect to AnyLog via REST
+        db_name:str - database to partition
+        table_name:str - table to partition if '*' then partition all correlated tables
+        partition_column:str - partition column
+        partition_interval:str - partition interval
+        view_help:bool - whether to print help
+        exceptions:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST headers
+        r:bool, error:str - whether the command failed & why
+    :return:
+        status
+    """
+    status = None
+    headers = {
+        'command': 'partition',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(headers=headers['command'])
+    else:
+        status = True
+        headers['command'] += f' {db_name} {table_name} using {partition_column} by {partition_interval}'
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             status = False
@@ -177,6 +261,4 @@ def query_data(anylog_conn:AnyLogConnector, db_name:str, query:str, destination:
             output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return output
-
-
 

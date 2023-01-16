@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'python_rest'))
 from anylog_connector import AnyLogConnector
 import database_calls
 import database_support
+import generic_data_calls
 
 
 def declare_database(anylog_conn:AnyLogConnector, db_name:str, anylog_configs:dict, exception:bool=False)->bool:
@@ -88,6 +89,48 @@ def declare_table(anylog_conn:AnyLogConnector, db_name:str, table_name:str, exce
                                            view_help=False, exception=exception):
             status = False
             print(f'Failed to create table {table_name} in {db_name} logical database')
+
+    return status
+
+
+def set_partions(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:bool=False)->bool:
+    """
+    Set partitioning
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog via REST
+        anylog_configs:dict - anylog cconfigurations
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        db_name:str - database to partition
+        table_name:str - table to partition if '*' then partition all correlated tables
+        partition_column:str - partition column
+        partition_interval:str - partition interval
+    :return:
+        status
+    """
+    status = True
+    table_name = '*'
+    partition_column = 'timestamp'
+    partition_interval = 'day'
+    if 'default_dbms' not in anylog_configs:
+        print('Notice: Missing logical database to partitioning')
+        status = False
+    else:
+        db_name = anylog_configs['default_dbms']
+
+    if 'table_name' in anylog_configs:
+        table_name = anylog_configs['table_name']
+    if 'partition_column' in anylog_configs:
+        partition_column = anylog_configs['partition_column']
+    if 'partition_interval' in anylog_configs:
+        partition_interval = anylog_configs['partition_interval']
+
+    if status is True:
+        status = generic_data_calls.set_partitions(anylog_conn=anylog_conn, db_name=db_name, table_name=table_name,
+                                                   partition_column=partition_column,
+                                                   partition_interval=partition_interval, view_help=False,
+                                                   exception=exception)
 
     return status
 

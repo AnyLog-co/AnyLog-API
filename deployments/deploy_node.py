@@ -12,6 +12,7 @@ import generic_get_calls
 import support
 
 import run_master
+import run_operator
 import run_publisher
 import run_query
 
@@ -126,7 +127,11 @@ def main():
         else:
             print(f'Master node started against - {args.rest_conn}')
     if anylog_configs['node_type'] in ['operator', 'standalone']:
-        pass
+        if run_operator.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs,
+                              exception=args.exception) is False:
+            print(f'Failed to start operator node against - {args.rest_conn}')
+        else:
+            print(f'Operator node started against - {args.rest_conn}')
     if anylog_configs['node_type'] in ['publisher', 'standalone-publisher']:
         if run_publisher.main(anylog_conn=anylog_conn, anylog_configs=anylog_configs, exception=args.exception) is False:
             print(f'Failed to start publisher node against - {args.rest_conn}')

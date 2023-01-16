@@ -179,7 +179,7 @@ def declare_schedule_process(anylog_conn:AnyLogConnector, time:str, task:str, st
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', command=headers['command'], exception=exception)
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -390,5 +390,53 @@ def run_publisher(anylog_conn:AnyLogConnector, db_name:str='file_name[0]', table
             status = False
             if exception is True:
                 rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
+
+def run_operator(anylog_conn:AnyLogConnector, operator_id:str, create_table:bool=True, update_tsd_info:bool=True,
+                 archive:bool=True, compress_json:bool=True, compress_sql:bool=True, threads:int=3,
+                 ledger_conn: str = None, view_help:bool=False, exception:bool=False)->bool:
+    """
+    Run operator process
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/background%20processes.md#operator-process
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog
+        operator_id:str - (policy) ID of the operator policy
+        craete_table:bool - A True value creates a table if the table doesn't exists.
+        update_tsd_info - True/False to update a summary table (tsd_info table in almgm dbms) with status of files ingested.
+        compress_json - True/False to enable/disable compression of the JSON file.
+        compress_sql - True/False to enable/disable compression of the SQL file.
+        archvive:bool - True/False to move JSON files to archive.
+        threads:int - number of operator threads
+        ledger_conn - The IP and Port of a Master Node (if a master node is used)
+        view_help:bool - whether to print info about command
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - Success
+        False - Fails
+        None - print help information
+    """
+    status = None
+    headers = {
+        'command': f'run operator where policy={operator_id} and create_table={create_table} and update_tsd_info={update_tsd_info} and archive={archive} and compress_json={compress_json} and compress_sql={compress_sql} and threads={threads}',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = True
+        if ledger_conn is not None:
+            headers['command'] += f' and master_node={ledger_conn}'
+
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
