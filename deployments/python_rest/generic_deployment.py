@@ -46,13 +46,17 @@ def run_mqtt_client(anylog_conn:AnyLogConnector, anylog_configs:dict, exception:
     if 'mqtt_value_column_type' in anylog_configs:
         mqtt_value_column_type = anylog_configs['mqtt_value_column_type']
 
-    if generic_data_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=mqtt_broker, port=mqtt_port,
-                                          username=mqtt_user, password=mqtt_passwd, topic=mqtt_topic, db_name=mqtt_dbms,
-                                          table_name=mqtt_table,timestamp=mqtt_timestamp_column,
-                                          values={'value': {
-                                              'type': mqtt_value_column_type,
-                                              'value': mqtt_value_column
-                                          }},
-                                          logs=mqtt_log, user_agent=False, view_help=False,
-                                          exception=exception) is False:
-        print(f'Notice: Failed to add mqtt topic {mqtt_topic}')
+    output = generic_data_calls.get_msg_client(anylog_conn=anylog_conn, topic_name=mqtt_topic,
+                                               broker=f'{mqtt_broker}:{mqtt_port}', view_help=False, exception=True)
+
+    if output.replace('\n', '').replace('\r', '') in ['No such client subscription', 'No message client subscriptions']:
+        if generic_data_calls.run_mqtt_client(anylog_conn=anylog_conn, broker=mqtt_broker, port=mqtt_port,
+                                              username=mqtt_user, password=mqtt_passwd, topic=mqtt_topic, db_name=mqtt_dbms,
+                                              table_name=mqtt_table,timestamp=mqtt_timestamp_column,
+                                              values={'value': {
+                                                  'type': mqtt_value_column_type,
+                                                  'value': mqtt_value_column
+                                              }},
+                                              logs=mqtt_log, user_agent=False, view_help=False,
+                                              exception=exception) is False:
+            print(f'Notice: Failed to add mqtt topic {mqtt_topic}')

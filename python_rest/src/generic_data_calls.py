@@ -45,7 +45,7 @@ def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:
 
 
 def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, topic_name:str=None, broker:str=None,
-                   port:int=None, view_help:bool=False, exception:bool=False)->str:
+                   view_help:bool=False, exception:bool=False)->str:
     """
     View data coming in for message client
     :url:
@@ -54,8 +54,7 @@ def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, topi
         anylog_conn:AnyLogConnector - connection to AnyLog node via REST
         message_client_id:int - specific message client to view
         topic_name:str - MQTT topic name
-        broker:str - MQTT broker
-        port:int - MQTT port
+        broker:str - MQTT broker:port
         view_help:bool - whether to print help or not
         exception:bool - whether to print exception
     :params:
@@ -77,23 +76,21 @@ def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, topi
     else:
         if message_client_id is not None or topic_name is not None or broker is not None or port is not None:
             where_conditions = 'where'
+
             if message_client_id is not None and where_conditions == 'where':
-                headers['command'] += f' id={message_client_id}'
+                where_conditions += f' id={message_client_id}'
             elif message_client_id is not None:
-                headers['command'] += f' and id={message_client_id}'
+                where_conditions += f' and id={message_client_id}'
+
             if topic_name is not None and where_conditions == 'where':
-                headers['command'] += f' topic={topic_name}'
+                where_conditions += f' topic={topic_name}'
             elif topic_name is not None:
-                headers['command'] += f' and topic={topic_name}'
+                where_conditions += f' and topic={topic_name}'
 
             if broker is not None and where_conditions == 'where':
-                headers['command'] += f' broker={broker}'
+                where_conditions += f' broker={broker}'
             elif broker is not None:
-                headers['command'] += f' and broker={broker}'
-            if port is not None and where_conditions == 'where':
-                headers['command'] += f' port={port}'
-            elif port is not None:
-                headers['command'] += f' and port={port}'
+                where_conditions += f' and broker={broker}'
             headers['command'] += f' {where_conditions}'
 
         r, error = anylog_conn.get(headers=headers)
