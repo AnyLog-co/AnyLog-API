@@ -2,7 +2,7 @@ import requests
 
 
 class AnyLogConnector:
-    def __init__(self, conn:str, auth:tuple=None, timeout:int=30):
+    def __init__(self, conn:str, auth:str=None, timeout:int=30):
         """
         The following are the base support for AnyLog via REST
             - GET: extract information from AnyLog (information + queries)
@@ -98,5 +98,3 @@ class AnyLogConnector:
                 error = str(r.status_code)
                 r = False
         return r, error
-
-
