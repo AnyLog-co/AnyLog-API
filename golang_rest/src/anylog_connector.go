@@ -1,7 +1,7 @@
-package main
+package mypackage
 
 import (
-    "encoding/json"
+//    "encoding/json"
     "fmt"
     "net/http"
     "io/ioutil"
@@ -229,146 +229,122 @@ func Get(command string, network bool, remote_conn string,  exception bool) (boo
     return status, content
 }
 
-func Post(command string, topic string, remote_conn string,  payload string, exception bool) bool {
-    /**
-    Execute POST command against AnyLog. payload is required under the following conditions:
-        1. payload can be data that you want to add into AnyLog, in which case you should also have an
-        MQTT client of type REST running on said node
-        2. payload can be a policy you'd like to add into the blockchain
-        3. payload can be a policy you'd like to remove from the blockchain
-        note only works with Master, cannot remove a policy on a real blockchain like Ethereum.
-    :args:
-        command string - command to execute
-        topic string - topic correlated to the MQTT client using a REST
-        remote_conn string - if you'd like to forward the POST request (usually master node for declaring policies)
-        payload string - JSON string to be stored
-        exception:bool - whether to print exceptions
-    :param:
-        status bool
-        status_code int - REST status code
-    :return:
-        status
-    */
-    var status_code int = 200
-    var status bool = true
+//func Post(command string, topic string, remote_conn string,  payload string, exception bool) bool {
+//    /**
+//    Execute POST command against AnyLog. payload is required under the following conditions:
+//        1. payload can be data that you want to add into AnyLog, in which case you should also have an
+//        MQTT client of type REST running on said node
+//        2. payload can be a policy you'd like to add into the blockchain
+//        3. payload can be a policy you'd like to remove from the blockchain
+//        note only works with Master, cannot remove a policy on a real blockchain like Ethereum.
+//    :args:
+//        command string - command to execute
+//        topic string - topic correlated to the MQTT client using a REST
+//        remote_conn string - if you'd like to forward the POST request (usually master node for declaring policies)
+//        payload string - JSON string to be stored
+//        exception:bool - whether to print exceptions
+//    :param:
+//        status bool
+//        status_code int - REST status code
+//    :return:
+//        status
+//    */
+//    var status_code int = 200
+//    var status bool = true
+//
+//    // prepare POST connection
+//    client := &http.Client{
+//        Timeout: conn_info.timeout * time.Second,
+//    }
+//    if payload != "" {
+//        req, _ := http.NewRequest("POST", conn_info.conn, bytes.NewBuffer(payload))
+//    } else {
+//        req, _ := http.NewRequest("POST", conn_info.conn, nil)
+//    }
+//    if conn_info.user != "" || conn_info.password != "" {
+//        req.SetBasicAuth(conn_info.user, conn_info.password)
+//    }
+//
+//    // prepare Headers
+//    req.Header.Add("command", command)
+//    req.Header.Add("user-agent", "AnyLog/1.23")
+//    if remote_conn != "" {
+//        req.Header.Add("destination", remote_conn)
+//    }
+//    if topic != "" {
+//        req.Header.Add("topic", topic)
+//    }
+//
+//    // Execute POST command
+//    resp, err := client.Do(req)
+//    fmt.Sscan(resp.Status, &status_code)
+//    defer resp.Body.Close()
+//
+//    // if error in request - generate error message
+//    if err != nil {
+//        status = false
+//        output := printRESTError("POST", command, status_code, err)
+//        if exception == true{
+//            fmt.Println(output)
+//        }
+//    }
+//
+//    return status
+//
+//}
+//
+//func Put(dbms string, table string, mode string, payload string, exception bool) bool {
+//    /**
+//    Execute a PUT command against AnyLog - mainly used for Data
+//    :args:
+//        dbms string - logical database to store in
+//        table string - table to store data in
+//        mode string - whether to PUT data continuously (streaming) or one at a time (file)
+//        payload string - JSON string to be stored
+//        exception:bool - whether to print exceptions
+//    :param:
+//        status bool
+//        status_code int - REST status code
+//    :return:
+//        status
+//    */
+//    var status_code int = 200
+//    var status bool = true
+//
+//    // prepare POST connection
+//    client := &http.Client{
+//        Timeout: conn_info.timeout * time.Second,
+//    }
+//
+//    req, _ := http.NewRequest("PUT", conn_info.conn, bytes.NewBuffer(payload))
+//
+//    // prepare Headers
+//    req.Header.Add("type", "json")
+//    req.Header.Add("dbms", dbms)
+//    req.Header.Add("table", table)
+//    if mode == "streaming" || mode == "file" {
+//        req.Header.Add("mode", mode)
+//    } else {
+//        req.Header.Add("mode", "streaming")
+//    }
+//    req.Header.Add("Content-Type", "text/plain")
+//
+//
+//    // Execute POST command
+//    resp, err := client.Do(req)
+//    fmt.Sscan(resp.Status, &status_code)
+//    defer resp.Body.Close()
+//
+//    // if error in request - generate error message
+//    if err != nil {
+//        status = false
+//        output := printRESTError("PUT", command, status_code, err)
+//        if exception == true{
+//            fmt.Println(output)
+//        }
+//    }
+//
+//    return status
+//
+//}
 
-    // prepare POST connection
-    client := &http.Client{
-        Timeout: conn_info.timeout * time.Second,
-    }
-    if payload != "" {
-        req, _ := http.NewRequest("POST", conn_info.conn, bytes.NewBuffer(payload))
-    } else {
-        req, _ := http.NewRequest("POST", conn_info.conn, nil)
-    }
-    if conn_info.user != "" || conn_info.password != "" {
-        req.SetBasicAuth(conn_info.user, conn_info.password)
-    }
-
-    // prepare Headers
-    req.Header.Add("command", command)
-    req.Header.Add("user-agent", "AnyLog/1.23")
-    if remote_conn != "" {
-        req.Header.Add("destination", remote_conn)
-    }
-    if topic != "" {
-        req.Header.Add("topic", topic)
-    }
-
-    // Execute POST command
-    resp, err := client.Do(req)
-    fmt.Sscan(resp.Status, &status_code)
-    defer resp.Body.Close()
-
-    // if error in request - generate error message
-    if err != nil {
-        status = false
-        output := printRESTError("POST", command, status_code, err)
-        if exception == true{
-            fmt.Println(output)
-        }
-    }
-
-    return status
-
-}
-
-func Put(dbms string, table string, mode string, payload string, exception bool) bool {
-    /**
-    Execute a PUT command against AnyLog - mainly used for Data
-    :args:
-        dbms string - logical database to store in
-        table string - table to store data in
-        mode string - whether to PUT data continuously (streaming) or one at a time (file)
-        payload string - JSON string to be stored
-        exception:bool - whether to print exceptions
-    :param:
-        status bool
-        status_code int - REST status code
-    :return:
-        status
-    */
-    var status_code int = 200
-    var status bool = true
-
-    // prepare POST connection
-    client := &http.Client{
-        Timeout: conn_info.timeout * time.Second,
-    }
-
-    req, _ := http.NewRequest("PUT", conn_info.conn, bytes.NewBuffer(payload))
-
-    // prepare Headers
-    req.Header.Add("type", "json")
-    req.Header.Add("dbms", dbms)
-    req.Header.Add("table", table)
-    if mode == "streaming" || mode == "file" {
-        req.Header.Add("mode", mode)
-    } else {
-        req.Header.Add("mode", "streaming")
-    }
-    req.Header.Add("Content-Type", "text/plain")
-
-
-    // Execute POST command
-    resp, err := client.Do(req)
-    fmt.Sscan(resp.Status, &status_code)
-    defer resp.Body.Close()
-
-    // if error in request - generate error message
-    if err != nil {
-        status = false
-        output := printRESTError("PUT", command, status_code, err)
-        if exception == true{
-            fmt.Println(output)
-        }
-    }
-
-    return status
-
-}
-
-/**
-func main() {
-    var status bool
-    var content string
-
-    StatusConn("23.239.12.151:32349", "", "", 30)
-    status, content = Get("get status", false, "", true)
-    if status == true {
-        fmt.Println(content)
-    }
-
-    status, content = Get("sql edgex format=table select count(*) from rand_data", true, "", true)
-    if status == true {
-        fmt.Println(content)
-    }
-
-    status, content = Get("sql edgex stat=false and format=json select count(*) from rand_data", true, "", true)
-    if status == true { // convert JSON output to mapping format
-        var data map[string]interface{}
-        json.Unmarshal([]byte(content), &data)
-        fmt.Println("\n", data, "\n")
-    }
-}
-*/
