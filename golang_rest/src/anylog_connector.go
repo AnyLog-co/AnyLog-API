@@ -1,11 +1,13 @@
 package main
 
 import (
+    "encoding/json"
     "fmt"
     "net/http"
     "io/ioutil"
-    "mypackage"
     "time"
+
+    "mypackage"
 )
 
 type ConnInfo struct {
@@ -126,5 +128,12 @@ func main() {
     status, content = Get("sql edgex format=table select count(*) from rand_data", true, "", true)
     if status == true {
         fmt.Println(content)
+    }
+
+    status, content = Get("sql edgex stat=false and format=json select count(*) from rand_data", true, "", true)
+    if status == true { // convert JSON output to mapping format
+        var data map[string]interface{}
+        json.Unmarshal([]byte(content), &data)
+        fmt.Println("\n", data, "\n")
     }
 }
