@@ -3,6 +3,34 @@ import generic_get_calls
 import rest_support
 
 
+def activate_license_key(anylog_conn:AnyLogConnector, license_key:str, exception:bool=False)->bool:
+    """
+    Enable license key
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog
+        license_key:str - license key
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool - initially used as a list of True/False, but ultimately becomes True/False based on which has more
+        headers:dict - REST header information
+    :return:
+        status
+    """
+    status = True
+    headers = {
+        "command": f"set license where activation_key = {license_key}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    r, error = anylog_conn.post(headers=headers)
+    if r is False:
+        status = False
+        if exception is True:
+            rest_support.print_rest_error(call_type='POST', cmd="set liicense key", exception=exception)
+
+    return status
+
+
 def add_dict_params(anylog_conn:AnyLogConnector, content:dict, exception:bool=False):
     """
     Add parameters to dictionary
