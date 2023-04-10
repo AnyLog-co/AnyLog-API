@@ -1,6 +1,6 @@
 def generate_run_mqtt_client(broker:str, port:int, username:str=None, password:str=None, topic:str='*',
                              db_name:str=None, table_name:str=None, timestamp:str='timestamp', values:dict={},
-                             logs:bool=False, user_agent:bool=False)->str:
+                             logs:bool=False, user_agent:bool=False):
     """
     Generate `run mqtt client` command
     :args:
@@ -66,7 +66,7 @@ def generate_run_mqtt_client(broker:str, port:int, username:str=None, password:s
 
 
 def generate_query(db_name:str, query:str, format:str='json', stat:bool=True,
-                   include:str=None, extend:str=None, timezone:str='local')->str:
+                   include:str=None, extend:str=None, timezone:str='local'):
     """
     Generate SQL request
     :args:

@@ -5,7 +5,7 @@ import generic_get_calls
 import rest_support
 
 
-def __set_location(anylog_conn:AnyLogConnector, exception:bool=False)->bool:
+def __set_location(anylog_conn:AnyLogConnector, exception:bool=False):
     """
     Using `https://ipinfo.io/json` store location of node on node
     :sample:
@@ -47,7 +47,7 @@ def __set_location(anylog_conn:AnyLogConnector, exception:bool=False)->bool:
     return status
 
 
-def __get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str, str, str):
+def __get_location(anylog_conn:AnyLogConnector, exception:bool=False):
     """
     Extract information from `location_info` AnyLog parameter
     :args:
@@ -86,7 +86,7 @@ def __get_location(anylog_conn:AnyLogConnector, exception:bool=False)->(str, str
     return location, country, state, city
 
 
-def get_location(anylog_conn:AnyLogConnector, exception:bool=False)->dict:
+def get_location(anylog_conn:AnyLogConnector, exception:bool=False):
     """
     Process to get location information
     :args:

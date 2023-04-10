@@ -99,7 +99,7 @@ def print_rest_error(call_type:str, cmd:str, error:str):
     print(error_msg)
 
 
-def extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
+def extract_results(cmd:str, r:requests.get, exception:bool=False):
     """
     Given the results from a GET request, extract the results as JSON, then text if JSON fails
     :args:
@@ -125,7 +125,7 @@ def extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
 
 
 def generate_connection_command(conn_type:str, internal_ip:str, internal_port:int, external_ip:str=None,
-                                external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30)->str:
+                                external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30):
     """
     Generate connection to network command
     :args:

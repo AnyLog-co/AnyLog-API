@@ -4,7 +4,7 @@ import database_support
 import rest_support
 
 
-def get_databases(anylog_conn:AnyLogConnector, json_format:bool=False, view_help:bool=False, exception:bool=False)->str:
+def get_databases(anylog_conn:AnyLogConnector, json_format:bool=False, view_help:bool=False, exception:bool=False):
     """
     Get list of databases
     :url:
@@ -43,7 +43,7 @@ def get_databases(anylog_conn:AnyLogConnector, json_format:bool=False, view_help
 
 
 def get_tables(anylog_conn:AnyLogConnector, db_name:str='*', json_format:bool=True, view_help:bool=False,
-               exception:bool=False)->str:
+               exception:bool=False):
     """
     View list of tables in database (if set)
     :url:
@@ -83,7 +83,7 @@ def get_tables(anylog_conn:AnyLogConnector, db_name:str='*', json_format:bool=Tr
 
 
 def connect_database(anylog_conn:AnyLogConnector, db_name:str, db_type:str='sqlite', host:str=None, port:int=None,
-                     user:str=None, password:str=None, memory:bool=False, view_help:bool=False, exception:bool=False)->bool:
+                     user:str=None, password:str=None, memory:bool=False, view_help:bool=False, exception:bool=False):
     """
     connect to logical database
     :url:
@@ -126,7 +126,7 @@ def connect_database(anylog_conn:AnyLogConnector, db_name:str, db_type:str='sqli
 
 
 def create_table(anylog_conn:AnyLogConnector, db_name:str, table_name:str, view_help:bool=False,
-                 exception:bool=False)->bool:
+                 exception:bool=False):
     """
     create table within a given database - as long as the `CREATE TABLE` statement exists in the blockchain
     :args:

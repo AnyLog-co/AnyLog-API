@@ -2,7 +2,7 @@ from anylog_connector import AnyLogConnector
 import database_calls
 
 
-def check_db_exists(anylog_conn:AnyLogConnector, db_name:str, view_help:bool=False, exception:bool=False)->bool:
+def check_db_exists(anylog_conn:AnyLogConnector, db_name:str, view_help:bool=False, exception:bool=False):
     """
     check if database exists
     :args:
@@ -27,7 +27,7 @@ def check_db_exists(anylog_conn:AnyLogConnector, db_name:str, view_help:bool=Fal
 
 
 def check_table_exists(anylog_conn:AnyLogConnector, db_name:str, table_name:str, local:bool=False, view_help:bool=False,
-                       exception:bool=False)->bool:
+                       exception:bool=False):
     """
     check if database exists
     :args:
@@ -63,7 +63,7 @@ def check_table_exists(anylog_conn:AnyLogConnector, db_name:str, table_name:str,
 
 
 def connect_dbms_call(db_name:str, db_type:str, host:str=None, port:int=None, username:str=None, password:str=None,
-                      memory:bool=False)->str:
+                      memory:bool=False):
     """
     Generate `connect dbms` command
     :args:

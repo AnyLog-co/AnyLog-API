@@ -7,7 +7,7 @@ import blockchain_support
 
 
 def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockchain_destination:str, sync_time:str,
-                    ledger_conn:str, view_help:bool=False, exception:bool=False)->bool:
+                    ledger_conn:str, view_help:bool=False, exception:bool=False):
     """
     Enable automatic blockchain sync process
     :url:
@@ -48,7 +48,7 @@ def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockcha
 
 
 def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:dict=None, bring_conditions:str=None,
-               bring_values:str=None, separator:str=None, view_help:bool=False, exception:bool=False)->str:
+               bring_values:str=None, separator:str=None, view_help:bool=False, exception:bool=False):
     """
     Execute `blockchain get` command
     :url:
@@ -91,7 +91,7 @@ def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:di
     return policies
 
 
-def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False, exception:bool=False)->bool:
+def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False, exception:bool=False):
     """
     Prepare a policy for deploying on blockchain
     :args:
@@ -116,7 +116,6 @@ def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False
     }
     payload = f'<new_policy={policy}>'
 
-
     if view_help is True:
         generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
@@ -132,7 +131,7 @@ def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False
 
 
 def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool=True, platform:str=None,
-              ledger_conn:str=None, view_help:bool=False,  exception:bool=False)->bool:
+              ledger_conn:str=None, view_help:bool=False,  exception:bool=False):
     """
     Post policy to blockchain
     :url:

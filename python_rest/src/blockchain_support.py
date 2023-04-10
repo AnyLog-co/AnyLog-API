@@ -2,7 +2,7 @@ import support
 
 
 def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_conditions:str=None,
-                            bring_values:str=None, separator:str=None)->str:
+                            bring_values:str=None, separator:str=None):
     """
     Generate `blockchain get` command based on params
     :args:
@@ -53,7 +53,7 @@ def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_c
     return command
 
 
-def generate_blockchain_insert(local_publish:bool=True, platform:str=None, ledger_conn:str=None)->str:
+def generate_blockchain_insert(local_publish:bool=True, platform:str=None, ledger_conn:str=None):
     """
     Generate blockchain insert statement
     :sample command:
@@ -86,7 +86,7 @@ def generate_blockchain_insert(local_publish:bool=True, platform:str=None, ledge
 def node_policy(policy_type:str, name:str, company:str, external_ip:str, local_ip:str, anylog_server_port:int,
                 anylog_rest_port:int, hostname:str=None, member:int=None, cluster_id:str=None,
                 anylog_broker_port:int=None, location:str="Unknown", country:str="Unknown", state:str="Unknown",
-                city:str="Unknown", exception:bool=False)->str:
+                city:str="Unknown", exception:bool=False):
     """
     Generate policy for:
         - master
@@ -168,7 +168,7 @@ def node_policy(policy_type:str, name:str, company:str, external_ip:str, local_i
 
 
 def cluster_policy(name:str, company:str, parent_cluster:str=None, db_name:str=None, table_name:str=None,
-                   exception:bool=False)->str:
+                   exception:bool=False):
     """
     Generate a cluster policy
     :sample cluster:
@@ -214,7 +214,7 @@ def cluster_policy(name:str, company:str, parent_cluster:str=None, db_name:str=N
     return support.json_dumps(content=policy, indent=4, exception=exception)
 
 
-def table_policy(name:str, db_name:str, create_stmt:str, exception:bool=False)->str:
+def table_policy(name:str, db_name:str, create_stmt:str, exception:bool=False):
     """
     Create table policy
     :sample table:
@@ -258,7 +258,7 @@ def table_policy(name:str, db_name:str, create_stmt:str, exception:bool=False)->
     return support.json_dumps(content=policy, indent=4, exception=exception)
 
 
-def anmp_policy(policy_id:str, content:dict, exception:bool=False)->str:
+def anmp_policy(policy_id:str, content:dict, exception:bool=False):
     """
     The ANMP policy is used for updating information for a given policy. Examples include:
       - updating an IP
@@ -291,7 +291,7 @@ def anmp_policy(policy_id:str, content:dict, exception:bool=False)->str:
     return support.json_dumps(content=policy, indent=4, exception=exception)
 
 
-def generic_policy(policy_type:str, content:dict, exception:bool=False)->str:
+def generic_policy(policy_type:str, content:dict, exception:bool=False):
     """
     Generic policy creator
     :args:

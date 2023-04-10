@@ -4,7 +4,7 @@ from anylog_connector import AnyLogConnector
 import rest_support
 
 
-def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->bool:
+def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False):
     """
     check if node is running
     :url:
@@ -52,7 +52,7 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
     return status
 
 
-def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
+def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False):
     """
     Extract AnyLog dictionary
     :url:
@@ -90,7 +90,7 @@ def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help
     return anylog_dict
 
 
-def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
+def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False):
     """
     view running / not declared processes
     :url:
@@ -128,7 +128,7 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
     return processes_dict
 
 
-def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
+def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False):
     """
     Get network information
     :args:
@@ -166,7 +166,7 @@ def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_he
     return connections
 
 
-def get_hostname(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->str:
+def get_hostname(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False):
     """
     Get hostname
     :args:
@@ -198,7 +198,7 @@ def get_hostname(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bo
     return hostname
 
 
-def get_operator(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->str:
+def get_operator(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False):
     """
     view data comming into operator node
     :url:
@@ -232,7 +232,7 @@ def get_operator(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bo
     return output
 
 
-def get_publisher(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->str:
+def get_publisher(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False):
     """
     view data coming into publisher node
     :args:
@@ -264,7 +264,7 @@ def get_publisher(anylog_conn:AnyLogConnector, view_help:bool=False, exception:b
     return output
 
 
-def get_streaming(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
+def get_streaming(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False):
     """
     view streaming
     :url:

@@ -1,7 +1,7 @@
 import ast
 import json
 
-def __format_merged_dict(configs:dict)->dict:
+def __format_merged_dict(configs:dict):
     """
     iterate through configs and update values to correct type
     :args:
@@ -22,7 +22,7 @@ def __format_merged_dict(configs:dict)->dict:
     return configs
 
 
-def json_dumps(content:dict, indent:int=4, exception:bool=False)->str:
+def json_dumps(content:dict, indent:int=4, exception:bool=False):
     """
     Convert dict to JSON string
     :args:
@@ -40,7 +40,7 @@ def json_dumps(content:dict, indent:int=4, exception:bool=False)->str:
     return content
 
 
-def json_loads(content:str, exception:bool=False)->dict:
+def json_loads(content:str, exception:bool=False):
     """
     Convert JSON-string to dict
     :args:
@@ -80,9 +80,9 @@ def convert_literal(content, exception:bool=False):
     return content
 
 
-def dictionary_merge(file_config:dict, anylog_config:dict, exception:bool=False)->dict:
+def dictionary_merge(file_config:dict, anylog_config:dict, exception:bool=False):
     """
-    Merg dictionary params
+    Merge dictionary params
     :args:
        file_config:dict - file configurations
        anylog_config:dict - AnyLog dictionary

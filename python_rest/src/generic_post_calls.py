@@ -3,7 +3,7 @@ import generic_get_calls
 import rest_support
 
 
-def activate_license_key(anylog_conn:AnyLogConnector, license_key:str, exception:bool=False)->bool:
+def activate_license_key(anylog_conn:AnyLogConnector, license_key:str, exception:bool=False):
     """
     Enable license key
     :args:
@@ -72,7 +72,7 @@ def add_dict_params(anylog_conn:AnyLogConnector, content:dict, exception:bool=Fa
 
 def network_connect(anylog_conn:AnyLogConnector, conn_type:str, internal_ip:str, internal_port:int,
                     external_ip:str=None, external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30,
-                    view_help:bool=False, exception:bool=False)->bool:
+                    view_help:bool=False, exception:bool=False):
     """
     Connect to a network
     :args: 
@@ -126,7 +126,7 @@ def network_connect(anylog_conn:AnyLogConnector, conn_type:str, internal_ip:str,
     return status
 
 
-def run_scheduler_1(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->bool:
+def run_scheduler_1(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False):
     """
     Execute `run scheduler 1` command
     :url:
@@ -163,7 +163,7 @@ def run_scheduler_1(anylog_conn:AnyLogConnector, view_help:bool=False, exception
 
 
 def declare_schedule_process(anylog_conn:AnyLogConnector, time:str, task:str, start:str=None, name:str=None,
-                             view_help:bool=False, exception:bool=False)->bool:
+                             view_help:bool=False, exception:bool=False):
     """
     Declare new scheduled process
     :url:
@@ -213,7 +213,7 @@ def declare_schedule_process(anylog_conn:AnyLogConnector, time:str, task:str, st
 
 
 def run_scheduler(anylog_conn:AnyLogConnector, schedule_number:int=None, view_help:bool=False,
-                  exception:bool=False)->bool:
+                  exception:bool=False):
     """
     invoke a scheduled process
     :url:
@@ -256,7 +256,7 @@ def run_scheduler(anylog_conn:AnyLogConnector, schedule_number:int=None, view_he
 
 def set_buffer_threshold(anylog_conn:AnyLogConnector, db_name:str=None, table_name:str=None, time:str='60 seconds',
                          volume:str='10KB', write_immediate:bool=False, view_help:bool=False,
-                         exception:bool=False)->bool:
+                         exception:bool=False):
     """
     Setting the buffer threshold
     :url:
@@ -312,7 +312,7 @@ def set_buffer_threshold(anylog_conn:AnyLogConnector, db_name:str=None, table_na
     return status
 
 
-def enable_streamer(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->bool:
+def enable_streamer(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False):
     """
     run streamer
     :url:
@@ -350,7 +350,7 @@ def enable_streamer(anylog_conn:AnyLogConnector, view_help:bool=False, exception
 def run_publisher(anylog_conn:AnyLogConnector, db_name:str='file_name[0]', table_name:str='file_name[1]',
                   watch_dir:str=None, bkup_dir:str=None, error_dir:dict=None, delete_json:bool=False,
                   delete_sql:bool=True, compress_json:bool=True, compress_sql:bool=False,
-                  ledger_conn:str=None, view_help:bool=False, exception:bool=False)->bool:
+                  ledger_conn:str=None, view_help:bool=False, exception:bool=False):
     """
     Initiate `run publisher`
     :url:
@@ -424,7 +424,7 @@ def run_publisher(anylog_conn:AnyLogConnector, db_name:str='file_name[0]', table
 
 def run_operator(anylog_conn:AnyLogConnector, operator_id:str, create_table:bool=True, update_tsd_info:bool=True,
                  archive:bool=True, compress_json:bool=True, compress_sql:bool=True, threads:int=3,
-                 ledger_conn: str = None, view_help:bool=False, exception:bool=False)->bool:
+                 ledger_conn: str = None, view_help:bool=False, exception:bool=False):
     """
     Run operator process
     :url:
@@ -470,7 +470,7 @@ def run_operator(anylog_conn:AnyLogConnector, operator_id:str, create_table:bool
     return status
 
 
-def execute_process(anylog_conn:AnyLogConnector, file_path:str, view_help:bool=False, exception:bool=False)->bool:
+def execute_process(anylog_conn:AnyLogConnector, file_path:str, view_help:bool=False, exception:bool=False):
     """
     Execute an AnyLog file via REST - file must be accessible on the AnyLog instance
     :url:

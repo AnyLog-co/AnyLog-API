@@ -5,7 +5,7 @@ import rest_support
 import support
 
 
-def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->bool:
+def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False):
     """
     Check whether partitions exist
     :url:
@@ -45,7 +45,7 @@ def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:
 
 
 def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, topic_name:str=None, broker:str=None,
-                   view_help:bool=False, exception:bool=False)->str:
+                   view_help:bool=False, exception:bool=False):
     """
     View data coming in for message client
     :url:
@@ -102,7 +102,7 @@ def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, topi
     return output
 
 
-def put_data(anylog_conn:AnyLogConnector, db_name:str, table_name:str, payloads:list, exception:bool=False)->bool:
+def put_data(anylog_conn:AnyLogConnector, db_name:str, table_name:str, payloads:list, exception:bool=False):
     """
     Store data in AnyLog via PUT command
     :url:
@@ -138,7 +138,7 @@ def put_data(anylog_conn:AnyLogConnector, db_name:str, table_name:str, payloads:
     return status
 
 
-def post_data(anylog_conn:AnyLogConnector, topic:str, payloads:list, exception:bool=False)->bool:
+def post_data(anylog_conn:AnyLogConnector, topic:str, payloads:list, exception:bool=False):
     """
     Store data in AnyLog via POST command
     :url:
@@ -177,7 +177,7 @@ def post_data(anylog_conn:AnyLogConnector, topic:str, payloads:list, exception:b
 
 def run_mqtt_client(anylog_conn:AnyLogConnector, broker:str, port:int, username:str=None, password:str=None,
                     topic:str='*', db_name:str=None, table_name:str=None, timestamp:str='timestamp', values:dict={},
-                    logs:bool=False, user_agent:bool=False, view_help:bool=False, exception:bool=False)->bool:
+                    logs:bool=False, user_agent:bool=False, view_help:bool=False, exception:bool=False):
     """
     Generate `run mqtt client` command
     :url:
@@ -230,7 +230,7 @@ def run_mqtt_client(anylog_conn:AnyLogConnector, broker:str, port:int, username:
 
 
 def set_partitions(anylog_conn:AnyLogConnector, db_name:str, table_name:str='*', partition_column:str='timestamp',
-                   partition_interval:str='day', view_help:bool=False, exception:bool=False)->bool:
+                   partition_interval:str='day', view_help:bool=False, exception:bool=False):
     """
     Set partitions
     :url:
@@ -272,7 +272,7 @@ def set_partitions(anylog_conn:AnyLogConnector, db_name:str, table_name:str='*',
 
 def query_data(anylog_conn:AnyLogConnector, db_name:str, query:str, destination:str='network', format:str='json',
                stat:bool=True, include:str=None, extend:str=None, timezone:str='local', view_help:bool=False,
-               exception:bool=False)->str:
+               exception:bool=False):
     """
     SQL query execution via REST
     :url: 
