@@ -35,9 +35,9 @@ with tqdm(total=len(extensions)) as pbar:
     for i, ext in enumerate(extensions):
         ext.name = ext.name.replace(".py", ".so")
         setup(
-            name="anylog-api",
+            name="anylog_api",
             author_email="info@anylog.co",
-            description="Copwrite by AnyLog Co.",
+            description="Copywrite by AnyLog Co.",
             long_description="API Development Tool",
             url="https://anylog.co",
             #packages=PACKAGES,
