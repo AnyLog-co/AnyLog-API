@@ -19,7 +19,7 @@ class AnyLogConnector:
         self.auth = auth
         self.timeout = timeout
 
-    def get(self, headers:dict)->(str, str):
+    def get(self, headers:dict):
         """
         requests GET command
         :args:
