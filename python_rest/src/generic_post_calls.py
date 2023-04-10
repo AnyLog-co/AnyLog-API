@@ -337,7 +337,7 @@ def enable_streamer(anylog_conn:AnyLogConnector, view_help:bool=False, exception
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_configs, command=headers['command'], exception=exception)
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         r, error = anylog_conn.post(headers=headers)
