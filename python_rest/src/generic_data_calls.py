@@ -44,62 +44,66 @@ def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:
     return status
 
 
-def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, topic_name:str=None, broker:str=None,
-                   view_help:bool=False, exception:bool=False):
-    """
-    View data coming in for message client
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/monitoring%20calls.md#get-msg-clients
-    :args:
-        anylog_conn:AnyLogConnector - connection to AnyLog node via REST
-        message_client_id:int - specific message client to view
-        topic_name:str - MQTT topic name
-        broker:str - MQTT broker:port
-        view_help:bool - whether to print help or not
-        exception:bool - whether to print exception
-    :params:
-        output:str - `get msg client results`
-        headers:dict - REST header information
-        r:requests.get, error:str - results from REST GET request
-    :return:
-        if view_hep is True - None
-        else - output from command
-    """
-    output = None
-    headers = {
-        'command': 'get msg client',
-        'User-Agent': 'AnyLog/1.23'
-    }
-
-    if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
-    else:
-        if message_client_id is not None or topic_name is not None or broker is not None or port is not None:
-            where_conditions = 'where'
-
-            if message_client_id is not None and where_conditions == 'where':
-                where_conditions += f' id={message_client_id}'
-            elif message_client_id is not None:
-                where_conditions += f' and id={message_client_id}'
-
-            if topic_name is not None and where_conditions == 'where':
-                where_conditions += f' topic={topic_name}'
-            elif topic_name is not None:
-                where_conditions += f' and topic={topic_name}'
-
-            if broker is not None and where_conditions == 'where':
-                where_conditions += f' broker={broker}'
-            elif broker is not None:
-                where_conditions += f' and broker={broker}'
-            headers['command'] += f' {where_conditions}'
-
-        r, error = anylog_conn.get(headers=headers)
-        if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif not isinstance(r, bool):
-            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
-
-    return output
+# def get_msg_client(anylog_conn:AnyLogConnector, message_client_id:int=None, topic_name:str=None, broker:str=None,
+#                    view_help:bool=False, exception:bool=False):
+#     """
+#     View data coming in for message client
+#     :url:
+#         https://github.com/AnyLog-co/documentation/blob/master/monitoring%20calls.md#get-msg-clients
+#     :args:
+#         anylog_conn:AnyLogConnector - connection to AnyLog node via REST
+#         message_client_id:int - specific message client to view
+#         topic_name:str - MQTT topic name
+#         broker:str - MQTT broker:port
+#         view_help:bool - whether to print help or not
+#         exception:bool - whether to print exception
+#     :params:
+#         output:str - `get msg client results`
+#         headers:dict - REST header information
+#         r:requests.get, error:str - results from REST GET request
+#     :return:
+#         if view_hep is True - None
+#         else - output from command
+#     """
+#     output = None
+#     headers = {
+#         'command': 'get msg client',
+#         'User-Agent': 'AnyLog/1.23'
+#     }
+#
+#     if broker is not None:
+#         broker, port = broker.split('@')[-1].split(':')
+#
+#
+#     if view_help is True:
+#         generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+#     else:
+#         if message_client_id is not None or topic_name is not None or broker is not None or port is not None:
+#             where_conditions = 'where'
+#
+#             if message_client_id is not None and where_conditions == 'where':
+#                 where_conditions += f' id={message_client_id}'
+#             elif message_client_id is not None:
+#                 where_conditions += f' and id={message_client_id}'
+#
+#             if topic_name is not None and where_conditions == 'where':
+#                 where_conditions += f' topic={topic_name}'
+#             elif topic_name is not None:
+#                 where_conditions += f' and topic={topic_name}'
+#
+#             if broker is not None and where_conditions == 'where':
+#                 where_conditions += f' broker={broker}'
+#             elif broker is not None:
+#                 where_conditions += f' and broker={broker}'
+#             headers['command'] += f' {where_conditions}'
+#
+#         r, error = anylog_conn.get(headers=headers)
+#         if r is False and exception is True:
+#             rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+#         elif not isinstance(r, bool):
+#             output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+#
+#     return output
 
 
 def put_data(anylog_conn:AnyLogConnector, db_name:str, table_name:str, payloads:list, exception:bool=False):
