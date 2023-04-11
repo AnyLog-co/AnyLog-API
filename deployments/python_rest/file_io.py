@@ -99,7 +99,7 @@ def read_configs(config_file:str, exception:bool=False)->dict:
 
     if os.path.isfile(full_path):
         if file_extension == 'env':
-            configs = __read_dotenv(config_file=config_file, exception=exception)
+            configs = __read_dotenv(config_file=full_path, exception=exception)
         elif file_extension in ['.yml', '.yaml']:
             pass
         elif exception is True:

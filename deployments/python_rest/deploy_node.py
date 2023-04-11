@@ -1,12 +1,15 @@
 import argparse
 import os
+import re
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
 
 from anylog_connector import AnyLogConnector
 import generic_get_calls
+import generic_post_calls
 
 from file_io import read_configs
+from master import deploy_master
 
 def validate_conn_pattern(conn:str)->str:
     """
@@ -30,6 +33,7 @@ def validate_conn_pattern(conn:str)->str:
         raise argparse.ArgumentTypeError(f'Invalid REST connection format: {conn}')
 
     return conn
+
 
 def main():
     """
@@ -60,6 +64,7 @@ def main():
     parser.add_argument('rest_conn', type=validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument('config_file', type=str, default=config_file, help='Configuration file to be utilized')
     parser.add_argument('--timeout', type=int, default=30, help='REST timeout')
+    parser.add_argument('--license-key', type=str, default=None, help='AnyLog License Key')
     parser.add_argument('-e', '--exception', type=bool, nargs='?', const=True, default=False, help='Whether to print errors')
     args = parser.parse_args()
 
@@ -76,8 +81,35 @@ def main():
     if not generic_get_calls.get_status(anylog_conn=anylog_conn, json_format=True, view_help=False, exception=args.exception):
         print(f"Failed to connect to node against {conn}. Cannot Continue...")
         exit(1)
+    if 'LICENSE_KEY' not in configuration and args.license_key is None:
+        print(f"Unable to locate license key, Cannot continue...")
+        exit(1)
+    else:
+        license_key = args.license_key
+        if 'LICENSE_KEY' in configuration:
+            license_key = configuration['LICENSE_KEY']
+        count = 0
+        is_license = generic_get_calls.get_license(anylog_conn=anylog_conn, view_help=False, exception=args.exception)
+        while is_license is False and count < 2:
+            generic_post_calls.activate_license_key(anylog_conn=anylog_conn, license_key=license_key, exception=args.exception)
+            is_license = generic_get_calls.get_license(anylog_conn=anylog_conn, view_help=False, exception=args.exception)
+            count += 1
+        if is_license is False:
+            print(f"Failed to set AnyLog license with license: {license_key}")
+            exit(1)
+        else:
+            print("AnyLog has been activated")
 
+    if 'NODE_TYPE' in configuration and configuration['NODE_TYPE'] in ['master', 'standalone', 'standalone-publisher']:
+        deploy_master(anylog_conn=anylog_conn, configuration=configuration, exception=args.exception)
+    if 'NODE_TYPE' in configuration and configuration['NODE_TYPE'] in ['operator', 'standalone']:
+        pass
+    if 'NODE_TYPE' in configuration and configuration['NODE_TYPE'] in ['publisher', 'standalone-publisher']:
+        pass
+    if 'NODE_TYPE' in configuration and configuration['NODE_TYPE'] == 'query':
+        pass
 
+    print(generic_get_calls.get_processes(anylog_conn=anylog_conn, json_format=False, view_help=False, exception=args.exception))
 
 
 if __name__ == '__main__':

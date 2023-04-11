@@ -4,3 +4,7 @@ __pycache__/
 *.pem
 .fleet/
 go.mod
+python_rest/src/*.c
+build/
+dist/
+anylog_node.egg-info

@@ -26,7 +26,7 @@ def activate_license_key(anylog_conn:AnyLogConnector, license_key:str, exception
     if r is False:
         status = False
         if exception is True:
-            rest_support.print_rest_error(call_type='POST', cmd="set liicense key", exception=exception)
+            rest_support.print_rest_error(call_type='POST', cmd="set liicense key", error=error)
 
     return status
 

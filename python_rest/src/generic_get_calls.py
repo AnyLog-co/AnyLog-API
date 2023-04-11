@@ -12,7 +12,7 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
     :args:
         anylog_conn:AnyLogConnector - AnyLog REST connection information
         json_format:bool - whether to get the results in JSON format
-        view_:bool - whether to get help information for node
+        view_help:bool - whether to get help information for node
         exception:bool - whether to print exceptions
     :params:
         status:bool
@@ -37,20 +37,56 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
     else:
         r, error = anylog_conn.get(headers=headers)
         if r is False:
-            status = False
             if exception is True:
                 rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
             output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
             if isinstance(output, dict):
-                output = output['status']
+                output = output['Status']
             if 'running' in output and 'not' not in output:
+                status = True
+
+    return status
+
+
+def get_license(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False):
+    """
+    Validate if license key
+    :url:
+    :args:
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
+        view_help:bool - whether to get help information for node
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - has license key that's activated
+        False - doesn't have a valid license key
+        help - None
+    """
+    status = None
+    headers = {
+        "command": "get license",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if view_help is True:
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        r, error = anylog_conn.get(headers=headers)
+        if r is False:
+            if exception is True:
+                rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+        elif not isinstance(r, bool):
+            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            if 'Status: Activation license is missing' not in output:
                 status = True
             else:
                 status = False
 
     return status
-
 
 def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False):
     """
