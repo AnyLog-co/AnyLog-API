@@ -49,6 +49,17 @@ def __read_dotenv(config_file: str, exception: bool = False) -> dict:
     return configs
 
 
+def __lower_case(configs:dict):
+    """
+    Convert configuration to lower case
+    :args:
+        configs:dict - configurations to convert to lower case
+    :return:
+       configs with lower case keys
+    """
+    return {key.lower(): value for key, value in configs.items()}
+
+
 def generic_write(file_path:str, content:str, exception:bool=False)->bool:
     """
     Given a file path and content (string) write it to file
@@ -106,5 +117,8 @@ def read_configs(config_file:str, exception:bool=False)->dict:
             print(f'Invalid extension type: {file_extension}')
     elif exception is True:
         print(f"Failed to locate configuration file: {config_file}")
+
+    if configs != {}:
+        configs = __lower_case(configs=configs)
 
     return configs

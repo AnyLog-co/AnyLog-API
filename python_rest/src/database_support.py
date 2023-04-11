@@ -80,14 +80,15 @@ def connect_dbms_call(db_name:str, db_type:str, host:str=None, port:int=None, us
         command
     """
     command = f'connect dbms {db_name} where type={db_type.lower()}'
-    if host is not None:
-        command += f' and ip={host}'
-    if port is not None:
-        command += f' and port={port}'
-    if username is not None:
-        command += f' and user={username}'
-    if password is not None:
-        command += f' and password={password}'
+    if db_type.lower() != 'sqlite':
+        if host is not None:
+            command += f' and ip={host}'
+        if port is not None:
+            command += f' and port={port}'
+        if username is not None:
+            command += f' and user={username}'
+        if password is not None:
+            command += f' and password={password}'
     if memory is True:
         command += f' and memory=true'
 
