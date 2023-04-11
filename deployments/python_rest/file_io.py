@@ -93,14 +93,18 @@ def read_configs(config_file:str, exception:bool=False)->dict:
     :return:
         configs
     """
+    full_path = os.path.expanduser(os.path.expandvars(config_file))
     file_extension = config_file.rsplit('.', 1)[-1]
     configs = {}
 
-    if file_extension == 'env':
-        configs = __read_dotenv(config_file=config_file, exception=exception)
-    elif file_extension in ['.yml', '.yaml']:
-        pass
-    else:
-        print(f'Invalid extension type: {file_extension}')
+    if os.path.isfile(full_path):
+        if file_extension == 'env':
+            configs = __read_dotenv(config_file=config_file, exception=exception)
+        elif file_extension in ['.yml', '.yaml']:
+            pass
+        elif exception is True:
+            print(f'Invalid extension type: {file_extension}')
+    elif exception is True:
+        print(f"Failed to locate configuration file: {config_file}")
 
     return configs
