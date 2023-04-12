@@ -142,6 +142,7 @@ def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool
         local_publish:bool - A true/false value to determine an update to the local copy of the ledger
         platform:str - connected blockchain platform
         ledger_conn:str - The IP and Port value of a master node
+        exception:bool - whether to print exception
     :params:
         status:bool
         headers:dict - headers for REST request

@@ -1,26 +1,6 @@
 import ast
 import json
 
-def __format_merged_dict(configs:dict):
-    """
-    iterate through configs and update values to correct type
-    :args:
-        configs:dict - dictionary to iterate through
-    else:
-        updated configs
-    """
-    for key in configs:
-        if configs[key].lower() == 'true':
-            configs[key] = True
-        elif configs[key].lower() == 'false':
-            configs[key] = False
-        else:
-            try:
-                configs[key] = int(configs[key])
-            except:
-                pass
-    return configs
-
 
 def json_dumps(content:dict, indent:int=4, exception:bool=False):
     """
@@ -36,7 +16,8 @@ def json_dumps(content:dict, indent:int=4, exception:bool=False):
         content = json.dumps(content, indent=indent)
     except Exception as error:
         if exception is True:
-            print(f'Failed to convert content into JSON string')
+            print(f'Failed to convert content into JSON string (Error: {error})')
+
     return content
 
 
@@ -80,7 +61,7 @@ def convert_literal(content, exception:bool=False):
     return content
 
 
-def dictionary_merge(file_config:dict, anylog_config:dict, exception:bool=False):
+def dictionary_merge(file_config:dict, anylog_config:dict):
     """
     Merge dictionary params
     :args:
@@ -102,6 +83,17 @@ def dictionary_merge(file_config:dict, anylog_config:dict, exception:bool=False)
         if param not in full_configs:
             full_configs[param] = anylog_config[param]
 
-    return __format_merged_dict(configs=full_configs)
+    for key in full_configs:
+        if full_configs[key].lower() == 'true':
+            full_configs[key] = True
+        elif full_configs[key].lower() == 'false':
+            full_configs[key] = False
+        else:
+            try:
+                full_configs[key] = int(full_configs[key])
+            except:
+                pass
 
+
+    return full_configs
 
