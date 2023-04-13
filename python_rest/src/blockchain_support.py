@@ -46,9 +46,8 @@ def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_c
         if bring_values is not None:
             bring_stmt += f" {bring_values}"
         command += " " + bring_stmt
-
-    if separator is not None:
-        command += f" separator={separator}"
+        if separator is not None:
+            command += f" separator={separator}"
 
     return command
 
@@ -164,7 +163,7 @@ def node_policy(policy_type:str, name:str, company:str, external_ip:str, local_i
     if city is not None:
         policy[policy_type]["city"] = city
 
-    return support.json_dumps(content=policy, indent=4, exception=exception)
+    return support.json_dumps(content=policy, indent=0, exception=exception)
 
 
 def cluster_policy(name:str, company:str, parent_cluster:str=None, db_name:str=None, table_name:str=None,
