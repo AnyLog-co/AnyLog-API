@@ -1,5 +1,4 @@
 import os
-import json
 import sys
 
 DIR_PATH = os.path.expanduser(os.path.expandvars("$HOME/AnyLog-API/python_rest/src"))
@@ -10,6 +9,7 @@ import database_deployment
 import blockchain_calls
 import blockchain_support
 from deployment_support import  node_location
+import database_calls
 
 def deploy_node(anylog_conn:AnyLogConnector, configuration:dict, exception:bool=False):
     """
@@ -47,15 +47,16 @@ def deploy_node(anylog_conn:AnyLogConnector, configuration:dict, exception:bool=
         "name": node_name,
         "ip": configuration['external_ip'],
         "local_ip": configuration['ip'],
-        "anylog_server_port": configuration['anylog_server_port'],
-        "anylog_rest_port": configuration['anylog_rest_port']
+        "port": configuration['anylog_server_port'],
+        "rest_port": configuration['anylog_rest_port']
     }
 
-    database_deployment.declare_database(anylog_conn=anylog_conn, db_name='blockchain', anylog_configs=configuration,
-                                         exception=exception)
-
-    database_deployment.declare_table(anylog_conn=anylog_conn, db_name='blockchain', table_name='ledger',
-                                      exception=exception)
+    if 'blockchain' not in database_calls.get_databases(anylog_conn=anylog_conn, json_format=True, view_help=False, exception=exception):
+        database_deployment.declare_database(anylog_conn=anylog_conn, db_name='blockchain', anylog_configs=configuration,
+                                             exception=exception)
+        if 'ledger' not in database_calls.get_tables(anylog_conn=anylog_conn, db_name='ledger', json_format=True, view_help=False, exception=exception):
+            database_deployment.declare_table(anylog_conn=anylog_conn, db_name='blockchain', table_name='ledger',
+                                              exception=exception)
 
     if 'system_query' in configuration and configuration['system_query'] is True:
         database_deployment.declare_database(anylog_conn=anylog_conn, db_name='system_query', anylog_configs=configuration, exception=exception)
