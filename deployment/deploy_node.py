@@ -2,6 +2,7 @@ import argparse
 import os
 
 import anylog_connector
+import blockchain
 import generic_get
 import generic_post
 import deployment_support
@@ -11,6 +12,23 @@ ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')
 
 
 def main():
+    """
+    :positional arguments:
+        rest_conn             REST connection information (example: {user}:{password}@
+        config_file           Configuration file to be utilized
+        license_key           AnyLog License Key
+
+    :optional arguments:
+        -h, --help                      show this help message and exit
+        --timeout       TIMEOUT         REST timeout (default: 30)
+        -e,--exception  [EXCEPTION]     Whether to print errors (default: False)
+    :params:
+        config_file:str - configuration file
+        conn:str - REST connection IP and Port
+        auth:tuple - REST authentication
+        anylog_conn:anylog_connector.AnyLogConnector - Connection to AnyLog via REST
+        configuration:dict - deployment configurations (both file and AnyLog dictionary)
+    """
     config_file=os.path.join(ROOT_DIR, 'configurations', 'master_configs.env')
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('rest_conn', type=deployment_support.validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
@@ -38,7 +56,24 @@ def main():
         print(f"Failed to get configurations against file {args.config_file} and connection {conn}. Cannot continue")
         exit(1)
 
-    print(configuration)
+    if configuration['node_type'] not in ['rest', 'none']:
+            if blockchain.check_synchronizer(anylog_conn=anylog_conn) is False:
+                if blockchain.run_synchronizer(anylog_conn=anylog_conn, source=configuration['blockchain_source'],
+                                               time=configuration['sync_time'],
+                                               dest=configuration ['blockchain_destination'],
+                                               connection=configuration['ledger_conn'], view_help=False) is False:
+                    print(f"Failed to declare blockchain sync against {conn}")
+
+    if configuration['node_type'] in ['master', 'ledger', 'standalone', 'standalone-publisher']:
+        pass
+    if configuration['node_type'] in ['operator', 'standalone']:
+        pass
+    if configuration['node_type'] in ['publisher', 'standalone-publisher']:
+        pass
+    if configuration['node_type'] in ['query']:
+        pass
+
+    print(generic_get.get_processes(anylog_conn=anylog_conn, json_format=False, view_help=False))
 
 
 if __name__ == '__main__':

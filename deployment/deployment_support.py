@@ -63,15 +63,12 @@ def prepare_dictionary(anylog_conn:anylog_connector.AnyLogConnector, config_file
     :return:
         configs
     """
-    configs = {}
     anylog_configs = generic_get.get_dictionary(anylog_conn=anylog_conn, json_format=True, view_help=False)
-    file_configs = file_io.read_configs(config_file=config_file, exception=exception)
+    configs = file_io.read_configs(config_file=config_file, exception=exception)
 
     for config in anylog_configs:
-        if config not in file_configs:
+        if config not in configs:
             configs[config] = anylog_configs[config]
-        else:
-            configs[config] = file_configs[config]
 
     return configs
 
