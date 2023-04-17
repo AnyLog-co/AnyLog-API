@@ -27,19 +27,18 @@ def main():
         print(f"Failed to connect to AnyLog via {conn}. Cannot Continue")
         exit(1)
 
-    count = 0
-    status = generic_get.check_license(anylog_conn=anylog_conn)
-    while status is False:
-        if generic_post.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key) is False:
-            print(f"Failed to utilize given license to enable AnyLog {conn}. Cannot continue")
-            exit(1)
-        status = generic_get.check_license(anylog_conn=anylog_conn)
-        if count > 0:
-            print(f"Issue with license against {conn}. Cannot continue")
-            exit(1)
-        else:
-            count += 1
+    if generic_post.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key) is False:
+        print(f"Failed to utilize given license to enable AnyLog {conn}. Cannot continue")
+        exit(1)
 
+    configuration = deployment_support.prepare_dictionary(anylog_conn=anylog_conn, config_file=args.config_file,
+                                                          exception=args.exception)
+
+    if len(configuration) == 0 or configuration is None:
+        print(f"Failed to get configurations against file {args.config_file} and connection {conn}. Cannot continue")
+        exit(1)
+
+    print(configuration)
 
 
 if __name__ == '__main__':
