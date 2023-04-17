@@ -1,4 +1,5 @@
 import requests
+
 NETWORK_ERRORS_GENERIC = {
     1: "Informational",
     2: "Successful",
@@ -74,6 +75,9 @@ def print_rest_error(call_type:str, cmd:str, error):
         error_type:str - Error Type
         cmd:str - command that failed
         error - error message
+    :global:
+        NETWORK_ERRORS_GENERIC:dict - generic error message for a given error code
+        NETWORK_ERRORS:dict  - specific error message for a given error code
     :params:
         error_msg:str - generated error message
     :print:
