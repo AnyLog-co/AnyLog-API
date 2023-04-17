@@ -57,7 +57,7 @@ def main():
         exit(1)
 
     if configuration['node_type'] not in ['rest', 'none']:
-            if blockchain.check_synchronizer(anylog_conn=anylog_conn) is False:
+            if deployment_support.check_synchronizer(anylog_conn=anylog_conn) is False:
                 if blockchain.run_synchronizer(anylog_conn=anylog_conn, source=configuration['blockchain_source'],
                                                time=configuration['sync_time'],
                                                dest=configuration ['blockchain_destination'],

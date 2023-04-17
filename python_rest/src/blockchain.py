@@ -2,25 +2,6 @@ import anylog_connector
 import generic_get
 
 
-def check_synchronizer(anylog_conn:anylog_connector.AnyLogConnector):
-    """
-    Check whether blockchain synchronizer is active
-    :args:
-        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog via REST
-    :params:
-        status:bool
-    :return:
-        True if blockchain sync is active
-        False if not
-    """
-    status = False
-    active_processes = generic_get.get_processes(anylog_conn=anylog_conn, json_format=False, view_help=False)
-    if "Blockchain Sync" in active_processes and "Status" in active_processes["Blockchain Sync"]:
-        if active_processes["Blockchain Sync"]["Status"] != "Not declared":
-            status = True
-
-    return status
-
 def run_synchronizer(anylog_conn:anylog_connector.AnyLogConnector, source:str, time:str, dest:str, connection:str,
                      view_help:bool=False):
     """

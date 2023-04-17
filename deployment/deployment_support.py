@@ -7,6 +7,7 @@ import file_io
 import anylog_connector
 import generic_get
 
+
 def validate_conn_pattern(conn:str)->str:
     """
     Validate connection information format is connect
@@ -73,6 +74,23 @@ def prepare_dictionary(anylog_conn:anylog_connector.AnyLogConnector, config_file
     return configs
 
 
+def check_synchronizer(anylog_conn:anylog_connector.AnyLogConnector):
+    """
+    Check whether blockchain synchronizer is active
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog via REST
+    :params:
+        status:bool
+    :return:
+        True if blockchain sync is active
+        False if not
+    """
+    status = False
+    active_processes = generic_get.get_processes(anylog_conn=anylog_conn, json_format=True)
+    if "Blockchain Sync" in active_processes and "Status" in active_processes["Blockchain Sync"]:
+        if active_processes["Blockchain Sync"]["Status"] != "Not declared":
+            status = True
 
+    return status
 
 
