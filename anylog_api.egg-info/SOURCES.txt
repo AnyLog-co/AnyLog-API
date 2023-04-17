@@ -1,8 +1,0 @@
-README.md
-/Users/orishadmon/AnyLog-API/python_rest/src/anylog_connector.c
-/Users/orishadmon/AnyLog-API/python_rest/src/generic_get.c
-/Users/orishadmon/AnyLog-API/python_rest/src/generic_post.c
-anylog_api.egg-info/PKG-INFO
-anylog_api.egg-info/SOURCES.txt
-anylog_api.egg-info/dependency_links.txt
-anylog_api.egg-info/top_level.txt
