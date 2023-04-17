@@ -122,12 +122,14 @@ class AnyLogConnector:
         :args:
             headers:dict - REST header information
         :params:
-            r:requests.request - REST request results
+            r:requests.request - REST request output
+            result - extracted results
         :return:
-            r
+            result
         """
+        result = None
         try:
-            r = requests.get(url=f'http:{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
+            r = requests.get(url=f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
         except Exception as error:
             r = None
             if self.exception is True:
@@ -138,7 +140,13 @@ class AnyLogConnector:
                     print_rest_error(call_type="GET", cmd=headers["command"], error=r.status_code)
                 r = None
 
-        return r
+        if r is not None:
+            try:
+                result = r.json()
+            except:
+                result = r.text
+
+        return result
 
     def post(self, headers:dict):
         """
@@ -151,7 +159,7 @@ class AnyLogConnector:
             r
         """
         try:
-            r = requests.post(url=f'http:{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
+            r = requests.post(url=f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
         except Exception as error:
             r = None
             if self.exception is True:
@@ -175,7 +183,7 @@ class AnyLogConnector:
             r
         """
         try:
-            r = requests.put(url=f'http:{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
+            r = requests.put(url=f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
         except Exception as error:
             r = None
             if self.exception is True:
@@ -187,3 +195,27 @@ class AnyLogConnector:
                 r = None
 
         return r
+
+
+def view_help(anylog_conn:AnyLogConnector, cmd:str):
+    """
+    Execute `help` command against a given function
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog
+        cmd:str - command to get help for
+    :params:
+        exception:bool - placeholder of original exception value
+        output:str - results from
+    """
+    headers = {
+        "command": f"help {cmd}",
+        "User-Agent": "AnyLog/1.23"
+    }
+    exception = anylog_conn.exception
+    anylog_conn.exception = True
+    r = anylog_conn.get(headers=headers)
+    if r is not None:
+        print(r)
+    else:
+        print(f"Failed to get information regarding command `{cmd}`")
+    anylog_conn.exception = exception
