@@ -79,6 +79,8 @@ def dictionary_merge(file_config:dict, anylog_config:dict):
         else:
             full_configs[param.lower()] = file_config[param]
 
+    print(anylog_config)
+    print(file_config)
     for param in anylog_config:
         if param not in full_configs:
             full_configs[param] = anylog_config[param]
@@ -94,6 +96,4 @@ def dictionary_merge(file_config:dict, anylog_config:dict):
             except:
                 pass
 
-
     return full_configs
-

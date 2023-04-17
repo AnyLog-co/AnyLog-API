@@ -51,7 +51,8 @@ def main():
 
     deployment_support.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key, exception=args.exception)
 
-    configuration = deployment_support.set_dictionary(anylog_conn=anylog_conn, config_file=args.config_file, exception=args.exception)
+    configuration = deployment_support.set_dictionary(anylog_conn=anylog_conn, config_file=args.config_file,
+                                                      exception=args.exception)
     if configuration == {}:
         print(f"Failed to extract content configuration file (configuration file: {args.config_file}. Cannot continue...")
         exit(1)

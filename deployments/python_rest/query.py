@@ -7,11 +7,9 @@ import database_calls
 
 def deploy_node(anylog_conn:AnyLogConnector, configuration:dict, exception:bool=False):
     """
-    Deploy master node
+    Deploy query node
     :process:
-        1. connect to blockchain database
-        2. create blockchain.ledger table
-        3. create system_query (if configured)
+        1. create system_query
         4. create policy if DNE
     :args:
         anylog_conn:AnyLogConnector - Connection via REST
@@ -44,15 +42,6 @@ def deploy_node(anylog_conn:AnyLogConnector, configuration:dict, exception:bool=
         "port": configuration['anylog_server_port'],
         "rest_port": configuration['anylog_rest_port']
     }
-
-    if 'blockchain' not in database_calls.get_databases(anylog_conn=anylog_conn, json_format=True, view_help=False,
-                                                        exception=exception):
-        database_deployment.declare_database(anylog_conn=anylog_conn, db_name='blockchain', anylog_configs=configuration,
-                                             exception=exception)
-        if 'ledger' not in database_calls.get_tables(anylog_conn=anylog_conn, db_name='ledger', json_format=True,
-                                                     view_help=False, exception=exception):
-            database_deployment.declare_table(anylog_conn=anylog_conn, db_name='blockchain', table_name='ledger',
-                                              exception=exception)
 
     if 'system_query' not in database_calls.get_databases(anylog_conn=anylog_conn, json_format=True, view_help=False,
                                                           exception=exception):
