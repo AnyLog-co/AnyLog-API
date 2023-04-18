@@ -148,7 +148,7 @@ class AnyLogConnector:
 
         return result
 
-    def post(self, headers:dict, payload:dict=None):
+    def post(self, headers:dict, payload:str=None):
         """
         Execute POST command
         :args:

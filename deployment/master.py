@@ -42,7 +42,12 @@ def deploy_node(anylog_conn:anylog_connector.AnyLogConnector, configuration:dict
         except Exception as error:
             print(f"Failed to convert master node policy to JSON format (Error: {error})")
         else:
-            print(json_policy)
+            if blockchain.prepare_policy(anylog_conn=anylog_conn, policy=json_policy) is True:
+                if blockchain.publish_policy(anylog_conn=anylog_conn, policy=json_policy, local=True,
+                                             ledger_conn=configuration['ledger_conn'], blockchain=None) is False:
+                    print(f"Failed to declare policy {json_policy} in blockchain")
+
+
 
 
 

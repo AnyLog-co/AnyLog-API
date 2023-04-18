@@ -48,7 +48,6 @@ def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type
         new_policy[policy_type]["cluster"] = cluster_id
 
     location, country, state, city = find_location.get_location(anylog_conn=anylog_conn, exception=exception)
-    print(location, country, state, city)
     if "location" in configuration and configuration["location"] != "Unknown":
         new_policy[policy_type]["loc"] = configuration["location"]
     elif location is not None and location != "location":
@@ -161,6 +160,8 @@ def get_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str="*"
 def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str):
     """
     Prepare policy
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
     :args:
         anylog_conn:anylog_connector.AnyLogConnector
         policy:str - policy to publish
@@ -176,6 +177,43 @@ def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str):
         "User-Agent": "AnyLog/1.23"
     }
     payload = f"<new_policy={policy}>"
+
+    r = anylog_conn.post(headers=headers, payload=payload)
+    if int(r.status_code) != 200:
+        status = False
+
+    return status
+
+
+def publish_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str=None, local:bool=True, ledger_conn:str=None,
+                   blockchain:str=None):
+    """
+    Publish policy to blockchain
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md#the-blockchain-insert-command
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - AnyLog connection
+        policy:str - policy to publish, if DNE then use pre-existing from prepare_policy
+        local:bool - whether to store locally
+        ledger_conn:str - master node
+        blockchain:str - blockchain
+    :params:
+        headers:dict - REST headers
+
+    """
+    status = True
+    headers = {
+        "command": f"blockchain insert where policy=!new_policy",
+        "User-Agent": "AnyLog/1.23"
+    }
+    if policy is not None:
+        payload = f"<new_policy={policy}>"
+    if local is True:
+        headers["command"] += f" and local={local}"
+    if ledger_conn is not None:
+        headers["command"] += f" and master={ledger_conn}"
+    if blockchain is not None:
+        headers += f" and blockchain={blockchain}"
 
     r = anylog_conn.post(headers=headers, payload=payload)
     if int(r.status_code) != 200:
