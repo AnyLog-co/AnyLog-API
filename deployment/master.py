@@ -9,9 +9,20 @@ import deployment_support
 
 def deploy_node(anylog_conn:anylog_connector.AnyLogConnector, configuration:dict, exception:bool=False):
     """
-
+    Deploy an AnyLog master node
+    :process:
+        1. create blockchain database if DNE
+        2. create ledger table in blockchain database if DNE
+        3. connect to system_query (used for querying data) if configured
+        4. declare policy on the blockchain
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog via REST
+        configuration:dict - configurations to be used
+        exception:bool - whether to print exceptions
+    :params:
+        new_policy:dict - generated policy
+        json_policy:str - new_policy as JSON string
     """
-    status = True
     if database.check_database(anylog_conn=anylog_conn,  db_name='blockchain', json_format=True) is False:
         if deployment_support.connect_dbms(anylog_conn=anylog_conn, db_name='blockchain', configurations=configuration) is False:
             status = False
