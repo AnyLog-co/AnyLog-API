@@ -48,21 +48,22 @@ def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type
         new_policy[policy_type]["cluster"] = cluster_id
 
     location, country, state, city = find_location.get_location(anylog_conn=anylog_conn, exception=exception)
+    print(location, country, state, city)
     if "location" in configuration and configuration["location"] != "Unknown":
         new_policy[policy_type]["loc"] = configuration["location"]
-    elif location is not None:
+    elif location is not None and location != "location":
         new_policy[policy_type]["loc"] = location
     if "country" in configuration and configuration["country"] != "Unknown":
         new_policy[policy_type]["country"] = configuration["country"]
-    elif country is not None:
+    elif country is not None and country != "country":
         new_policy[policy_type]["country"] = country
     if "state" in configuration and configuration["state"] != "Unknown":
         new_policy[policy_type]["state"] = configuration["state"]
-    elif state is not None:
+    elif state is not None and state != "state":
         new_policy[policy_type]["state"] = state
     if "city" in configuration and configuration["city"] != "Unknown":
         new_policy[policy_type]["city"] = configuration["city"]
-    elif city is not None:
+    elif city is not None and city != "city":
         new_policy[policy_type]["city"] = city
 
     return new_policy

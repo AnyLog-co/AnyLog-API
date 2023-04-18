@@ -1,3 +1,5 @@
+import json
+
 import anylog_connector
 import blockchain
 import database
@@ -35,7 +37,13 @@ def deploy_node(anylog_conn:anylog_connector.AnyLogConnector, configuration:dict
                                  bring_conditions=None, bring_values=None, separator=None, view_help=False)) == 0:
         new_policy = blockchain.create_node_policy(anylog_conn=anylog_conn, policy_type="master", configuration=configuration,
                                                    cluster_id=None, exception=exception)
-        print(new_policy)
+        try:
+            json_policy = json.dumps(new_policy)
+        except Exception as error:
+            print(f"Failed to convert master node policy to JSON format (Error: {error})")
+        else:
+            print(json_policy)
+
 
 
 
