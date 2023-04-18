@@ -158,3 +158,27 @@ def get_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str="*"
     return anylog_conn.get(headers=headers)
 
 
+def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str):
+    """
+    Prepare policy
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector
+        policy:str - policy to publish
+    :params:
+        status:bool
+        headers:dict - REST headers
+    :return:
+        status
+    """
+    status = True
+    headers = {
+        "command": "blockchain prepare policy !new_policy",
+        "User-Agent": "AnyLog/1.23"
+    }
+    payload = f"<new_policy={policy}>"
+
+    r = anylog_conn.post(headers=headers, payload=payload)
+    if int(r.status_code) != 200:
+        status = False
+
+    return status

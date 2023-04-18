@@ -148,18 +148,20 @@ class AnyLogConnector:
 
         return result
 
-    def post(self, headers:dict):
+    def post(self, headers:dict, payload:dict=None):
         """
         Execute POST command
         :args:
             headers:dict - REST header information
         :params:
             r:requests.request - REST request results
+            payload:dict - payload to publish into AnyLog
         :return:
             r
         """
         try:
-            r = requests.post(url=f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
+            r = requests.post(url=f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
+                              data=payload)
         except Exception as error:
             r = None
             if self.exception is True:
