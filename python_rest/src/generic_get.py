@@ -157,3 +157,32 @@ def get_processes(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool
         headers["command"] += " where format=json"
 
     return anylog_conn.get(headers=headers)
+
+def get_msg_client(anylog_conn:anylog_connector.AnyLogConnector, topic:str=None, broker:str=None, id:int=None,
+                   view_help:bool=False):
+    headers = {
+        "command": "get msg client",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if view_help is True:
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
+        return None
+
+    if topic is not None or broker is not None or id is not None:
+        count = 0
+        headers["command"] += " where"
+        if topic is not None:
+            headers["command"] += f" topic={topic}"
+            count += 1
+        if broker is not None:
+            if count >= 1:
+                headers["command"] += " and"
+            headers["command"] += f" broker={broker}"
+            count += 1
+        if id is not None:
+            if count >= 1:
+                headers["command"] += " and"
+            headers["command"] += f" id={id}"
+
+    return anylog_conn.get(headers=headers)
