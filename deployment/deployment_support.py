@@ -5,6 +5,7 @@ import re
 import file_io
 
 import anylog_connector
+import database
 import generic_get
 
 
@@ -74,6 +75,24 @@ def prepare_dictionary(anylog_conn:anylog_connector.AnyLogConnector, config_file
     return configs
 
 
+def check_schedule1(anylog_conn:anylog_connector.AnyLogConnector):
+    """
+    Check schedule 1 process
+    :args:
+       anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog via REST
+    :params:
+        status:bool
+    :return:
+        True if proceses is running
+        False if not
+    """
+    status = False
+    active_processes = generic_get.get_processes(anylog_conn=anylog_conn, json_format=True)
+    if 'Scheduler' in active_processes and "Details" in  active_processes["Scheduler"]:
+        if '1 (user)' in active_processes["Scheduler"]["Details"]:
+            status = True
+    return status
+
 def check_synchronizer(anylog_conn:anylog_connector.AnyLogConnector):
     """
     Check whether blockchain synchronizer is active
@@ -92,5 +111,43 @@ def check_synchronizer(anylog_conn:anylog_connector.AnyLogConnector):
             status = True
 
     return status
+
+
+def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, configurations:dict):
+    """
+    Connect to logical (SQL) database
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - Connecton to AnyLog node
+        db_name:str - logical database
+        configurations:dict - AnyLog configurations
+    :params:
+        ip:str - IP address for connecting to database
+        port:int - database port
+        user:str - username recognized by the database
+        password;str - user dbms password
+        memory:bool - whether database is in memory or not (usually with SQLite)
+    :return:
+        True if Success
+        False if fails
+    """
+    ip = None
+    port = None
+    user = None
+    password = None
+    memory = False
+
+    if 'db_ip' in configurations:
+        ip = configurations["db_ip"]
+    if 'db_port' in configurations:
+        port = configurations["db_port"]
+    if 'db_user' in configurations:
+        user = configurations['db_user']
+    if 'db_password' in configurations:
+        password = configurations['db_password']
+    if 'memory' in configurations:
+        memory = configurations['memory']
+
+    return database.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=configurations['db_type'],
+                                 ip=ip, port=port, user=user, password=password, memory=memory, view_help=False)
 
 

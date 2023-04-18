@@ -19,7 +19,7 @@ def get_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, view_help
     }
 
     if view_help is True:
-        anylog_connector.view_help(headers["command"])
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
         return None
 
     return anylog_conn.get(headers=headers)
@@ -49,7 +49,7 @@ def get_status(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool=Tr
     }
 
     if view_help is True:
-        anylog_connector.view_help(headers["command"])
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
         return None
 
     if json_format is True:
@@ -86,7 +86,7 @@ def check_license(anylog_conn:anylog_connector.AnyLogConnector, view_help:bool=F
     }
 
     if view_help is True:
-        anylog_connector.view_help(headers["command"])
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
         return None
 
     output = anylog_conn.get(headers=headers)
@@ -119,7 +119,7 @@ def get_dictionary(anylog_conn:anylog_connector.AnyLogConnector, json_format:boo
     }
 
     if view_help is True:
-        anylog_connector.view_help(headers["command"])
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
         return None
 
     if json_format is True:
@@ -150,7 +150,7 @@ def get_processes(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool
     }
 
     if view_help is True:
-        anylog_connector.view_help(headers["command"])
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
         return None
 
     if json_format is True:

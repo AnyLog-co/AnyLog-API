@@ -3,21 +3,29 @@ import os
 
 import anylog_connector
 import blockchain
+import deployment_support
 import generic_get
 import generic_post
-import deployment_support
 
+import master
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
 
 
 def main():
     """
+    Deploy an AnyLog node via REST
+    :process:
+        0. An AnyLog with TCP, REST and Broker (if set) should be running
+        1. Validate node is accessible via REST
+        3. Set license key
+        4. prepare configuration
+        5. set blockchain synchronizer
+        6. deploy configuraton for a specific node type
     :positional arguments:
         rest_conn             REST connection information (example: {user}:{password}@
         config_file           Configuration file to be utilized
         license_key           AnyLog License Key
-
     :optional arguments:
         -h, --help                      show this help message and exit
         --timeout       TIMEOUT         REST timeout (default: 30)
@@ -56,16 +64,21 @@ def main():
         print(f"Failed to get configurations against file {args.config_file} and connection {conn}. Cannot continue")
         exit(1)
 
+    if deployment_support.check_schedule1(anylog_conn=anylog_conn) is False:
+        if generic_post.set_schedule1(anylog_conn=anylog_conn, view_help=False) is False:
+            print("Failed to set schedule 1. Cannot  Continue")
+            exit(1)
+
     if configuration['node_type'] not in ['rest', 'none']:
-            if deployment_support.check_synchronizer(anylog_conn=anylog_conn) is False:
-                if blockchain.run_synchronizer(anylog_conn=anylog_conn, source=configuration['blockchain_source'],
-                                               time=configuration['sync_time'],
-                                               dest=configuration ['blockchain_destination'],
-                                               connection=configuration['ledger_conn'], view_help=False) is False:
-                    print(f"Failed to declare blockchain sync against {conn}")
+        if deployment_support.check_synchronizer(anylog_conn=anylog_conn) is False:
+            if blockchain.run_synchronizer(anylog_conn=anylog_conn, source=configuration['blockchain_source'],
+                                           time=configuration['sync_time'],
+                                           dest=configuration ['blockchain_destination'],
+                                           connection=configuration['ledger_conn'], view_help=False) is False:
+                print(f"Failed to declare blockchain sync against {conn}")
 
     if configuration['node_type'] in ['master', 'ledger', 'standalone', 'standalone-publisher']:
-        pass
+        master.deploy_node(anylog_conn=anylog_conn, configuration=configuration, exception=args.exception)
     if configuration['node_type'] in ['operator', 'standalone']:
         pass
     if configuration['node_type'] in ['publisher', 'standalone-publisher']:
