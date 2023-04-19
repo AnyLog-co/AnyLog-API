@@ -32,8 +32,7 @@ def post_data(anylog_conn:anylog_connector.AnyLogConnector, topic:str, payload:s
     return status
 
 
-def put_data(anylog_conn:anylog_connector.AnyLogConnector, payload:str, db_name:str, table_name:str, mode:str="streaming",
-             exception:bool=False):
+def put_data(anylog_conn:anylog_connector.AnyLogConnector, payload:str, db_name:str, table_name:str, mode:str="streaming"):
     """
     Store data into AnyLog via PUT
     :url:
@@ -66,9 +65,7 @@ def put_data(anylog_conn:anylog_connector.AnyLogConnector, payload:str, db_name:
     if mode in ["streaming", "file"]:
         headers["mode"] = mode
     else:
-        status = False
-        if exception is True:
-            print(f"Invalid processing mode {mode}. Supported modes - streaming & file.")
+        headers["mode"] = "streaming"
 
     if status is True:
         r = anylog_conn.put(headers=headers, payload=payload)
@@ -76,3 +73,91 @@ def put_data(anylog_conn:anylog_connector.AnyLogConnector, payload:str, db_name:
             status = False
 
     return status
+
+
+def query_data(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, format:str="json",
+               timezone:str="local", include:list=[], extend:list=None, stat:str=True, dest:str=None,
+               file_name:str=None, table:str=None, test:bool=False, source:str=None, title:str=None,
+               destination:str='network', view_help:bool=False):
+    """
+    Execute query against AnyLog
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/queries.md#query-nodes-in-the-network
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector, - connection to AnyLog via REST
+        db_name:str - database to query against
+        sql_query:str - "SELECT" command to execute
+        format:str - The format of the result set
+        timezone:str - Timezone used for time values in the result set
+            A full list can be found: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        include:list - Allows to treat remote tables with a different name as the table being queried. The value is
+                       specified as dbms.table
+        extend:list - Include node variables (which are not in the table data) in the query result set.
+                      Example: extend = (@ip, @port.str, @DBMS, @table, !disk_space.int).
+        stat:bool - Adds processing statistics to the query output
+        dest:str - Destination of the query result set (i.e. stdout, rest, file)
+        file_name:str - File name for the output data
+        table:str - A table name for the output data (random table names are assigned to each executing query)
+        test:bool - The output is organized as a test output
+        source:str - A file name that is used in a test process to determine the processing result
+        title:str - Added to the test information in the test header
+    :params:
+        sql_cmd:str - generated full `sql` command
+    :return:
+        if view_help is True - return None
+        else returns results
+    """
+    sql_cmd = f'sql {db_name} format={format} and timezone={timezone} and stat=true'
+
+    if format not in ["json", "table"]:
+        sql_cmd.replace(format, "json")
+    if timezone not in ["local", "utc"]:
+        sql_cmd.replace(timezone, "local")
+    if stat is False:
+        sql_cmd.replace("stat=true", "stat=false")
+
+    if len(include) != 0:
+        sql_cmd += " and include=("
+        for param in include:
+            sql_cmd += param
+            if param != include[-1]:
+                sql_cmd += ","
+            else:
+                sql_cmd += ")"
+
+    if len(extend) != 0:
+        sql_cmd += " and extend=("
+        for param in extend:
+            sql_cmd += param
+            if param != extend[-1]:
+                sql_cmd += ","
+            else:
+                sql_cmd += ")"
+
+    if dest in ["stdout", "rest", "dbms", "file"]:
+        sql_cmd += f" and dest={dest}"
+    if file_name is not None:
+        sql_cmd += f" and file={file_name}"
+    if table is not None:
+        sql_cmd += f" and table={table}"
+    if test is True:
+        sql_cmd += f" and test=true"
+    if source is not None:
+        sql_cmd += f" and source={source}"
+    if title is not None:
+        sql_cmd += f" and title={title}"
+
+    sql_cmd += f' "{sql_query}"'
+
+    headers = {
+        "command": sql_cmd,
+        "User-Agent": "AnyLog/1.23"
+    }
+    if destination is not None:
+        headers['destination'] = destination
+
+    if view_help is True:
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=sql_query)
+        return None
+
+    return anylog_conn.get(headers=headers)

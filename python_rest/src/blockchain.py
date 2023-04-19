@@ -157,7 +157,7 @@ def get_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str="*"
     return anylog_conn.get(headers=headers)
 
 
-def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str):
+def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str, view_help:bool=False):
     """
     Prepare policy
     :url:
@@ -178,6 +178,10 @@ def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str):
     }
     payload = f"<new_policy={policy}>"
 
+    if view_help is True:
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
+        return None
+
     r = anylog_conn.post(headers=headers, payload=payload)
     if int(r.status_code) != 200:
         status = False
@@ -186,7 +190,7 @@ def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str):
 
 
 def publish_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str=None, local:bool=True, ledger_conn:str=None,
-                   blockchain:str=None):
+                   blockchain:str=None, view_help:bool=False):
     """
     Publish policy to blockchain
     :url:
@@ -206,6 +210,10 @@ def publish_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str=None
         "command": f"blockchain insert where policy=!new_policy",
         "User-Agent": "AnyLog/1.23"
     }
+    if view_help is True:
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
+        return None
+
     if policy is not None:
         payload = f"<new_policy={policy}>"
     if local is True:
