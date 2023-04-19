@@ -174,7 +174,7 @@ class AnyLogConnector:
 
         return r
 
-    def put(self, headers:dict):
+    def put(self, headers:dict, payload:str=None):
         """
         Execute PUT command
         :args:
@@ -185,7 +185,7 @@ class AnyLogConnector:
             r
         """
         try:
-            r = requests.put(url=f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers)
+            r = requests.put(url=f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers, data=payload)
         except Exception as error:
             r = None
             if self.exception is True:
@@ -217,6 +217,7 @@ def view_help(anylog_conn:AnyLogConnector, cmd:str):
     anylog_conn.exception = True
     r = anylog_conn.get(headers=headers)
     if r is not None:
+        print(f"command: {cmd}")
         print(r)
     else:
         print(f"Failed to get information regarding command `{cmd}`")
