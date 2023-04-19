@@ -1,3 +1,4 @@
+import pytz
 import anylog_connector
 
 
@@ -76,7 +77,7 @@ def put_data(anylog_conn:anylog_connector.AnyLogConnector, payload:str, db_name:
 
 
 def query_data(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, format:str="json",
-               timezone:str="local", include:list=[], extend:list=None, stat:str=True, dest:str=None,
+               timezone:str="local", include:str=None, extend:str=None, stat:bool=True, dest:str=None,
                file_name:str=None, table:str=None, test:bool=False, source:str=None, title:str=None,
                destination:str='network', view_help:bool=False):
     """
@@ -101,6 +102,7 @@ def query_data(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, sql_qu
         test:bool - The output is organized as a test output
         source:str - A file name that is used in a test process to determine the processing result
         title:str - Added to the test information in the test header
+        destination:str - where to query against
     :params:
         sql_cmd:str - generated full `sql` command
     :return:
@@ -111,25 +113,24 @@ def query_data(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, sql_qu
 
     if format not in ["json", "table"]:
         sql_cmd.replace(format, "json")
-    if timezone not in ["local", "utc"]:
+    if timezone not in pytz.all_timezones and timezone != "local":
         sql_cmd.replace(timezone, "local")
     if stat is False:
         sql_cmd.replace("stat=true", "stat=false")
 
-    if len(include) != 0:
-        sql_cmd += " and include=("
-        for param in include:
+    if include is not None:
+        sql_cmd += f" and include=("
+        for param in include.split(','):
             sql_cmd += param
-            if param != include[-1]:
+            if param != include.split(',')[-1]:
                 sql_cmd += ","
             else:
                 sql_cmd += ")"
-
-    if len(extend) != 0:
-        sql_cmd += " and extend=("
-        for param in extend:
+    if extend is not None:
+        sql_cmd += f" and extend=("
+        for param in extend.split(','):
             sql_cmd += param
-            if param != extend[-1]:
+            if param != extend.split(',')[-1]:
                 sql_cmd += ","
             else:
                 sql_cmd += ")"
@@ -153,7 +154,8 @@ def query_data(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, sql_qu
         "command": sql_cmd,
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
+
+    if destination is not None and destination != "":
         headers['destination'] = destination
 
     if view_help is True:

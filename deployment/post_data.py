@@ -134,7 +134,7 @@ def main():
         mqtt_client = generic_get.get_msg_client(anylog_conn=anylog_conn, topic=args.topic_name, broker=broker,
                                                  id=None, view_help=False)
 
-    if mqtt_client == "No such client subscription":
+    if "No message client subscriptions" in mqtt_client:
         if generic_post.run_mqtt_client(anylog_conn=anylog_conn, broker=broker_ip, port=broker_port, user=broker_user,
                                         password=broker_password, log=args.enable_log, topic_name=args.topic_name,
                                         db_name=args.db_name, table_name=args.table_name, params=mqtt_params,
@@ -143,7 +143,7 @@ def main():
 
     json_string = serialize_row(data=DATA)
     if json_string is not None:
-        if data_management.publish_data(anylog_conn=anylog_conn, topic=args.topic_name, payload=json_string) is False:
+        if data_management.post_data(anylog_conn=anylog_conn, topic=args.topic_name, payload=json_string) is False:
             print(f"Failed to publish data against {conn} via POST")
 
 

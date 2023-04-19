@@ -5,8 +5,8 @@ import random
 import uuid
 
 import anylog_connector
-import data_management
 import deployment_support
+import data_management
 
 DATA = [
     {
@@ -82,6 +82,7 @@ def main():
         headers:dict - REST header information
         conn:str - REST connection IP:Port
         auth:tuple - authentication information for REST
+        anylog_conn:anylog_connector.AnyLogConnector - AnyLog connection
         json_string:str - JSON string of Data
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -98,7 +99,7 @@ def main():
 
     json_string = serialize_row(data=DATA)
     if data_management.put_data(anylog_conn=anylog_conn, payload=json_string, db_name=args.db_name,
-                                table_name=args.table_name, mode=args.mode, exception=args.exception) is False:
+                                table_name=args.table_name, mode=args.mode) is False:
         print(f"Failed to publish data against {conn} via PUT")
 
 
