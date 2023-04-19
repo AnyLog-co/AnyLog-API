@@ -53,9 +53,10 @@ def main():
         print(f"Failed to connect to AnyLog via {conn}. Cannot Continue")
         exit(1)
 
-    if generic_post.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key) is False:
-        print(f"Failed to utilize given license to enable AnyLog {conn}. Cannot continue")
-        exit(1)
+    if generic_get.check_license(anylog_conn=anylog_conn, view_help=False) is False:
+        if generic_post.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key) is False:
+            print(f"Failed to utilize given license to enable AnyLog {conn}. Cannot continue")
+            exit(1)
 
     configuration = deployment_support.prepare_dictionary(anylog_conn=anylog_conn, config_file=args.config_file,
                                                           exception=args.exception)
