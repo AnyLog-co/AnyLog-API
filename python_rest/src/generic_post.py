@@ -105,6 +105,27 @@ def set_schedule1(anylog_conn:anylog_connector.AnyLogConnector, view_help:bool=F
 def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, port:str, user:str=None, password:str=None,
                     log:bool=False, topic_name:str='*', db_name:str=None, table_name:str=None, params:dict={},
                     view_help:bool=False):
+    """
+    Execute `run mqtt client` command
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        broker:str - broker IP
+        port:str - broker port
+        user:str - authentication user
+        password:str - authentication password
+        log:bool - whether to print MQTT client logs
+        topic_name:str - topic to send data against
+        db_name:str - logical databsae name
+        table_name:str - logical table name
+        params:dict - topic parameters (such as timestamp and value)
+        view_help:bool - execute `help` against `set license`
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:results.model.Response - request response
+    :return:
+        status
+    """
     status = True
     headers = {
         "command": f"run mqtt client where broker={broker} and port={port}",
@@ -147,8 +168,19 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
 
 def publish_data(anylog_conn:anylog_connector.AnyLogConnector, topic:str, payload:str):
     """
-    Publish data into AnyLog
+    Publish data into AnyLog via POST command
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-post-command
     :args:
+        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        topic:str - topic to publish data against
+        payload:str - JSON string of data to publish
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:results.model.Response - request response
+    :return:
+        status
     """
     status = True
     headers = {

@@ -160,6 +160,22 @@ def get_processes(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool
 
 def get_msg_client(anylog_conn:anylog_connector.AnyLogConnector, topic:str=None, broker:str=None, id:int=None,
                    view_help:bool=False):
+    """
+    Check whether a msg client is active or not
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/monitoring%20calls.md#get-msg-clients
+    :args:
+        anylog_conn::anylog_connector.AnyLogConnector - connection to AnyLog via REST
+        topic:str - topic to check for
+        broker:str - IP:Port client is associated with
+        id:int - client ID
+       view_help:bool - get info regarding command
+    :params:
+        headers:dict - REST header information
+        count:int - count number of conditions in `run msg client where`
+    :return:
+        results for command
+    """
     headers = {
         "command": "get msg client",
         "User-Agent": "AnyLog/1.23"
