@@ -67,13 +67,14 @@ def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:st
     return status
 
 
-def set_schedule1(anylog_conn:anylog_connector.AnyLogConnector, view_help:bool=False):
+def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:int=None, view_help:bool=False):
     """
     Execute `run scheduler 1` command
     :url:
         https://github.com/AnyLog-co/documentation/blob/master/alerts%20and%20monitoring.md#invoking-a-scheduler
     :args:
         anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        schedule_number:int - schedule number (ex `run schedule 1`
         view_help:bool - execute `help` against `set license`
     :params:
         status:bool
@@ -87,13 +88,62 @@ def set_schedule1(anylog_conn:anylog_connector.AnyLogConnector, view_help:bool=F
     status = True
     status = True
     headers = {
-        "command": "run scheduler 1",
+        "command": "run scheduler",
         "User-Agent": "AnyLog/1.23"
     }
 
     if view_help is True:
         anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
         return None
+
+    if schedule_number is not None:
+        headers["command"] += " " + str(schedule_number)
+
+    r = anylog_conn.post(headers=headers)
+    if r is None or int(r.status_code) != 200:
+        status = False
+
+    return status
+
+
+def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, task:str, start:str=None, name:str=None,
+                     view_help:bool=False):
+    """
+    Declare new scheduled process
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/alerts%20and%20monitoring.md#adding-tasks-to-the-scheduler
+    :args:
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
+        time:str - how often to run the scheduled process
+        task:str - process (cmd) to run
+        start:str - Scheduled start time for first execution of the task. The default value is the current day and time.
+        name:str - name of the scheduled task
+        view_help:bool - whether to print help information
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:requests.model.Response - response from REST request
+    :return:
+        True - Success
+        False - Fails
+        None - print help
+    :note:
+        for schedule to start user needs to invoke it
+    """
+    status = None
+    headers = {
+        "command": f"schedule time={time}",
+        "User-Agent": "AnyLog/1.23"
+    }
+    if view_help is True:
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
+        return None
+
+    if name is not None:
+        headers["command"] += f" and name={name}"
+    if start is not None:
+        headers["command"] += f" and start={start}"
+    headers["command"] += f' task {task}'
 
     r = anylog_conn.post(headers=headers)
     if r is None or int(r.status_code) != 200:
@@ -164,6 +214,7 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
         status = False
 
     return status
+
 
 
 

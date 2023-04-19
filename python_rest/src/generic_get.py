@@ -24,6 +24,7 @@ def get_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, view_help
 
     return anylog_conn.get(headers=headers)
 
+
 def get_status(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool=True, view_help:bool=False):
     """
     Check whether node is running or not
@@ -91,7 +92,7 @@ def check_license(anylog_conn:anylog_connector.AnyLogConnector, view_help:bool=F
 
     output = anylog_conn.get(headers=headers)
 
-    if "Missing Valid AnyLog License Key" in output:
+    if "Missing Valid AnyLog License Key" in output or "Activation license is missing" in output:
         status = False
 
     return status
@@ -157,6 +158,50 @@ def get_processes(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool
         headers["command"] += " where format=json"
 
     return anylog_conn.get(headers=headers)
+
+
+def get_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:int=None, view_help:bool=False):
+    """
+    Check if a scheduler is active or not
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/alerts%20and%20monitoring.md#view-scheduled-commands
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        schedule_number:int - schedule number (ex `run schedule 1`
+        view_help:bool - execute `help` against `set license`
+    :params:
+        status:bool
+        headers:dict - REST header
+    :return:
+        if view_help is True - will print information regarding command and return None
+        if scheduler_number is not None - will check if a scheduler process exists and return
+            True if exists
+            False if DNE
+        else - return raw results of command
+    """
+    status = True
+    headers = {
+        "command": "get scheduler",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if view_help is True:
+        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
+        return None
+
+    if schedule_number is not None:
+        headers["command"] += " " + str(schedule_number)
+
+    output = anylog_conn.get(headers=headers)
+
+    if schedule_number is not None:
+        return output
+    elif schedule_number is not None and "not declared" in output:
+        status = False
+
+    print(status)
+    return status
+
 
 def get_msg_client(anylog_conn:anylog_connector.AnyLogConnector, topic:str=None, broker:str=None, id:int=None,
                    view_help:bool=False):

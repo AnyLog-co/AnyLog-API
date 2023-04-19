@@ -65,8 +65,8 @@ def main():
         print(f"Failed to get configurations against file {args.config_file} and connection {conn}. Cannot continue")
         exit(1)
 
-    if deployment_support.check_schedule1(anylog_conn=anylog_conn) is False:
-        if generic_post.set_schedule1(anylog_conn=anylog_conn, view_help=False) is False:
+    if generic_get.get_scheduler(anylog_conn=anylog_conn, schedule_number=1, view_help=False) is False:
+        if generic_post.run_scheduler(anylog_conn=anylog_conn, schedule_number=1, view_help=False) is False:
             print("Failed to set schedule 1. Cannot  Continue")
             exit(1)
 

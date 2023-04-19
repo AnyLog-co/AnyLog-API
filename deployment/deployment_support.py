@@ -75,24 +75,6 @@ def prepare_dictionary(anylog_conn:anylog_connector.AnyLogConnector, config_file
     return configs
 
 
-def check_schedule1(anylog_conn:anylog_connector.AnyLogConnector):
-    """
-    Check schedule 1 process
-    :args:
-       anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog via REST
-    :params:
-        status:bool
-    :return:
-        True if proceses is running
-        False if not
-    """
-    status = False
-    active_processes = generic_get.get_processes(anylog_conn=anylog_conn, json_format=True)
-    if 'Scheduler' in active_processes and "Details" in  active_processes["Scheduler"]:
-        if '1 (user)' in active_processes["Scheduler"]["Details"]:
-            status = True
-    return status
-
 def check_synchronizer(anylog_conn:anylog_connector.AnyLogConnector):
     """
     Check whether blockchain synchronizer is active
