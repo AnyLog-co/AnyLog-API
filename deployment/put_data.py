@@ -5,6 +5,7 @@ import random
 import uuid
 
 import anylog_connector
+import data_management
 import deployment_support
 
 DATA = [
@@ -30,6 +31,13 @@ DATA = [
 
 
 def serialize_row(data:dict):
+    """
+    Serialize data
+    :args:
+        data:dict - content to serialize
+    :return:
+        dict as JSON string(s)
+    """
     try:
         return json.dumps(data)
     except Exception as error:
@@ -79,7 +87,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('rest_conn', type=deployment_support.validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument("--db-name", type=str, default="test", help="logical database to store data in")
-    parser.add_argument("--table-name", type=str, default="test", help="table to store data in")
+    parser.add_argument("--table-name", type=str, default="sample_data", help="table to store data in")
     parser.add_argument('--timeout', type=int, default=30, help='REST timeout')
     parser.add_argument("--mode", type=str, choices=["streaming", "file"], default="streaming", help="format to ingest data")
     parser.add_argument('-e', '--exception', type=bool, nargs='?', const=True, default=False, help='Whether to print errors')
@@ -88,19 +96,10 @@ def main():
     conn, auth = deployment_support.anylog_connection(rest_conn=args.rest_conn)
     anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=args.timeout, exception=args.exception)
 
-    headers = {
-        'type': 'json',
-        'dbms': args.db_name,
-        'table': args.table_name,
-        'mode': args.mode,
-        'Content-Type': 'text/plain'
-    }
-
     json_string = serialize_row(data=DATA)
-    if json_string is not None:
-        r = anylog_conn.put(headers=headers, payload=json_string)
-        if r is None or int(r.status_code) != 200:
-            print(f"Failed to publish data against {conn} via PUT")
+    if data_management.put_data(anylog_conn=anylog_conn, payload=json_string, db_name=args.db_name,
+                                table_name=args.table_name, mode=args.mode, exception=args.exception) is False:
+        print(f"Failed to publish data against {conn} via PUT")
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ import deployment_support
 import anylog_connector
 import generic_get
 import generic_post
+import data_management
 
 DATA = [
     {
@@ -33,6 +34,13 @@ DATA = [
 
 
 def serialize_row(data:dict):
+    """
+    Serialize data
+    :args:
+        data:dict - content to serialize
+    :return:
+        dict as JSON string(s)
+    """
     try:
         return json.dumps(data)
     except Exception as error:
@@ -84,7 +92,7 @@ def main():
     parser.add_argument('rest_conn', type=deployment_support.validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument("--topic-name", type=str, default="new-topic", help="Topic name")
     parser.add_argument("--db-name", type=str, default="test", help="logical database to store data in")
-    parser.add_argument("--table-name", type=str, default="test", help="table to store data in")
+    parser.add_argument("--table-name", type=str, default="sample_data", help="table to store data in")
     parser.add_argument("--mqtt-configs", type=str, default='rest:2049', help="MQTT connection configuration")
     parser.add_argument("--enable-log", type=bool, nargs='?', const=True, default=False, help="enable MQTT logs")
     parser.add_argument('--timeout', type=int, default=30, help='REST timeout')
@@ -135,7 +143,7 @@ def main():
 
     json_string = serialize_row(data=DATA)
     if json_string is not None:
-        if generic_post.publish_data(anylog_conn=anylog_conn, topic=args.topic_name, payload=json_string) is False:
+        if data_management.publish_data(anylog_conn=anylog_conn, topic=args.topic_name, payload=json_string) is False:
             print(f"Failed to publish data against {conn} via POST")
 
 

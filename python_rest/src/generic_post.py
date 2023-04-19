@@ -166,35 +166,5 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
     return status
 
 
-def publish_data(anylog_conn:anylog_connector.AnyLogConnector, topic:str, payload:str):
-    """
-    Publish data into AnyLog via POST command
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-post-command
-    :args:
-        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
-        topic:str - topic to publish data against
-        payload:str - JSON string of data to publish
-    :params:
-        status:bool
-        headers:dict - REST header information
-        r:results.model.Response - request response
-    :return:
-        status
-    """
-    status = True
-    headers = {
-        'command': 'data',
-        'topic': topic,
-        'User-Agent': 'AnyLog/1.23',
-        'Content-Type': 'text/plain'
-    }
-
-    r = anylog_conn.post(headers=headers, payload=payload)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
-
 
 
