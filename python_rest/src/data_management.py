@@ -2,6 +2,59 @@ import pytz
 import anylog_connector
 
 
+def build_increment_function_example(table_name:str, timestamp_column:str="insert_timestamp",
+                                     time_interval:str="minute", units:int=1):
+    """
+    Build an example for interval function
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/queries.md#the-increment-function
+    :args:
+        table_name:str - logical table to query against
+        timestamp_column:str - timestamp column name
+        time_interval:str - time increments to consider
+        units:int - grouping of time intervals
+    :params:
+        cmd:str - generated SQL command
+    :return:
+        if invalid time_interval prints error + returns None
+        if valid time_interval returns SQL command
+    """
+    cmd = f"SELECT increment({time_interval}, {units}, {timestamp_column}), MIN({timestamp_column}), MAX({timestamp_column}), COUNT(*) FROM {table_name};"
+    if time_interval[-1] == "s":
+        time_interval = time_interval.rsplit("s", 1)[0]
+    if time_interval not in ["second", "minute", "day", "month", "year"]:
+        print(f"Invalid time interval {time_interval}. Supported Intervals: second, minute, day, month, year")
+        return None
+    return cmd
+
+
+def build_period_function_example(table_name:str, timestamp_column:str="insert_timestamp",  time_interval:str="minute",
+                                  units:int=1, period:str="NOW()"):
+    """
+    Build an example for period function
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/queries.md#the-period-function
+    :args:
+        table_name:str - logical table to query against
+        timestamp_column:str - timestamp column name
+        time_interval:str - time increments to consider
+        units:int - grouping of time intervals
+        period:str - last occurrence which is smaller or equal to the date-time.
+    :params:
+        cmd:str - generated SQL command
+    :return:
+        if invalid time_interval prints error + returns None
+        if valid time_interval returns SQL command
+    """
+    cmd = f"SELECT * FROM {table_name} WHERE period({time_interval}, {units}, {period}, {timestamp_column})"
+    if time_interval[-1] == "s":
+        time_interval = time_interval.rsplit("s", 1)[0]
+    if time_interval not in ["second", "minute", "day", "month", "year"]:
+        print(f"Invalid time interval {time_interval}. Supported Intervals: second, minute, day, month, year")
+        return None
+    return cmd
+
+
 def post_data(anylog_conn:anylog_connector.AnyLogConnector, topic:str, payload:str):
     """
     Publish data into AnyLog via POST command
