@@ -1,9 +1,11 @@
 import anylog_connector
 import find_location
+from generic_post import post_cmd
+from generic_get import get_cmd
 
 
 def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str, configuration:dict,
-                       cluster_id:str=None, exception:bool=False):
+                       cluster_id:str=None, scripts:list=[], exception:bool=False):
     """
     Create a node policy
     :args:
@@ -65,11 +67,16 @@ def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type
     elif city is not None and city != "city":
         new_policy[policy_type]["city"] = city
 
+    if isinstance(scripts, list) and scripts != []:
+        new_policy[policy_type]["scripts"] = scripts
+    elif isinstance(scripts, str):
+        new_policy[policy_type]["scripts"] = [scripts]
+
     return new_policy
 
 
 def run_synchronizer(anylog_conn:anylog_connector.AnyLogConnector, source:str, time:str, dest:str, connection:str,
-                     view_help:bool=False):
+                     destination:str=None, execute_cmd:bool=True, view_help:bool=False):
     """
     Initiate the blockchain sync process
     :url:
@@ -80,33 +87,25 @@ def run_synchronizer(anylog_conn:anylog_connector.AnyLogConnector, source:str, t
         dest:str - The destination of the blockchain data such as a file (a local file) or a DBMS (a local DBMS).
         The connection information that is needed to retrieve the data. For a Master, the IP and Port of the master/ledger node
         time:str - the frequency of updates.
-        view_help:bool - view help regarding command
-    :params
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
+    :params:
         status:bool
         headers:dict - REST header information
         r:requests.model.Response - response from REST request
     :return:
         status
     """
-    status = False
-    headers = {
-        "command": f"run blockchain sync where source={source} and time={time} and dest={dest} and connection={connection}",
-        "User-Agent": "AnyLog/1.23"
-    }
+    command= f"run blockchain sync where source={source} and time={time} and dest={dest} and connection={connection}",
 
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
-
-    r = anylog_conn.post(headers=headers)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
 
 
 def get_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str="*", where_conditions:dict=None,
-               bring_conditions:str=None, bring_values:str=None, separator:str=None, view_help:bool=False):
+               bring_conditions:str=None, bring_values:str=None, separator:str=None, destination:str=None,
+               execute_cmd:bool=True, view_help:bool=False):
     """
     execute `blockchain get` command
     :url:
@@ -118,7 +117,9 @@ def get_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str="*"
         bring_conditions:str - bring condition (ex. first, last, unique)
         bring_values:str - values to bring
         seperator:str - how to separate results if using bring command
-        view_help:bool - get informmation regarding command
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
     :params:
         headers:dict - REST header
         output:list - results
@@ -126,38 +127,39 @@ def get_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str="*"
         if help returns None
         else execute GET and return results
     """
-    headers = {
-        "command": f"blockchain get ({policy_type})",
-        "User-Agent": "AnyLog/1.23"
-    }
-
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
+    command = f"blockchain get (",
+    for policy in policy_type.split(','):
+        command += policy
+        if policy != policy_type.split(','):
+            command += ","
+        else:
+            command += ")"
 
     if len(where_conditions) > 0:
-        headers["command"] += " where "
+        command += " where "
         for param in where_conditions:
             if isinstance(where_conditions[param], int) or isinstance(where_conditions[param], float):
-                headers["command"] += f"{param}={where_conditions[param]} "
+                command += f"{param}={where_conditions[param]} "
             else:
-                headers["command"] += f'{param}="{where_conditions[param]}" '
+                command += f'{param}="{where_conditions[param]}" '
             if param != list(where_conditions.keys())[-1]:
-                headers["command"] += "and "
+                command += "and "
     if bring_conditions is not None or bring_values is not None:
         if bring_conditions is not None:
-            headers["command"] += f" bring.{bring_conditions} "
+            command += f" bring.{bring_conditions} "
         else:
-            headers["command"] += f" bring "
+            command += f" bring "
         if bring_values is not None:
-            headers["command"] += f" {bring_values}"
+            command += f" {bring_values}"
         if separator is not None:
-            headers["command"] += f" separator={separator}"
+            command += f" separator={separator}"
 
-    return anylog_conn.get(headers=headers)
+    return get_cmd(anylog_conn=anylog_conn, command=command, destination=destination, execute_cmd=execute_cmd,
+                   view_help=view_help)
 
 
-def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str, view_help:bool=False):
+def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str, destination:str=None,
+                   execute_cmd:bool=True, view_help:bool=False):
     """
     Prepare policy
     :url:
@@ -165,32 +167,24 @@ def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str, vie
     :args:
         anylog_conn:anylog_connector.AnyLogConnector
         policy:str - policy to publish
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
     :params:
         status:bool
         headers:dict - REST headers
     :return:
         status
     """
-    status = True
-    headers = {
-        "command": "blockchain prepare policy !new_policy",
-        "User-Agent": "AnyLog/1.23"
-    }
+    command = "blockchain prepare policy !new_policy",
     payload = f"<new_policy={policy}>"
 
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
-
-    r = anylog_conn.post(headers=headers, payload=payload)
-    if int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=payload, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
 
 
 def publish_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str=None, local:bool=True, ledger_conn:str=None,
-                   blockchain:str=None, view_help:bool=False):
+                   blockchain:str=None, destination:str=None, execute_cmd:bool=True, view_help:bool=False):
     """
     Publish policy to blockchain
     :url:
@@ -201,30 +195,24 @@ def publish_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str=None
         local:bool - whether to store locally
         ledger_conn:str - master node
         blockchain:str - blockchain
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
     :params:
         headers:dict - REST headers
 
     """
     status = True
-    headers = {
-        "command": f"blockchain insert where policy=!new_policy",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
+    command = "blockchain insert where policy=!new_policy"
 
     if policy is not None:
         payload = f"<new_policy={policy}>"
     if local is True:
-        headers["command"] += f" and local={local}"
+        command += f" and local={local}"
     if ledger_conn is not None:
-        headers["command"] += f" and master={ledger_conn}"
+        command += f" and master={ledger_conn}"
     if blockchain is not None:
-        headers += f" and blockchain={blockchain}"
+        command += f" and blockchain={blockchain}"
 
-    r = anylog_conn.post(headers=headers, payload=payload)
-    if int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=payload, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
