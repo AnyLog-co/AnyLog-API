@@ -39,6 +39,38 @@ def post_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, payload:
     return headers["command"]
 
 
+def add_dictionary_params(anylog_conn:anylog_connector.AnyLogConnector, values:dict, literal_set:bool=False,
+                          destination:str=None, execute_cmd:bool=True, view_help:bool=False):
+    """
+    Add [literal] variable(s)  to AnyLog dictionary
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - Connection to AnyLog node
+        values:dict - key/value pairs to store in AnyLog dictionary
+        literal_set:bool - whether to store value to key literal or execute (if possible)
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - execute `help` against cmd
+    :params:
+        cmd:str - based
+    """
+    for key in values:
+        if values[key] is True:
+            cmd = f"{key}=true"
+        elif values[key] is False:
+            cmd = f"{key}=false"
+        elif values[key] in ['', ""]:
+            cmd = f'{key}=""'
+        elif type(values[key]) in [int, float]:
+            cmd = f'{key}={values[key]}'
+        elif literal_set is True:
+            cmd = f'{key}="{values[key]}"'
+        elif literal_set is False:
+            cmd = f'{key}={values[key]}'
+
+        post_cmd(anylog_conn=anylog_conn, command=cmd, payload=None, destination=destination, execute_cmd=execute_cmd,
+                 view_help=view_help)
+
+
 def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:str, destination:str=None,
                     execute_cmd:bool=True, view_help:bool=False):
     """
@@ -62,7 +94,7 @@ def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:st
     """
     command = f"set license where activation_key = {license_key}",
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
                     execute_cmd=execute_cmd, view_help=view_help)
 
 
@@ -92,7 +124,7 @@ def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:
     if schedule_number is not None:
         command += " " + str(schedule_number)
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
                     execute_cmd=execute_cmd, view_help=view_help)
 
 
@@ -130,7 +162,7 @@ def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, tas
         command += f" and start={start}"
     command += f' task {task}'
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
                     execute_cmd=execute_cmd, view_help=view_help)
 
 
@@ -186,7 +218,7 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
                 command += f' and column.{key}=(type={params[key]["type"]} and value=\"{params[key]["value"]}\")'
     command += ")"
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
                     execute_cmd=execute_cmd, view_help=view_help)
 
 

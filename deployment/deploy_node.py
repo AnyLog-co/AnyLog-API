@@ -8,6 +8,7 @@ import generic_get
 import generic_post
 
 import master
+import query
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
 
@@ -85,7 +86,7 @@ def main():
     if configuration['node_type'] in ['publisher', 'standalone-publisher']:
         pass
     if configuration['node_type'] in ['query']:
-        pass
+        query.deploy_node(anylog_conn=anylog_conn, configuration=configuration, exception=args.exception)
 
     print(generic_get.get_processes(anylog_conn=anylog_conn, json_format=False, view_help=False))
 

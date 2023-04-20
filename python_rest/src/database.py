@@ -1,8 +1,10 @@
 import anylog_connector
+from generic_get import get_cmd
+from generic_post import post_cmd
 
 
 def check_database(anylog_conn:anylog_connector.AnyLogConnector, db_name:str=None, json_format:bool=False,
-                   view_help:bool=False):
+                   destination:str=None, execute_cmd:bool=True, view_help:bool=False):
     """
     Check whether database exists
     :url:
@@ -11,7 +13,9 @@ def check_database(anylog_conn:anylog_connector.AnyLogConnector, db_name:str=Non
         anylog_conn:anylog_connector.AnyLogConnector - AnyLog connection
         db_name:str - logical database name
         json_format:bool - whether to get JSON format
-        view_help:bool - whether to print help information regarding command
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
     :params:
         status:bool
         headers:dict - REST headers
@@ -21,29 +25,24 @@ def check_database(anylog_conn:anylog_connector.AnyLogConnector, db_name:str=Non
         True/False - if db_name is not None
         output - output from command
     """
-    headers = {
-        "command": "get databases",
-        "User-Agent": "AnyLog/1.23"
-    }
-
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
+    command = "get databases"
     if json_format is True:
-        headers["command"] += " where format=json"
+        command += " where format=json"
 
-    output = anylog_conn.get(headers=headers)
+    output = get_cmd(anylog_conn=anylog_conn, command=command, destination=destination, execute_cmd=execute_cmd,
+                     view_help=view_help)
+
     if db_name is not None:
         status = False
         if db_name in output:
             status = True
         return status
-    else:
-        return output
+
+    return output
 
 
 def check_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str=None, json_format:bool=False,
-                view_help:bool=False):
+                destination:str=None, execute_cmd:bool=True, view_help:bool=False):
     """
     check whether table exists in a given database
     :url:
@@ -53,7 +52,9 @@ def check_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, table
         db_name:str - logical database name
         table_name:str - table to check 
         json_format:bool - whether to get JSON format
-        view_help:bool - whether to print help information regarding command
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
     :param:
         status:bool
         headers:dict - REST headers
@@ -63,32 +64,27 @@ def check_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, table
         True/False - if db_name is not None
         output - output from command
     """
-    status = False
-    headers = {
-        "command": f"get tables where dbms={db_name}",
-        "User-Agent": "AnyLog/1.23"
-    }
-
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
+    command = f"get tables where dbms={db_name}",
     if json_format is True:
-        headers["command"] += " and format=json"
+        command += " and format=json"
 
-    output = anylog_conn.get(headers=headers)
+    output = get_cmd(anylog_conn=anylog_conn, command=command, destination=destination, execute_cmd=execute_cmd,
+                     view_help=view_help)
+
     if table_name is not None:
+        status = False
         if db_name in output:
             if table_name in output[db_name]:
                 if "local" in output[db_name][table_name] and output[db_name][table_name]["local"] is True:
                     status = True
-    else:
-        return output
+        return status
 
-    return status
+    return output
 
 
 def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', ip:str=None,
-                 port:int=None, user:str=None, password=None, memory:bool=False, view_help:bool=False):
+                 port:int=None, user:str=None, password=None, memory:bool=False,
+                 destination:str=None, execute_cmd:bool=True, view_help:bool=False):
     """
     connect to logical database
     :url:
@@ -102,7 +98,9 @@ def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, db_t
         user:str - username recognized by the database
         password;str - user dbms password
         memory:bool - whether database is in memory or not (usually with SQLite)
-        view_help:bool - whether to print help information regarding command
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
     :params:
         status:bool
         headers:dict - REST headers
@@ -111,42 +109,33 @@ def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, db_t
         True - success
         False - fails
     """
-    status = True
-    headers = {
-        "command": f"connect dbms {db_name} where type={db_type}",
-        "User-Agent": "AnyLog/1.23"
-    }
-
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
-
+    command = f"connect dbms {db_name} where type={db_type}",
     if ip is not None:
-        headers['command'] += f" and ip={ip}"
+        command += f" and ip={ip}"
     if port is not None:
-        headers['command'] += f" and port={port}"
+        command += f" and port={port}"
     if user is not None:
-        headers['command'] += f" and user={user}"
+        command += f" and user={user}"
     if password is not None:
-        headers['command'] += f" and password={password}"
+        command += f" and password={password}"
     if memory is True:
-        headers['command'] += f" and memory=true"
+        command += f" and memory=true"
 
-    r = anylog_conn.post(headers=headers)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
 
 
-def create_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str=None, view_help:bool=False):
+def create_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str=None, destination:str=None,
+                 execute_cmd:bool=True, view_help:bool=False):
     """
     Create table on a given database
     :args:
         anylog_conn:anylog_connector.AnyLogConnector - AnyLog connection
         db_name:str - logical database name
         db_name:str - table to create on given database
-        view_help:bool - whether to print help information regarding command
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - whether to print help information
     :args:
         status:bool
         headers:dict - REST headers
@@ -155,18 +144,7 @@ def create_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, tabl
         True - success
         False - fails
     """
-    status = True
-    headers = {
-        "command": f"create table {table_name} where dbms={db_name}",
-        "User-Agent": "AnyLog/1.23"
-    }
+    command = f"create table {table_name} where dbms={db_name}",
 
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
-
-    r = anylog_conn.post(headers=headers)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
