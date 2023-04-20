@@ -1,10 +1,9 @@
 import argparse
 import datetime
-import json
 import random
 import uuid
 
-import deployment_support
+import support
 
 import anylog_connector
 import generic_get
@@ -31,20 +30,6 @@ DATA = [
         'unit': 'Celsius'
     }
 ]
-
-
-def serialize_row(data:dict):
-    """
-    Serialize data
-    :args:
-        data:dict - content to serialize
-    :return:
-        dict as JSON string(s)
-    """
-    try:
-        return json.dumps(data)
-    except Exception as error:
-        print(f"Failed to serialize data")
 
 
 def main():
@@ -89,7 +74,7 @@ def main():
         json_string:str - JSON string of Data
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('rest_conn', type=deployment_support.validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
+    parser.add_argument('rest_conn', type=support.validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument("--topic-name", type=str, default="new-topic", help="Topic name")
     parser.add_argument("--db-name", type=str, default="test", help="logical database to store data in")
     parser.add_argument("--table-name", type=str, default="sample_data", help="table to store data in")
@@ -99,9 +84,9 @@ def main():
     parser.add_argument('-e', '--exception', type=bool, nargs='?', const=True, default=False, help='Whether to print errors')
     args = parser.parse_args()
 
-    conn, auth = deployment_support.anylog_connection(rest_conn=args.rest_conn)
+    conn, auth = support.anylog_connection(rest_conn=args.rest_conn)
     anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=args.timeout, exception=args.exception)
-    broker, broker_auth = deployment_support.anylog_connection(rest_conn=args.mqtt_configs)
+    broker, broker_auth = support.anylog_connection(rest_conn=args.mqtt_configs)
     broker_ip, broker_port = broker.split(":")
     broker_user = None
     broker_password = None
@@ -141,7 +126,7 @@ def main():
                                         view_help=False) is False:
             print(f"Failed to declare MQTT client process against {conn}")
 
-    json_string = serialize_row(data=DATA)
+    json_string = support.serialize_row(data=DATA)
     if json_string is not None:
         if data_management.post_data(anylog_conn=anylog_conn, topic=args.topic_name, payload=json_string) is False:
             print(f"Failed to publish data against {conn} via POST")

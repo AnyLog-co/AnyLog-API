@@ -1,7 +1,7 @@
 import argparse
 import pytz
 
-import deployment_support
+import support
 
 import anylog_connector
 import data_management
@@ -38,7 +38,7 @@ def main():
         output:str - results
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('rest_conn', type=deployment_support.validate_conn_pattern, default='127.0.0.1:2049',
+    parser.add_argument('rest_conn', type=support.validate_conn_pattern, default='127.0.0.1:2049',
                         help='REST connection information')
     parser.add_argument("--db-name", type=str, default="test", help="logical database to store data in")
     parser.add_argument("--table-name", type=str, default="sample_data", help="table to store data in")
@@ -59,7 +59,7 @@ def main():
                         help='Whether to print errors')
     args = parser.parse_args()
 
-    conn, auth = deployment_support.anylog_connection(rest_conn=args.rest_conn)
+    conn, auth = support.anylog_connection(rest_conn=args.rest_conn)
     anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=args.timeout, exception=args.exception)
 
     for sql_query in [

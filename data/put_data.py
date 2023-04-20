@@ -1,11 +1,10 @@
 import argparse
 import datetime
-import json
 import random
 import uuid
 
 import anylog_connector
-import deployment_support
+import support
 import data_management
 
 DATA = [
@@ -30,18 +29,6 @@ DATA = [
 ]
 
 
-def serialize_row(data:dict):
-    """
-    Serialize data
-    :args:
-        data:dict - content to serialize
-    :return:
-        dict as JSON string(s)
-    """
-    try:
-        return json.dumps(data)
-    except Exception as error:
-        print(f"Failed to serialize data")
 
 
 def main():
@@ -86,7 +73,7 @@ def main():
         json_string:str - JSON string of Data
     """
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('rest_conn', type=deployment_support.validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
+    parser.add_argument('rest_conn', type=support.validate_conn_pattern, default='127.0.0.1:2049', help='REST connection information')
     parser.add_argument("--db-name", type=str, default="test", help="logical database to store data in")
     parser.add_argument("--table-name", type=str, default="sample_data", help="table to store data in")
     parser.add_argument('--timeout', type=int, default=30, help='REST timeout')
@@ -94,10 +81,10 @@ def main():
     parser.add_argument('-e', '--exception', type=bool, nargs='?', const=True, default=False, help='Whether to print errors')
     args = parser.parse_args()
 
-    conn, auth = deployment_support.anylog_connection(rest_conn=args.rest_conn)
+    conn, auth = support.anylog_connection(rest_conn=args.rest_conn)
     anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=args.timeout, exception=args.exception)
 
-    json_string = serialize_row(data=DATA)
+    json_string = support.serialize_row(data=DATA)
     if data_management.put_data(anylog_conn=anylog_conn, payload=json_string, db_name=args.db_name,
                                 table_name=args.table_name, mode=args.mode) is False:
         print(f"Failed to publish data against {conn} via PUT")
