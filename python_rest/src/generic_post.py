@@ -9,6 +9,7 @@ def post_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, payload:
         anylog_conn:anylog_connector.AnyLogConnector - Connection to AnyLog node
         cmd:str - command to execute
         payload:str - content to send over POST
+        destination:str - destination to send request against (ie `run client`)
         execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `get status`
     :params:
@@ -38,8 +39,8 @@ def post_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, payload:
     return headers["command"]
 
 
-def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:str, execute_cmd:bool=True,
-                    view_help:bool=False):
+def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:str, destination:str=None,
+                    execute_cmd:bool=True, view_help:bool=False):
     """
     Set license key
     :url:
@@ -47,6 +48,7 @@ def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:st
     :args:
         anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
         license_key:str - license key
+        destination:str - destination to send request against (ie `run client`)
         execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `set license`
     :params:
@@ -60,11 +62,12 @@ def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:st
     """
     command = f"set license where activation_key = {license_key}",
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
 
 
-def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:int=None, execute_cmd:bool=True,
-                  view_help:bool=False):
+def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:int=None, destination:str=None,
+                  execute_cmd:bool=True, view_help:bool=False):
     """
     Execute `run scheduler 1` command
     :url:
@@ -72,6 +75,7 @@ def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:
     :args:
         anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
         schedule_number:int - schedule number (ex `run schedule 1`
+        destination:str - destination to send request against (ie `run client`)
         execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `set license`
     :params:
@@ -85,15 +89,15 @@ def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:
     """
     command = "run scheduler"
 
-
     if schedule_number is not None:
         command += " " + str(schedule_number)
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
 
 
 def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, task:str, start:str=None, name:str=None,
-                     execute_cmd:bool=True, view_help:bool=False):
+                     destination:str=None, execute_cmd:bool=True, view_help:bool=False):
     """
     Declare new scheduled process
     :url:
@@ -104,6 +108,8 @@ def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, tas
         task:str - process (cmd) to run
         start:str - Scheduled start time for first execution of the task. The default value is the current day and time.
         name:str - name of the scheduled task
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - whether to print help information
     :params:
         status:bool
@@ -124,12 +130,13 @@ def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, tas
         command += f" and start={start}"
     command += f' task {task}'
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
 
 
 def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, port:str, user:str=None, password:str=None,
                     log:bool=False, topic_name:str='*', db_name:str=None, table_name:str=None, params:dict={},
-                    execute_cmd:bool=True, view_help:bool=False):
+                    destination:str=None, execute_cmd:bool=True, view_help:bool=False):
     """
     Execute `run mqtt client` command
     :args:
@@ -143,6 +150,7 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
         db_name:str - logical databsae name
         table_name:str - logical table name
         params:dict - topic parameters (such as timestamp and value)
+        destination:str - destination to send request against (ie `run client`)
         execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `set license`
     :params:
@@ -178,7 +186,8 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
                 command += f' and column.{key}=(type={params[key]["type"]} and value=\"{params[key]["value"]}\")'
     command += ")"
 
-    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
 
 
 
