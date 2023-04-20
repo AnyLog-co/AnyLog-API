@@ -85,7 +85,8 @@ def run_synchronizer(anylog_conn:anylog_connector.AnyLogConnector, source:str, t
         anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog via REST
         source:str - the source of the metadata (blockchain or a Master Node)
         dest:str - The destination of the blockchain data such as a file (a local file) or a DBMS (a local DBMS).
-        The connection information that is needed to retrieve the data. For a Master, the IP and Port of the master/ledger node
+        connection - the connection information that is needed to retrieve the data.
+            For a Master, the IP and Port of the master/ledger node
         time:str - the frequency of updates.
         destination:str - destination to send request against (ie `run client`)
         execute_cmd:bool - execute a given command, if False, then return command
