@@ -1,12 +1,15 @@
 import anylog_connector
 
 
-def post_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, view_help:bool=False):
+def post_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, payload:str=None, destination:str=None,
+             execute_cmd:bool=True, view_help:bool=False):
     """
     execute a generic POST command
     :args:
         anylog_conn:anylog_connector.AnyLogConnector - Connection to AnyLog node
         cmd:str - command to execute
+        payload:str - content to send over POST
+        execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `get status`
     :params:
         status:bool
@@ -16,7 +19,6 @@ def post_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, view_hel
         False - if request failed
         None -  if viewed help
     """
-    status = True
     headers = {
         "command": command,
         "User-Agent": "AnyLog/1.23"
@@ -25,14 +27,19 @@ def post_cmd(anylog_conn:anylog_connector.AnyLogConnector, command:str, view_hel
     if view_help is True:
         anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
         return None
+    elif execute_cmd is True:
+        if destination is not None:
+            headers["destination"] = destination
+        r = anylog_conn.post(headers=headers, payload=payload)
+        if r is None or int(r.status_code) != 200:
+            return False
+        return True
 
-    r = anylog_conn.post(headers=headers)
-    if int(r.status_code) != 200:
-        status = False
-    return status
+    return headers["command"]
 
 
-def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:str, view_help:bool=False):
+def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:str, execute_cmd:bool=True,
+                    view_help:bool=False):
     """
     Set license key
     :url:
@@ -40,6 +47,7 @@ def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:st
     :args:
         anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
         license_key:str - license key
+        execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `set license`
     :params:
         status:bool
@@ -50,24 +58,13 @@ def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:st
         False - if fails
         True - if succeed
     """
-    status = True
-    headers = {
-        "command": f"set license where activation_key = {license_key}",
-        "User-Agent": "AnyLog/1.23"
-    }
+    command = f"set license where activation_key = {license_key}",
 
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
-
-    r = anylog_conn.post(headers=headers)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
 
 
-def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:int=None, view_help:bool=False):
+def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:int=None, execute_cmd:bool=True,
+                  view_help:bool=False):
     """
     Execute `run scheduler 1` command
     :url:
@@ -75,6 +72,7 @@ def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:
     :args:
         anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
         schedule_number:int - schedule number (ex `run schedule 1`
+        execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `set license`
     :params:
         status:bool
@@ -85,29 +83,17 @@ def run_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:
         False - if fails
         True - if succeed
     """
-    status = True
-    status = True
-    headers = {
-        "command": "run scheduler",
-        "User-Agent": "AnyLog/1.23"
-    }
+    command = "run scheduler"
 
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
 
     if schedule_number is not None:
-        headers["command"] += " " + str(schedule_number)
+        command += " " + str(schedule_number)
 
-    r = anylog_conn.post(headers=headers)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
 
 
 def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, task:str, start:str=None, name:str=None,
-                     view_help:bool=False):
+                     execute_cmd:bool=True, view_help:bool=False):
     """
     Declare new scheduled process
     :url:
@@ -130,31 +116,20 @@ def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, tas
     :note:
         for schedule to start user needs to invoke it
     """
-    status = None
-    headers = {
-        "command": f"schedule time={time}",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
-        return None
+    command = f"schedule time={time}",
 
     if name is not None:
-        headers["command"] += f" and name={name}"
+        command += f" and name={name}"
     if start is not None:
-        headers["command"] += f" and start={start}"
-    headers["command"] += f' task {task}'
+        command += f" and start={start}"
+    command += f' task {task}'
 
-    r = anylog_conn.post(headers=headers)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
 
 
 def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, port:str, user:str=None, password:str=None,
                     log:bool=False, topic_name:str='*', db_name:str=None, table_name:str=None, params:dict={},
-                    view_help:bool=False):
+                    execute_cmd:bool=True, view_help:bool=False):
     """
     Execute `run mqtt client` command
     :args:
@@ -168,6 +143,7 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
         db_name:str - logical databsae name
         table_name:str - logical table name
         params:dict - topic parameters (such as timestamp and value)
+        execute_cmd:bool - execute a given command, if False, then return command
         view_help:bool - execute `help` against `set license`
     :params:
         status:bool
@@ -176,44 +152,33 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
     :return:
         status
     """
-    status = True
-    headers = {
-        "command": f"run mqtt client where broker={broker} and port={port}",
-        "User-Agent": "AnyLog/1.23"
-    }
+    command = f"run mqtt client where broker={broker} and port={port}",
 
-    if view_help is True:
-        anylog_connector.view_help(anylog_conn=anylog_conn, cmd=headers['command'])
     if broker == "rest":
-        headers["command"] += " and user-agent=anylog"
+        command += " and user-agent=anylog"
     if user is not None:
-        headers["command"] += f" and user={user}"
+        command += f" and user={user}"
     if password is not None:
-        headers["command"] += f" and password={password}"
+        command += f" and password={password}"
     if log is True:
-        headers["command"] += f" and log=true"
+        command += f" and log=true"
     else:
-        headers["command"] += f" and log=false"
+        command += f" and log=false"
 
-    headers["command"] += f" and topic=(name={topic_name}"
+    command += f" and topic=(name={topic_name}"
     if db_name is not None and table_name is not None:
-        headers["command"] += f" and dbms={db_name} and table={table_name}"
+        command += f" and dbms={db_name} and table={table_name}"
         for key in params:
             if params[key]["type"] == "timestamp":
                 if "bring" in params[key]["value"]:
-                    headers["command"] += f' and column.{key}.timestamp=\"{params[key]["value"]}\"'
+                    command += f' and column.{key}.timestamp=\"{params[key]["value"]}\"'
                 else:
-                    headers["command"] += f' and column.{key}.timestamp={params[key]["value"]}'
+                    command += f' and column.{key}.timestamp={params[key]["value"]}'
             else:
-                headers["command"] += f' and column.{key}=(type={params[key]["type"]} and value=\"{params[key]["value"]}\")'
+                command += f' and column.{key}=(type={params[key]["type"]} and value=\"{params[key]["value"]}\")'
+    command += ")"
 
-    headers["command"] += ")"
-
-    r = anylog_conn.post(headers=headers)
-    if r is None or int(r.status_code) != 200:
-        status = False
-
-    return status
+    return post_cmd(anylog_conn=anylog_conn, cmd=command, payload=None, execute_cmd=execute_cmd, view_help=view_help)
 
 
 
