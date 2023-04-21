@@ -7,6 +7,7 @@ import file_io
 import anylog_connector
 import database
 import generic_get
+import generic_post
 
 
 def validate_conn_pattern(conn:str)->str:
@@ -65,12 +66,12 @@ def prepare_dictionary(anylog_conn:anylog_connector.AnyLogConnector, config_file
     :return:
         configs
     """
-    anylog_configs = generic_get.get_dictionary(anylog_conn=anylog_conn, json_format=True, view_help=False)
     configs = file_io.read_configs(config_file=config_file, exception=exception)
+    anylog_configs = generic_get.get_dictionary(anylog_conn=anylog_conn, json_format=True, view_help=False)
 
-    for config in anylog_configs:
-        if config not in configs:
-            configs[config] = anylog_configs[config]
+    for key in anylog_configs:
+        if key not in configs:
+            configs[key] = anylog_configs[key]
 
     return configs
 

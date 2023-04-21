@@ -119,8 +119,22 @@ def get_dictionary(anylog_conn:anylog_connector.AnyLogConnector, json_format:boo
     if json_format is True:
         command += " where format=json"
 
+
     return get_cmd(anylog_conn=anylog_conn, command=command, destination=destination, execute_cmd=execute_cmd,
                    view_help=view_help)
+    #
+    # if json_format is True:
+    #     for key in output:
+    #         try:
+    #             output[key] = int(output[key])
+    #         except:
+    #             if isinstance()
+    #             if output[key].capitalize() == "True":
+    #                 output[key] = True
+    #             if output[key].capitalize() == "True":
+    #                 output[key] == "False"
+    #                 output[key] = False
+    # return output
 
 
 def get_processes(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool=True, destination:str=None,
