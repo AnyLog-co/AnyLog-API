@@ -1,4 +1,3 @@
-import ast
 import dotenv
 import os
 
@@ -70,6 +69,7 @@ def __lower_case(configs:dict):
             elif configs[key].capitalize() == "False":
                 updated_configs[updated_key] = False
     return updated_configs
+
 
 def generic_write(file_path:str, content:str, exception:bool=False)->bool:
     """

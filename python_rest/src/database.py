@@ -109,7 +109,7 @@ def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, db_t
         True - success
         False - fails
     """
-    command = f"connect dbms {db_name} where type={db_type}",
+    command = f"connect dbms {db_name} where type={db_type}"
     if ip is not None:
         command += f" and ip={ip}"
     if port is not None:
@@ -144,7 +144,7 @@ def create_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, tabl
         True - success
         False - fails
     """
-    command = f"create table {table_name} where dbms={db_name}",
+    command = f"create table {table_name} where dbms={db_name}"
 
     return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
                     execute_cmd=execute_cmd, view_help=view_help)

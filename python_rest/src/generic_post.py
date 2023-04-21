@@ -55,17 +55,17 @@ def add_dictionary_params(anylog_conn:anylog_connector.AnyLogConnector, values:d
     """
     for key in values:
         if values[key] is True:
-            cmd = f"{key}=true"
+            cmd = f"{key.lower()}=true"
         elif values[key] is False:
-            cmd = f"{key}=false"
+            cmd = f"{key.lower()}=false"
         elif values[key] in ['', ""]:
-            cmd = f'{key}=""'
+            cmd = f'{key.lower()}=""'
         elif type(values[key]) in [int, float]:
-            cmd = f'{key}={values[key]}'
+            cmd = f'{key.lower()}={values[key]}'
         elif literal_set is True:
-            cmd = f'{key}="{values[key]}"'
+            cmd = f'{key.lower()}="{values[key]}"'
         elif literal_set is False:
-            cmd = f'{key}={values[key]}'
+            cmd = f'{key.lower()}={values[key]}'
 
         post_cmd(anylog_conn=anylog_conn, command=cmd, payload=None, destination=destination, execute_cmd=execute_cmd,
                  view_help=view_help)
@@ -92,8 +92,32 @@ def set_license_key(anylog_conn:anylog_connector.AnyLogConnector, license_key:st
         False - if fails
         True - if succeed
     """
-    command = f"set license where activation_key = {license_key}",
+    command = f"set license where activation_key = {license_key}"
 
+    return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
+                    execute_cmd=execute_cmd, view_help=view_help)
+
+
+def policy_config(anylog_conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str=None,
+                  execute_cmd:bool=True, view_help:bool=False):
+    """
+    configure node based on policy
+    :url:
+         https://github.com/AnyLog-co/documentation/blob/master/policies.md#assigning-a-configuration-policy-to-a-node
+    :args:
+        anylog_conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        policy_id:str - Policy ID
+        destination:str - destination to send request against (ie `run client`)
+        execute_cmd:bool - execute a given command, if False, then return command
+        view_help:bool - execute `help` against `set license`
+    :params:
+        command:str - command to execute
+    :return:
+        None - if help
+        False - if fails
+        True - if succeed
+    """
+    command = f"config from policy where id={policy_id}"
     return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
                     execute_cmd=execute_cmd, view_help=view_help)
 
@@ -215,7 +239,7 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
                 else:
                     command += f' and column.{key}.timestamp={params[key]["value"]}'
             else:
-                command += f' and column.{key}=(type={params[key]["type"]} and value=\"{params[key]["value"]}\")'
+                command += f' and column.{key.lower()}=(type={params[key]["type"]} and value=\"{params[key]["value"]}\")'
     command += ")"
 
     return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,

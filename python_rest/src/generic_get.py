@@ -115,8 +115,9 @@ def get_dictionary(anylog_conn:anylog_connector.AnyLogConnector, json_format:boo
     :return:
         AnyLog dictionary
     """
-    status = False
     command = "get dictionary"
+    if json_format is True:
+        command += " where format=json"
 
     return get_cmd(anylog_conn=anylog_conn, command=command, destination=destination, execute_cmd=execute_cmd,
                    view_help=view_help)

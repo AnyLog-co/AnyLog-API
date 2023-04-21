@@ -67,6 +67,7 @@ def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type
     elif city is not None and city != "city":
         new_policy[policy_type]["city"] = city
 
+    # new_policy[policy_type]["scripts"] = scripts
     if isinstance(scripts, list) and scripts != []:
         new_policy[policy_type]["scripts"] = scripts
     elif isinstance(scripts, str):
@@ -98,7 +99,7 @@ def run_synchronizer(anylog_conn:anylog_connector.AnyLogConnector, source:str, t
     :return:
         status
     """
-    command= f"run blockchain sync where source={source} and time={time} and dest={dest} and connection={connection}",
+    command=f"run blockchain sync where source={source} and time={time} and dest={dest} and connection={connection}"
 
     return post_cmd(anylog_conn=anylog_conn, command=command, payload=None, destination=destination,
                     execute_cmd=execute_cmd, view_help=view_help)
@@ -128,13 +129,13 @@ def get_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str="*"
         if help returns None
         else execute GET and return results
     """
-    command = f"blockchain get (",
-    for policy in policy_type.split(','):
-        command += policy
-        if policy != policy_type.split(','):
-            command += ","
-        else:
-            command += ")"
+    command = f"blockchain get {policy_type}"
+    if len(policy_type.split(",")) > 1:
+        command = f"blockchain get ("
+        for policy in policy_type.split(","):
+            command += f"{policy}, "
+            if policy == policy_type.split(",")[-1]:
+                command = command.rsplit(",")[0] + ")"
 
     if len(where_conditions) > 0:
         command += " where "
@@ -177,7 +178,7 @@ def prepare_policy(anylog_conn:anylog_connector.AnyLogConnector, policy:str, des
     :return:
         status
     """
-    command = "blockchain prepare policy !new_policy",
+    command = "blockchain prepare policy !new_policy"
     payload = f"<new_policy={policy}>"
 
     return post_cmd(anylog_conn=anylog_conn, command=command, payload=payload, destination=destination,

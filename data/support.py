@@ -2,7 +2,6 @@ import argparse
 import json
 import re
 
-import file_io
 
 import anylog_connector
 import generic_get
@@ -50,28 +49,6 @@ def anylog_connection(rest_conn:str)->(str, tuple):
         auth = tuple(rest_conn.split('@')[0].split(':'))
 
     return conn, auth
-
-
-def prepare_dictionary(anylog_conn:anylog_connector.AnyLogConnector, config_file:str, exception:bool=False):
-    """
-    Merge anylog dictionary with file configurations
-    :args:
-        anylog_conn:anylog_connector.AnyLogConnector - Connection to AnyLog via REST
-        config_file:str - configuration file
-        exception:bool - whether to print exceptions
-    :params:
-        configs:dict - merged configurations
-    :return:
-        configs
-    """
-    anylog_configs = generic_get.get_dictionary(anylog_conn=anylog_conn, json_format=True, view_help=False)
-    configs = file_io.read_configs(config_file=config_file, exception=exception)
-
-    for config in anylog_configs:
-        if config not in configs:
-            configs[config] = anylog_configs[config]
-
-    return configs
 
 
 def serialize_row(data:dict):
