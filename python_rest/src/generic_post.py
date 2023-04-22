@@ -178,7 +178,7 @@ def declare_schedule(anylog_conn:anylog_connector.AnyLogConnector, time:str, tas
     :note:
         for schedule to start user needs to invoke it
     """
-    command = f"schedule time={time}",
+    command = f"schedule time={time}"
 
     if name is not None:
         command += f" and name={name}"
@@ -216,7 +216,7 @@ def run_mqtt_client(anylog_conn:anylog_connector.AnyLogConnector, broker:str, po
     :return:
         status
     """
-    command = f"run mqtt client where broker={broker} and port={port}",
+    command = f"run mqtt client where broker={broker} and port={port}"
 
     if broker == "rest":
         command += " and user-agent=anylog"

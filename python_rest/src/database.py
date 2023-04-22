@@ -64,7 +64,7 @@ def check_table(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, table
         True/False - if db_name is not None
         output - output from command
     """
-    command = f"get tables where dbms={db_name}",
+    command = f"get tables where dbms={db_name}"
     if json_format is True:
         command += " and format=json"
 
@@ -110,14 +110,15 @@ def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, db_t
         False - fails
     """
     command = f"connect dbms {db_name} where type={db_type}"
-    if ip is not None:
-        command += f" and ip={ip}"
-    if port is not None:
-        command += f" and port={port}"
-    if user is not None:
-        command += f" and user={user}"
-    if password is not None:
-        command += f" and password={password}"
+    if db_type != 'sqlite':
+        if ip is not None:
+            command += f" and ip={ip}"
+        if port is not None:
+            command += f" and port={port}"
+        if user is not None:
+            command += f" and user={user}"
+        if password is not None:
+            command += f" and password={password}"
     if memory is True:
         command += f" and memory=true"
 

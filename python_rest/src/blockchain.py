@@ -5,7 +5,7 @@ from generic_get import get_cmd
 
 
 def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str, configuration:dict,
-                       cluster_id:str=None, scripts:list=[], exception:bool=False):
+                       cluster_id:str=None, exception:bool=False):
     """
     Create a node policy
     :args:
@@ -67,13 +67,32 @@ def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type
     elif city is not None and city != "city":
         new_policy[policy_type]["city"] = city
 
-    # new_policy[policy_type]["scripts"] = scripts
-    if isinstance(scripts, list) and scripts != []:
-        new_policy[policy_type]["scripts"] = scripts
-    elif isinstance(scripts, str):
-        new_policy[policy_type]["scripts"] = [scripts]
-
     return new_policy
+
+
+def create_config_policy(configs:dict={}, scripts:list=[]):
+    """
+    Generate a configuration policy
+    :args:
+        policy_name:str - policy name
+        network_configs:dict - network configuration
+            Note values are taken literally
+        scripts:list - list of scripts to execute
+    :params:
+        config_policy:dict - generated config policy
+    """
+    config_policy = {
+        "config": {
+        }
+    }
+
+    for config in configs:
+        config_policy["config"][config] = configs[config]
+
+    if len(scripts) > 0 and isinstance(scripts, list):
+        config_policy["config"]["script"] = scripts
+
+    return config_policy
 
 
 def run_synchronizer(anylog_conn:anylog_connector.AnyLogConnector, source:str, time:str, dest:str, connection:str,

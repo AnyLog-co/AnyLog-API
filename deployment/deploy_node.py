@@ -8,7 +8,7 @@ import support
 import generic_get
 import generic_post
 
-# import master
+import master
 # import query
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
@@ -92,7 +92,8 @@ def main():
                     print(f"Failed to declare blockchain sync against {conn}")
 
     if configuration['node_type'] in ['master', 'ledger', 'standalone', 'standalone-publisher']:
-        print(scripts)
+        master.deploy_node(anylog_conn=anylog_conn, configuration=configuration, scripts=scripts,
+                           policy_deployment=args.policy_deployment, exception=args.exception)
     if configuration['node_type'] in ['operator', 'standalone']:
         pass
     if configuration['node_type'] in ['publisher', 'standalone-publisher']:

@@ -1,5 +1,5 @@
 import argparse
-import os.path
+import json
 import re
 
 import file_io
@@ -7,7 +7,6 @@ import file_io
 import anylog_connector
 import database
 import generic_get
-import generic_post
 
 
 def validate_conn_pattern(conn:str)->str:
@@ -53,6 +52,19 @@ def anylog_connection(rest_conn:str)->(str, tuple):
 
     return conn, auth
 
+def serialize_row(data:dict):
+    """
+    Serialize data
+    :args:
+        data:dict - content to serialize
+    :return:
+        dict as JSON string(s)
+    """
+    try:
+        return json.dumps(data)
+    except Exception as error:
+        print(f"Failed to serialize data")
+
 
 def prepare_dictionary(anylog_conn:anylog_connector.AnyLogConnector, config_file:str, exception:bool=False):
     """
@@ -96,7 +108,7 @@ def check_synchronizer(anylog_conn:anylog_connector.AnyLogConnector):
     return status
 
 
-def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, configurations:dict):
+def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, configurations:dict, execute_cmd:bool=False):
     """
     Connect to logical (SQL) database
     :args:
@@ -131,6 +143,25 @@ def connect_dbms(anylog_conn:anylog_connector.AnyLogConnector, db_name:str, conf
         memory = configurations['memory']
 
     return database.connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=configurations['db_type'],
-                                 ip=ip, port=port, user=user, password=password, memory=memory, view_help=False)
+                                 ip=ip, port=port, user=user, password=password, memory=memory, execute_cmd=execute_cmd,
+                                 view_help=False)
+
+
+def build_where_condition(configuration:dict):
+    where_conditions = {
+        "name": configuration['node_name'],
+        "company": configuration['company_name'],
+        "port": configuration['anylog_server_port'],
+        "rest_port": configuration['anylog_rest_port']
+    }
+
+    if "tcp_bind" in configuration and configuration["tcp_bind"] is False:
+        where_conditions["ip"] = configuration["external_ip"]
+        where_conditions["local_ip"] = configuration["ip"]
+    elif "tcp_bind" in configuration and configuration["tcp_bind"] is False:
+        where_conditions["external_ip"] = configuration["external_ip"]
+        where_conditions["ip"] = configuration["ip"]
+
+    return where_conditions
 
 

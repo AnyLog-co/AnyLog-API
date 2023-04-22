@@ -119,22 +119,8 @@ def get_dictionary(anylog_conn:anylog_connector.AnyLogConnector, json_format:boo
     if json_format is True:
         command += " where format=json"
 
-
     return get_cmd(anylog_conn=anylog_conn, command=command, destination=destination, execute_cmd=execute_cmd,
                    view_help=view_help)
-    #
-    # if json_format is True:
-    #     for key in output:
-    #         try:
-    #             output[key] = int(output[key])
-    #         except:
-    #             if isinstance()
-    #             if output[key].capitalize() == "True":
-    #                 output[key] = True
-    #             if output[key].capitalize() == "True":
-    #                 output[key] == "False"
-    #                 output[key] = False
-    # return output
 
 
 def get_processes(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool=True, destination:str=None,
@@ -196,7 +182,7 @@ def get_scheduler(anylog_conn:anylog_connector.AnyLogConnector, schedule_number:
         return output
     elif execute_cmd is True and schedule_number is None: # print schedule
         return output
-    elif "node declared" not in output and schedule_number is not None: # scheduled process is running
+    elif "not declared" not in output and schedule_number is not None: # scheduled process is running
         return True
     else: # scheduled process(es) not running
         return False
