@@ -158,7 +158,7 @@ def build_where_condition(configuration:dict):
     if "tcp_bind" in configuration and configuration["tcp_bind"] is False:
         where_conditions["ip"] = configuration["external_ip"]
         where_conditions["local_ip"] = configuration["ip"]
-    elif "tcp_bind" in configuration and configuration["tcp_bind"] is False:
+    elif "tcp_bind" in configuration and configuration["tcp_bind"] is True:
         where_conditions["external_ip"] = configuration["external_ip"]
         where_conditions["ip"] = configuration["ip"]
 

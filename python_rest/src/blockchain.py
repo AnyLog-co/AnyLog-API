@@ -1,70 +1,99 @@
 import anylog_connector
-import find_location
 from generic_post import post_cmd
 from generic_get import get_cmd
 
 
-def create_node_policy(anylog_conn:anylog_connector.AnyLogConnector, policy_type:str, configuration:dict,
-                       cluster_id:str=None, exception:bool=False):
+def create_cluster_policy(name:str, company_name:str, db_name:str=None, table_name:str=None, parent:str=None):
+    """
+    Create cluster policy
+    :args:
+        name:str - cluster name
+        company_name:str - company cluster is associated with
+        db_name:str - logical database name
+        table_name:str - logical table for a given cluster
+        parent:str - cluster parent ID
+    :params;
+        new_policy:dict  - generated policy
+    :return:
+        new_policy
+    """
+    new_policy = {
+        "cluster": {
+            "name": name,
+            "company": company_name
+        }
+    }
+
+    if parent is not None:
+        new_policy["cluster"]["parent"] = parent
+
+    if db_name is not None and table_name is not None:
+        new_policy["cluster"]["table"] = {
+            "dbms": db_name,
+            "table": table_name
+        }
+    elif db_name is not None:
+        new_policy["cluster"]["dbms"] = db_name
+
+    return new_policy
+
+
+def create_node_policy(policy_type:str, node_name:str, company_name:str, ip:str, server_port:int, hostname:str=None,
+                       external_ip:str=None, rest_port:int=None, broker_port:int=None, proxy_ip:str=None,
+                       cluster_id:str=None, location:str=None, country:str=None, state:str=None, city:str=None):
     """
     Create a node policy
     :args:
-        anylog_conn:anylog_connector.AnyLogConnector - AnyLog REST connection
         policy_type:str - Node policy type (master, operator, query, publisher)
-        configuration:dict - configurations
+        node_name:str - node name
+        company_name:str - company
+        ip:str - IP address
+        server_port:int - AnyLog TCP port connection
+        hostname:str - hostname
+        external_ip:str - external IP
+        rest_port:int - AnyLog REST port connection
+        broekr_port:int - AnyLog Broker port connection
+        proxy_ip:str - proxy IP address
         cluster_id:str - Cluster ID for operator
-        exception:bool - whether to print exceptions
+        location:str - location coordinates
+        country:str
+        state:str
+        city:str
     :params:
         new_policy:dict - generated policy
-        location:str, country:str, state:str, city:str - location of machine
     :return
         new_policy
     """
-    new_policy = {policy_type: {}}
-    if "node_name" in configuration:
-        new_policy[policy_type]["name"] = configuration["node_name"]
-    if "company_name" in configuration:
-        new_policy[policy_type]["company"] = configuration["company_name"]
-    if "hostname" in configuration:
-        new_policy[policy_type]["hostname"] = configuration["hostname"]
+    new_policy = {policy_type: {
+        "name": node_name,
+        "company": company_name
+    }}
 
-    if "tcp_bind" in configuration and configuration["tcp_bind"] is False:
-        new_policy[policy_type]["ip"] = configuration["external_ip"]
-        new_policy[policy_type]["local_ip"] = configuration["ip"]
-    elif "tcp_bind" in configuration and configuration["tcp_bind"] is False:
-        new_policy[policy_type]["external_ip"] = configuration["external_ip"]
-        new_policy[policy_type]["ip"] = configuration["ip"]
+    if hostname is not None:
+        new_policy[policy_type]["hostname"] = hostname
 
-    if "proxy_ip" in configuration:
-        new_policy[policy_type]["proxy_ip"] = configuration["proxy_ip"]
+    new_policy[policy_type]["ip"] = ip
+    if external_ip is not None:
+        new_policy[policy_type]["external_ip"] = external_ip
+    if proxy_ip is not None:
+        new_policy[policy_type]["proxy_ip"] = proxy_ip
 
-    if "anylog_server_port" in configuration:
-        new_policy[policy_type]["port"] = configuration["anylog_server_port"]
-    if "anylog_rest_port" in configuration:
-        new_policy[policy_type]["rest_port"] = configuration["anylog_rest_port"]
-    if "anylog_server_port" in configuration:
-        new_policy[policy_type]["port"] = configuration["anylog_server_port"]
-    if "anylog_broker_port" in configuration:
-        new_policy[policy_type]["broker_port"] = configuration["anylog_broker_port"]
-    if policy_type == "operator" and cluster_id is not None:
+    new_policy[policy_type]["port"] = server_port
+    if rest_port is not None:
+        new_policy[policy_type]["rest_port"] = rest_port
+    if broker_port is not None:
+        new_policy[policy_type]["broker_port"] = broker_port
+
+    if cluster_id is not None and policy_type == "operator":
         new_policy[policy_type]["cluster"] = cluster_id
 
-    location, country, state, city = find_location.get_location(anylog_conn=anylog_conn, exception=exception)
-    if "location" in configuration and configuration["location"] != "Unknown":
-        new_policy[policy_type]["loc"] = configuration["location"]
-    elif location is not None and location != "location":
+    if location is not None:
         new_policy[policy_type]["loc"] = location
-    if "country" in configuration and configuration["country"] != "Unknown":
-        new_policy[policy_type]["country"] = configuration["country"]
-    elif country is not None and country != "country":
+    if country is not None:
         new_policy[policy_type]["country"] = country
-    if "state" in configuration and configuration["state"] != "Unknown":
-        new_policy[policy_type]["state"] = configuration["state"]
-    elif state is not None and state != "state":
+    if state is not None:
         new_policy[policy_type]["state"] = state
-    if "city" in configuration and configuration["city"] != "Unknown":
-        new_policy[policy_type]["city"] = configuration["city"]
-    elif city is not None and city != "city":
+    if city is not None:
         new_policy[policy_type]["city"] = city
 
     return new_policy

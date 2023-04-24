@@ -8,6 +8,7 @@ import support
 import generic_get
 import generic_post
 
+import declare_policy
 import master
 # import query
 
@@ -92,14 +93,19 @@ def main():
                     print(f"Failed to declare blockchain sync against {conn}")
 
     if configuration['node_type'] in ['master', 'ledger', 'standalone', 'standalone-publisher']:
+        declare_policy.declare_node(anylog_conn=anylog_conn, node_type="master", configuration=configuration,
+                                    cluster_id=None, exception=args.exception)
         master.deploy_node(anylog_conn=anylog_conn, configuration=configuration, scripts=scripts,
                            policy_deployment=args.policy_deployment, exception=args.exception)
     if configuration['node_type'] in ['operator', 'standalone']:
-        pass
+        declare_policy.declare_node(anylog_conn=anylog_conn, node_type="operator", configuration=configuration,
+                                    cluster_id=None, exception=args.exception)
     if configuration['node_type'] in ['publisher', 'standalone-publisher']:
-        pass
+        declare_policy.declare_node(anylog_conn=anylog_conn, node_type="publisher", configuration=configuration,
+                                    cluster_id=None, exception=args.exception)
     if configuration['node_type'] in ['query']:
-        pass
+        declare_policy.declare_node(anylog_conn=anylog_conn, node_type="query", configuration=configuration,
+                                    cluster_id=None, exception=args.exception)
 
     print(generic_get.get_processes(anylog_conn=anylog_conn, json_format=False, view_help=False))
 
