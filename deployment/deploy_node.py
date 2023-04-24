@@ -10,7 +10,7 @@ import generic_post
 
 import declare_policy
 import master
-# import query
+import query
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
 
@@ -57,7 +57,6 @@ def main():
     if generic_get.get_status(anylog_conn=anylog_conn, json_format=True) is False:
         print(f"Failed to connect to AnyLog via {conn}. Cannot Continue")
         exit(1)
-
 
     if generic_post.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key) is False:
         print(f"Failed to utilize given license to enable AnyLog {conn}. Cannot continue")
@@ -106,6 +105,8 @@ def main():
     if configuration['node_type'] in ['query']:
         declare_policy.declare_node(anylog_conn=anylog_conn, node_type="query", configuration=configuration,
                                     cluster_id=None, exception=args.exception)
+        query.deploy_node(anylog_conn=anylog_conn, configuration=configuration, scripts=scripts,
+                          policy_deployment=args.policy_deployment, exception=args.exception)
 
     print(generic_get.get_processes(anylog_conn=anylog_conn, json_format=False, view_help=False))
 
