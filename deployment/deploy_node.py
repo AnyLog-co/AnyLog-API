@@ -51,6 +51,7 @@ def main():
     args = parser.parse_args()
 
     scripts = []
+
     conn, auth = support.anylog_connection(rest_conn=args.rest_conn)
     anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=args.timeout, exception=args.exception)
 
@@ -74,7 +75,7 @@ def main():
                                                   view_help=False))
         scripts.append(blockchain.run_synchronizer(anylog_conn=anylog_conn, source=configuration['blockchain_source'],
                                                    time=configuration['sync_time'],
-                                                   dest=configuration ['blockchain_destination'],
+                                                   dest=configuration['blockchain_destination'],
                                                    connection=configuration['ledger_conn'], execute_cmd=False,
                                                    view_help=False))
     else:
