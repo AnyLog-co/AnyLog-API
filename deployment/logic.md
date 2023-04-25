@@ -1,6 +1,5 @@
-### Policy Counter: 
 **Required**: 
-1. network configuration policy
+0. network configuration policy - this step should be by the node during deployment
    * logic for TCP
 ```commandline
 if bind is True:
@@ -17,9 +16,11 @@ pass
 ```commandline
 pass
 ```
-2. cluster - if operator node
+1. `set license key`  
 
-3. node policy for master / operator / query / publisher
+2. 
+   * cluster - if operator node
+   * node policy for master / operator / query / publisher
 ```commandline
 if bind is True:
     new_policy[!policy_type][ip] = !external_ip
@@ -27,7 +28,8 @@ if bind is True:
 elif bind is False: 
     new_policy[!policy_type][ip] = !ip
 ```
-4. if deploy based on configuration then a configuration policy - will include: 
+
+3. if deploy based on configuration then a configuration policy - will include: 
    * `run scheduler 1`
    * `run blockchain sync`
    * `connect dbms`
@@ -52,4 +54,6 @@ elif bind is False:
    * if _publisher_ node: 
      * `run publisher` 
      * if set - `run mqtt client`
-   * 
+
+4. if deploy by policy is **True** then execute config policy that contains step 3. However, deploy by policy is 
+**False**, then each step within step 3 should be done already & there's no need for step 4. 
