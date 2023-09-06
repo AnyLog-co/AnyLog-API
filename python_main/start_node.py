@@ -61,7 +61,8 @@ def main():
     if not create_work_directory(anylog_conn=anylog_connector, exception=args.exception):
         print(f"Failed to create work directories within {anylog_configs['anylog_path']}")
         exit(1)
-    print("Success!")
+
+
 
 
 
