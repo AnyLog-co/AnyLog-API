@@ -24,7 +24,7 @@ def main():
     deployment script, but in (python) REST API format
     :process:
         1. extract connection information and validate connectivity
-        2.
+        2. set env configurations
     :positional arguments:
         conn:str                  REST credentials for the node to communicate with
         config_file               configuration file to utilize for deploying an AnyLog node
