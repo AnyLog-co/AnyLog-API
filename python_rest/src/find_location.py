@@ -38,7 +38,7 @@ def __set_location(anylog_conn:AnyLogConnector, exception:bool=False):
     }
 
     r = anylog_conn.post(headers=headers)
-    if int(r.status_code) != 2000:
+    if r is None or int(r.status_code) != 200:
         status = False
 
     return status

@@ -60,6 +60,9 @@ def get_status(anylog_conn:anylog_connector.AnyLogConnector, json_format:bool=Tr
     output = get_cmd(anylog_conn=anylog_conn, command=command, destination=destination, execute_cmd=execute_cmd,
                      view_help=view_help)
 
+    if output is None or int(output.status_code) != 200:
+        return False
+
     if execute_cmd is True:
         status = False
         if json_format is True and "Status" in output and "running" in output["Status"] and "not" not in output["Status"]:

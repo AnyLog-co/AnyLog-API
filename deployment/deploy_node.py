@@ -14,6 +14,14 @@ import query
 
 ROOT_DIR = os.path.expandvars(os.path.expanduser(__file__)).split('deployments')[0]
 
+def __check_license(anylog_conn:anylog_connector.AnyLogConnector):
+    is_license = True
+    license = generic_get.check_license(anylog_conn=anylog_conn, destination=None, execute_cmd=True, view_help=False)
+    for section in ["License Type", "Licensed Company", "Expiration Date"]:
+        if section not in license:
+            is_license = False
+
+    return is_license
 
 def main():
     """
@@ -59,9 +67,8 @@ def main():
         print(f"Failed to connect to AnyLog via {conn}. Cannot Continue")
         exit(1)
 
-    if generic_post.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key) is False:
-        print(f"Failed to utilize given license to enable AnyLog {conn}. Cannot continue")
-        exit(1)
+    if __check_license(anylog_conn=anylog_conn) is False:
+        generic_post.set_license_key(anylog_conn=anylog_conn, license_key=args.license_key)
 
     configuration = support.prepare_dictionary(anylog_conn=anylog_conn, config_file=args.config_file,
                                                           exception=args.exception)
@@ -97,18 +104,18 @@ def main():
                                     cluster_id=None, exception=args.exception)
         master.deploy_node(anylog_conn=anylog_conn, configuration=configuration, scripts=scripts,
                            policy_deployment=args.policy_deployment, exception=args.exception)
-    if configuration['node_type'] in ['operator', 'standalone']:
-        declare_policy.declare_node(anylog_conn=anylog_conn, node_type="operator", configuration=configuration,
-                                    cluster_id=None, exception=args.exception)
-    if configuration['node_type'] in ['publisher', 'standalone-publisher']:
-        declare_policy.declare_node(anylog_conn=anylog_conn, node_type="publisher", configuration=configuration,
-                                    cluster_id=None, exception=args.exception)
-    if configuration['node_type'] in ['query']:
-        declare_policy.declare_node(anylog_conn=anylog_conn, node_type="query", configuration=configuration,
-                                    cluster_id=None, exception=args.exception)
-        query.deploy_node(anylog_conn=anylog_conn, configuration=configuration, scripts=scripts,
-                          policy_deployment=args.policy_deployment, exception=args.exception)
-
+    # if configuration['node_type'] in ['operator', 'standalone']:
+    #     declare_policy.declare_node(anylog_conn=anylog_conn, node_type="operator", configuration=configuration,
+    #                                 cluster_id=None, exception=args.exception)
+    # if configuration['node_type'] in ['publisher', 'standalone-publisher']:
+    #     declare_policy.declare_node(anylog_conn=anylog_conn, node_type="publisher", configuration=configuration,
+    #                                 cluster_id=None, exception=args.exception)
+    # if configuration['node_type'] in ['query']:
+    #     declare_policy.declare_node(anylog_conn=anylog_conn, node_type="query", configuration=configuration,
+    #                                 cluster_id=None, exception=args.exception)
+    #     query.deploy_node(anylog_conn=anylog_conn, configuration=configuration, scripts=scripts,
+    #                       policy_deployment=args.policy_deployment, exception=args.exception)
+    #
     print(generic_get.get_processes(anylog_conn=anylog_conn, json_format=False, view_help=False))
 
 

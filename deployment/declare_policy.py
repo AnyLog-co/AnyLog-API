@@ -7,12 +7,9 @@ import support
 
 def blockchain_store_policy(anylog_conn:anylog_connector.AnyLogConnector, new_policy:dict, ledger_conn:str):
     json_policy = support.serialize_row(data=new_policy)
-    if blockchain.prepare_policy(anylog_conn=anylog_conn, policy=json_policy) is True:
-        if blockchain.publish_policy(anylog_conn=anylog_conn, policy=json_policy, local=True,
-                                     ledger_conn=ledger_conn, blockchain=None) is False:
-            print(f"Failed to declare policy {json_policy} in blockchain")
-    else:
-        print(f"Failed to declare policy {json_policy} in blockchain")
+    blockchain.prepare_policy(anylog_conn=anylog_conn, policy=json_policy)
+    blockchain.publish_policy(anylog_conn=anylog_conn, policy=json_policy, local=True, ledger_conn=ledger_conn,
+                              blockchain=None)
 
 
 def declare_cluster(anylog_conn:anylog_connector.AnyLogConnector, configuration:dict, ignore_db:bool=False):
