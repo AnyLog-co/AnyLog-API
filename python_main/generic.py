@@ -45,8 +45,9 @@ def set_params(anylog_connector:AnyLogConnector, config_file:str, exception:bool
 
     anylog_configs = get_dictionary(anylog_conn=anylog_connector, is_json=True, exception=exception)
 
-    if anylog_configs == {}:
-        anylog_configs = file_configs
+    for key in file_configs:
+        if key not in anylog_configs:
+            anylog_configs[key] = file_configs[key]
 
     return __format_configs(anylog_configs)
 

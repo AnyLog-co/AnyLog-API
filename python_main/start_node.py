@@ -2,15 +2,16 @@
 1. get information from configuration file
 """
 import argparse
-import json
 import os
 import utils_file_io
 
 import generic
+import network
 import anylog_api_py.support as support
 from anylog_api_py.anylog_connector import AnyLogConnector
 from anylog_api_py.generic_get_cmd import get_status
 from anylog_api_py.generic_post_cmd import enable_license_key, declare_anylog_path, create_work_directory
+
 
 
 ROOT_PATH = os.path.expanduser(os.path.expandvars('$HOME'))
@@ -77,7 +78,8 @@ def main():
         print(f"Failed missing anylog_path configs")
         exit(1)
 
-    print(json.dumps(anylog_configs, indent=4))
+    network.network_main(anylog_connector=anylog_connector, configs=anylog_configs, exception=args.exception)
+
 
 
 

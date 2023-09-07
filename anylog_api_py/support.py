@@ -1,4 +1,5 @@
 import argparse
+import json
 import re
 
 
@@ -47,4 +48,26 @@ def extract_conn_information(conn_ip_port:str)->(str, tuple):
         auth = tuple(auth.split(":"))
 
     return conn, auth
+
+
+def dict_to_string(payload:dict, exception:bool=False):
+    """
+    Convert dictionary to JSON string
+    :args:
+        payload:dict - content to convert
+        exception:bool - print exception
+    :params:
+        str_payload:str - converted payload
+    :return:
+        str_payload
+    """
+
+    try:
+        str_payload = json.dumps(payload)
+    except Exception as error:
+        str_payload = payload
+        if exception is True:
+            print(f"Failed to convert payload dict to JSON string (Exception: {error})")
+
+    return str_payload
 
