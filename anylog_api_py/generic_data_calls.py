@@ -2,7 +2,7 @@ from anylog_connector import AnyLogConnector
 import generic_get_calls
 import generic_data_support
 import rest_support
-import support
+from anylog_api_py import __support__
 
 
 def get_partitions(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bool=False)->bool:

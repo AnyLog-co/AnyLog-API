@@ -1,6 +1,7 @@
 import ast
 import json
 
+
 def __format_merged_dict(configs:dict)->dict:
     """
     iterate through configs and update values to correct type

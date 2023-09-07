@@ -1,10 +1,12 @@
-import support
+from anylog_api_py.__support__ import json_dumps
 
 
 def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_conditions:str=None,
                             bring_values:str=None, separator:str=None)->str:
     """
     Generate `blockchain get` command based on params
+    :URL:
+         https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md#query-policies
     :args:
         policy_type:str - policy types to get
         where_conditions:dict - dictionary of WHERE conditions (ex. {"company": "New Company", "rest_port": 32049})
@@ -56,6 +58,8 @@ def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_c
 def generate_blockchain_insert(local_publish:bool=True, platform:str=None, ledger_conn:str=None)->str:
     """
     Generate blockchain insert statement
+    :URL:
+        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md#the-blockchain-insert-command
     :sample command:
         blockchain insert where policy = !policy and local = true and master = !master_node
         blockchain insert where policy = !policy and local = true and blockchain = ethereum
@@ -164,7 +168,7 @@ def node_policy(policy_type:str, name:str, company:str, external_ip:str, local_i
     if city is not None:
         policy[policy_type]["city"] = city
 
-    return support.json_dumps(content=policy, indent=4, exception=exception)
+    return json_dumps(content=policy, indent=4, exception=exception)
 
 
 def cluster_policy(name:str, company:str, parent_cluster:str=None, db_name:str=None, table_name:str=None,
@@ -211,7 +215,7 @@ def cluster_policy(name:str, company:str, parent_cluster:str=None, db_name:str=N
         else:
             policy["cluster"]["dbms"] = db_name
 
-    return support.json_dumps(content=policy, indent=4, exception=exception)
+    return json_dumps(content=policy, indent=4, exception=exception)
 
 
 def table_policy(name:str, db_name:str, create_stmt:str, exception:bool=False)->str:
@@ -255,7 +259,7 @@ def table_policy(name:str, db_name:str, create_stmt:str, exception:bool=False)->
         }
     }
 
-    return support.json_dumps(content=policy, indent=4, exception=exception)
+    return json_dumps(content=policy, indent=4, exception=exception)
 
 
 def anmp_policy(policy_id:str, content:dict, exception:bool=False)->str:
@@ -288,7 +292,7 @@ def anmp_policy(policy_id:str, content:dict, exception:bool=False)->str:
         }
     }
 
-    return support.json_dumps(content=policy, indent=4, exception=exception)
+    return json_dumps(content=policy, indent=4, exception=exception)
 
 
 def generic_policy(policy_type:str, content:dict, exception:bool=False)->str:
@@ -305,5 +309,5 @@ def generic_policy(policy_type:str, content:dict, exception:bool=False)->str:
     """
     policy = {policy_type: content}
 
-    return support.json_dumps(content=policy, indent=4, exception=exception)
+    return json_dumps(content=policy, indent=4, exception=exception)
 

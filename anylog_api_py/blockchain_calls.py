@@ -1,10 +1,8 @@
 # Blockchain Commands: https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
-from anylog_connector import AnyLogConnector
-import rest_support
-
-import generic_get_calls
-import blockchain_support
-
+from anylog_api_py.anylog_connector import AnyLogConnector
+from anylog_api_py.generic_get_calls import help_command
+from anylog_api_py.blockchain_support import generate_blockchain_get, generate_blockchain_insert
+from anylog_api_py.rest_support import print_rest_error, extract_results
 
 def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockchain_destination:str, sync_time:str,
                     ledger_conn:str, view_help:bool=False, exception:bool=False)->bool:
@@ -35,14 +33,14 @@ def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockcha
         "User-Agent": "AnyLog/1.23"
     }
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             status = False
             if exception is True and r is False:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -70,23 +68,21 @@ def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:di
     """
     policies = {}
     headers = {
-        'command': blockchain_support.generate_blockchain_get(policy_type=policy_type,
-                                                              where_conditions=where_conditions,
-                                                              bring_conditions=bring_conditions,
-                                                              bring_values=bring_values,
-                                                              separator=separator),
+        'command': generate_blockchain_get(policy_type=policy_type, where_conditions=where_conditions, 
+                                           bring_conditions=bring_conditions, bring_values=bring_values,
+                                           separator=separator),
         'User-Agent': 'AnyLog/1.23'
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         r, error = anylog_conn.get(headers=headers)
         if r is False:
             if exception is True:
-                rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+                print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            policies = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            policies = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return policies
 
@@ -94,6 +90,8 @@ def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:di
 def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False, exception:bool=False)->bool:
     """
     Prepare a policy for deploying on blockchain
+    :URL:
+        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
     :args:
         anylog_conn:AnyLogConnector - connection to AnyLog node
         policy:str - policy to store on blockchain
@@ -118,13 +116,13 @@ def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False
 
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         r, error = anylog_conn.post(headers=headers, payload=payload)
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
             status = True
 
@@ -154,11 +152,10 @@ def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
-        headers['command']=blockchain_support.generate_blockchain_insert(local_publish=local_publish, platform=platform,
-                                                                         ledger_conn=ledger_conn)
+        headers['command']=generate_blockchain_insert(local_publish=local_publish, platform=platform, ledger_conn=ledger_conn)
 
         if policy is not None:
             payload = f'<new_policy={policy}>'
@@ -169,6 +166,6 @@ def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status

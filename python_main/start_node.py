@@ -7,7 +7,7 @@ import utils_file_io
 
 import generic
 import network
-import anylog_api_py.support as support
+import anylog_api_py.__support__ as support
 from anylog_api_py.anylog_connector import AnyLogConnector
 from anylog_api_py.generic_get_cmd import get_status
 from anylog_api_py.generic_post_cmd import enable_license_key, declare_anylog_path, create_work_directory

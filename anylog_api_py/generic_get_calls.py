@@ -1,7 +1,42 @@
 # Generic GET:  https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
 
-from anylog_connector import AnyLogConnector
-import rest_support
+from anylog_api_py.anylog_connector import AnyLogConnector
+from anylog_api_py.rest_support import print_rest_error, extract_results
+
+
+def help_command(anylog_conn:AnyLogConnector, command:str=None, exception:bool=False):
+    """
+    Given a command, get the `help` output for it
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/getting%20started.md#the-help-command
+    :args:
+        anylog_connector:AnylogConnector - connection to AnyLog node
+        command:str - command to get help for
+        exception:bool - whether to print exceptions
+    :params:
+        output:str - help information
+        headers:dict - REST header information
+        r:requests.get, error - output for GET request
+    :print:
+        prints the results for `help` command
+    """
+    output = None
+    headers = {
+        'command': 'help',
+        'User-Agent': 'AnyLog/1.23'
+    }
+    if command is not None:
+        headers['command'] += f' {command}'
+
+    r, error = anylog_conn.get(headers=headers)
+    if r is False:
+        if exception is True:
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+    elif not isinstance(r, bool):
+        output = extract_results(cmd=headers['command'], r=r, exception=exception)
+
+    if output is not None:
+        print(output)
 
 
 def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->bool:
@@ -39,9 +74,9 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+                print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            output = extract_results(cmd=headers['command'], r=r, exception=exception)
             if isinstance(output, dict):
                 output = output['status']
             if 'running' in output and 'not' not in output:
@@ -83,9 +118,9 @@ def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help
     else:
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            anylog_dict = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            anylog_dict = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return anylog_dict
 
@@ -121,9 +156,9 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
     else:
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            processes_dict = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            processes_dict = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return processes_dict
 
@@ -159,9 +194,9 @@ def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_he
         r, error = anylog_conn.get(header=header)
         if r is False:
             if exception is True:
-                rest_support.print_rest_error(call_type='GET', cmd=header['command'], error=error)
+                print_rest_error(call_type='GET', cmd=header['command'], error=error)
         elif not isinstance(r, bool):
-            connections = rest_support.extract_results(cmd=header['command'], r=r, exception=exception)
+            connections = extract_results(cmd=header['command'], r=r, exception=exception)
 
     return connections
 
@@ -191,9 +226,9 @@ def get_hostname(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bo
     else:
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            hostname = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            hostname = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return hostname
 
@@ -225,9 +260,9 @@ def get_operator(anylog_conn:AnyLogConnector, view_help:bool=False, exception:bo
     else:
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            output = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return output
 
@@ -257,9 +292,9 @@ def get_publisher(anylog_conn:AnyLogConnector, view_help:bool=False, exception:b
     else:
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            output = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return output
 
@@ -295,43 +330,9 @@ def get_streaming(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
 
         r, error = anylog_conn.get(headers=headers)
         if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
         elif not isinstance(r, bool):
-            output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
+            output = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return output
 
-
-def help_command(anylog_conn:AnyLogConnector, command:str=None, exception:bool=False):
-    """
-    Given a command, get the `help` output for it
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/getting%20started.md#the-help-command
-    :args:
-        anylog_connector:AnylogConnector - connection to AnyLog node
-        command:str - command to get help for
-        exception:bool - whether to print exceptions
-    :params:
-        output:str - help information
-        headers:dict - REST header information
-        r:requests.get, error - output for GET request
-    :print:
-        prints the results for `help` command
-    """
-    output = None
-    headers = {
-        'command': 'help',
-        'User-Agent': 'AnyLog/1.23'
-    }
-    if command is not None:
-        headers['command'] += f' {command}'
-
-    r, error = anylog_conn.get(headers=headers)
-    if r is False:
-        if exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-    elif not isinstance(r, bool):
-        output = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
-
-    if output is not None:
-        print(output)
