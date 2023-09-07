@@ -38,15 +38,17 @@ def help_command(anylog_conn:AnyLogConnector, command:str=None, exception:bool=F
     if output is not None:
         print(output)
 
+    return None
 
-def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->bool:
+
+def get_status(anylog_conn:AnyLogConnector, remote_destination:str=None, view_help:bool=False, exception:bool=False):
     """
     check if node is running
     :url:
         https://github.com/AnyLog-co/documentation/blob/master/monitoring%20nodes.md#the-get-status-command
     :args:
         anylog_conn:AnyLogConnector - AnyLog REST connection information
-        json_format:bool - whether to get the results in JSON format
+        remote_destination:str - remote destination to get status against
         view_:bool - whether to get help information for node
         exception:bool - whether to print exceptions
     :params:
@@ -58,33 +60,64 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:boo
         False - not running
         help - None
     """
-    status = None
+    status = False
     headers = {
-        'command': 'get status',
-        'User-Agent': 'AnyLog/1.23'
+        'command': 'get status where format=json',
+        'User-Agent': 'AnyLog/1.23',
+        "destination": remote_destination
     }
 
-    if json_format is True:
-        headers['command'] += f' where format=json'
-
     if view_help is True:
-        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
-    else:
-        r, error = anylog_conn.get(headers=headers)
-        if r is False:
-            status = False
-            if exception is True:
-                print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif not isinstance(r, bool):
-            output = extract_results(cmd=headers['command'], r=r, exception=exception)
-            if isinstance(output, dict):
-                output = output['status']
-            if 'running' in output and 'not' not in output:
-                status = True
-            else:
-                status = False
+        return help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+
+    r, error = anylog_conn.get(headers=headers)
+    if r is False:
+        if exception is True:
+            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+    elif not isinstance(r, bool):
+        output = extract_results(cmd=headers['command'], r=r, exception=exception)
+        if isinstance(output, dict):
+            output = output['Status']
+        if 'running' in output and 'not' not in output:
+            status = True
 
     return status
+
+
+def get_license(anylog_conn:AnyLogConnector, remote_destination:None, view_help:bool=False, exception:bool=False):
+    """
+    Get license
+    :args:
+        anylog_conn:AnyLogConnector - AnyLog REST connection information
+        remote_destination:str - remote destination to get status against
+        view_:bool - whether to get help information for node
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - running
+        False - not running
+        help - None
+    """
+    license_info = False
+    headers = {
+        'command': 'get license',
+        'User-Agent': 'AnyLog/1.23',
+        "destination": remote_destination
+    }
+
+    if view_help is True:
+        return help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+
+    r, error = anylog_conn.get(headers=headers)
+    if r is False and exception is True:
+        print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+    elif not isinstance(r, bool):
+        license_info = extract_results(cmd=headers['command'], r=r, exception=exception)
+
+    return license_info
 
 
 def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:

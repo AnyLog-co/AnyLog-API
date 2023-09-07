@@ -1,14 +1,54 @@
-from anylog_connector import AnyLogConnector
-import generic_get_calls
-import rest_support
+from anylog_api_py.anylog_connector import AnyLogConnector
+from anylog_api_py.generic_get_calls import help_command
+from anylog_api_py.rest_support import print_rest_error
 
 
-def add_dict_params(anylog_conn:AnyLogConnector, content:dict, exception:bool=False):
+def set_license_key(anylog_conn:AnyLogConnector, license_key:str, remote_destination:str=None, view_help:bool=False,
+                    exception:bool=False):
+    """
+    Set license key
+    :command:
+        set license where activation_key=XXX
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog
+        license_key:str - AnyLog license key
+        remote_destination:str - remote (TCP) IP and port connection
+        view_help:bool - whether to print help information
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST headers
+    :return:
+        if view_help is True, returns None
+        True if success
+        False if Fails
+    """
+    status = True
+    headers = {
+        "command": f"set license where activation_key={license_key}",
+        "User-Agent": "AnyLog/1.23",
+        "destination": remote_destination
+    }
+
+    if view_help is True:
+        return help_command(anylog_conn=anylog_conn, command=headers["command"], exception=exception)
+
+    r, error = anylog_conn.post(headers=headers, payload=None)
+    if r is False:
+        status = False
+        if exception is True:
+            print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
+
+def add_dict_params(anylog_conn:AnyLogConnector, content:dict, destination:str=None, exception:bool=False):
     """
     Add parameters to dictionary
     :args:
         anylog_conn:AnyLogConnector - connection to AnyLog
         content:dict - key/value pairs to add to dic
+        destination:str - remote destination to request against
         exception:bool - whether to print exceptions
     :params:
         status:bool - initially used as a list of True/False, but ultimately becomes True/False based on which has more
@@ -19,16 +59,25 @@ def add_dict_params(anylog_conn:AnyLogConnector, content:dict, exception:bool=Fa
     status = []
     headers = {
         'command':  None,
-        'User-Agent': 'AnyLog/1.23'
+        'User-Agent': 'AnyLog/1.23',
+        'destination': destination
     }
 
     for key in content:
-        headers['command'] = f'set {key} = {content[key]}'
+        try:
+            value = int(content[key])
+        except:
+            value = content[key].strip()
+
+        headers["command"] = f"set {key}={value}"
+        if " " in value:
+            headers["command"] = f"set {key}='{value}'"
+
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             status.append(False)
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], exception=exception)
+                print_rest_error(call_type='POST', cmd=headers['command'], exception=exception)
         elif not isinstance(r, bool):
             status.append(True)
 
@@ -79,21 +128,21 @@ def network_connect(anylog_conn:AnyLogConnector, conn_type:str, internal_ip:str,
 
     headers = {
         'command': rest_support.generate_connection_command(conn_type=conn_type, internal_ip=internal_ip,
-                                                       internal_port=internal_port, external_ip=external_ip,
-                                                       external_port=external_port, bind=bind, threads=threads,
-                                                       rest_timeout=rest_timeout),
+                                                            internal_port=internal_port, external_ip=external_ip,
+                                                            external_port=external_port, bind=bind, threads=threads,
+                                                            rest_timeout=rest_timeout),
         'User-Agent': 'AnyLog/1.23'
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -122,14 +171,14 @@ def run_scheduler_1(anylog_conn:AnyLogConnector, view_help:bool=False, exception
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -161,7 +210,7 @@ def declare_schedule_process(anylog_conn:AnyLogConnector, time:str, task:str, st
     """
     status = None
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command='schedule', exception=exception)
+        help_command(anylog_conn=anylog_conn, command='schedule', exception=exception)
     else:
         command = f'schedule time={time}'
         if name is not None:
@@ -179,7 +228,7 @@ def declare_schedule_process(anylog_conn:AnyLogConnector, time:str, task:str, st
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -211,7 +260,7 @@ def run_scheduler(anylog_conn:AnyLogConnector, schedule_number:int=None, view_he
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         if schedule_number is not None:
@@ -221,7 +270,7 @@ def run_scheduler(anylog_conn:AnyLogConnector, schedule_number:int=None, view_he
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -258,7 +307,7 @@ def set_buffer_threshold(anylog_conn:AnyLogConnector, db_name:str=None, table_na
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         where_conditions = f"where time={time} and volume={volume}"
@@ -279,7 +328,7 @@ def set_buffer_threshold(anylog_conn:AnyLogConnector, db_name:str=None, table_na
         if r is False or int(r.status_code) != 200:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -309,12 +358,12 @@ def enable_streamer(anylog_conn:AnyLogConnector, view_help:bool=False, exception
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_configs, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_configs, command=headers['command'], exception=exception)
     else:
         status = True
         r, error = anylog_conn.post(headers=headers)
         if r is False:
-            rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+            print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -357,7 +406,7 @@ def run_publisher(anylog_conn:AnyLogConnector, db_name:str='file_name[0]', table
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         if watch_dir is not None:
@@ -389,7 +438,7 @@ def run_publisher(anylog_conn:AnyLogConnector, db_name:str='file_name[0]', table
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -429,7 +478,7 @@ def run_operator(anylog_conn:AnyLogConnector, operator_id:str, create_table:bool
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         if ledger_conn is not None:
@@ -437,7 +486,7 @@ def run_operator(anylog_conn:AnyLogConnector, operator_id:str, create_table:bool
 
         r, error = anylog_conn.post(headers=headers)
         if r is False:
-            rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+            print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
@@ -468,13 +517,13 @@ def execute_process(anylog_conn:AnyLogConnector, file_path:str, view_help:bool=F
     }
 
     if view_help is True:
-        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
         r, error = anylog_conn.post(headers=headers)
         if r is False:
             status = False
             if exception is True:
-                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
