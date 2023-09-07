@@ -21,6 +21,7 @@ def get_help(anylog_conn:AnyLogConnector, cmd:str, exception:bool=False):
         "User-Agent": "AnyLog/1.23"
     }
 
+    print(f"Your Command: {headers['command']}")
     r, error = anylog_conn.get(headers=headers)
     if r is False and exception is True:
         print_rest_error(call_type='GET', cmd=headers['command'], error=error)
