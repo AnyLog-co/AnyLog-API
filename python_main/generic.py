@@ -32,7 +32,7 @@ def set_params(anylog_connector:AnyLogConnector, config_file:str, exception:bool
         file_configs:dict - configuration from file
         anylog_configs:dict - variable dictionary within AnyLog
     :return:
-        anylog_configs
+        anylog_configs - if fails to communicate will return file_configs
     """
     file_configs = read_config_file(config_file=config_file, exception=exception)
 
@@ -44,6 +44,9 @@ def set_params(anylog_connector:AnyLogConnector, config_file:str, exception:bool
             print(f"Failed to set `{key}` to `{file_configs[key]}`")
 
     anylog_configs = get_dictionary(anylog_conn=anylog_connector, is_json=True, exception=exception)
+
+    if anylog_configs == {}:
+        anylog_configs = file_configs
 
     return __format_configs(anylog_configs)
 

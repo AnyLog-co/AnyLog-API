@@ -5,40 +5,6 @@ from anylog_api_py.rest_support import print_rest_error
 from anylog_api_py.generic_get_cmd import get_help
 
 
-def __validate_license_key(activation_key:str):
-    """
-    validate license key
-    :args:
-        activation_key:str - license key to validate
-    :params:
-        status:bool
-        signature:UUID - AnyLog UUID license
-        expiration;str - expiration date
-        license_type;str - license type
-    ;return:
-        status
-    """
-    status = True
-    signature = None
-    expiration = None
-    license_type = None
-
-    if len(activation_key) <= 268:
-        status = False
-    else:
-        signature = activation_key[:256]
-        expiration = activation_key[256:266]
-        license_type = activation_key[266]  # b for BETA and c for Commercial
-    if signature is not None and not re.match(r'^[0-9a-fA-F]+$', signature):
-        status = False
-    if expiration is not None and not re.match("%Y-%m-%d", expiration):
-        status = False
-    if license_type not in ['c', 'b']:
-        status = False
-
-    return status
-
-
 def enable_license_key(anylog_conn:AnyLogConnector, license_key:str, destination:str=None, cmd_explain:bool=False, exception:bool=False)->bool:
     """
     Enable license key
@@ -50,7 +16,7 @@ def enable_license_key(anylog_conn:AnyLogConnector, license_key:str, destination
         destination:str - destination IP:PORT
         exception:bool - whether to print exceptions or not
     """
-    status = __validate_license_key(activation_key=license_key)
+    status = True
     headers = {
         "command": f"set license where activation_key={license_key}",
         "User-Agent": "AnyLog/1.23",
@@ -95,21 +61,22 @@ def declare_configs(anylog_conn:AnyLogConnector, key:str, value:str, destination
         "destination": destination
     }
 
-    if not isinstance(value, str):
-        headers["command"] = f"set {key}={value}"
-    elif " " in value:
-        headers["command"] = f'set {key.strip()}="{value.strip()}"'
-    else:
-        headers["command"] = f"set {key.strip()}={value.strip()}"
+    if value != "":
+        if not isinstance(value, str):
+            headers["command"] = f"set {key}={value}"
+        elif " " in value:
+            headers["command"] = f'set {key.strip()}="{value.strip()}"'
+        else:
+            headers["command"] = f"set {key.strip()}={value.strip()}"
 
-    if cmd_explain is True:
-        return get_help(anylog_conn=anylog_conn, cmd=headers['command'], exception=exception)
+        if cmd_explain is True:
+            return get_help(anylog_conn=anylog_conn, cmd=headers['command'], exception=exception)
 
-    r, error = anylog_conn.post(headers=headers, payload=None)
-    if r is False:
-        status = False
-        if exception is True:
-            print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+        r, error = anylog_conn.post(headers=headers, payload=None)
+        if r is False:
+            status = False
+            if exception is True:
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 
