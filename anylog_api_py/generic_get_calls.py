@@ -120,7 +120,8 @@ def get_license(anylog_conn:AnyLogConnector, remote_destination:None, view_help:
     return license_info
 
 
-def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
+def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, remote_destination:str=None, view_help:bool=False,
+                   exception:bool=False):
     """
     Extract AnyLog dictionary
     :url:
@@ -128,6 +129,7 @@ def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help
     :args:
         anylog_conn:AnyLogConnector - AnyLog REST connection information
         json_format:bool - whether to get results in JSON-dict format
+        remote_destination:str - remote node to get information from
         view_help:bool - whether to view help for given command
         exception:bool - whether to print exceptions
     :params:
@@ -141,24 +143,26 @@ def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=True, view_help
     anylog_dict = {}
     headers = {
         'command': 'get dictionary',
-        'User-Agent': 'AnyLog/1.23'
+        'User-Agent': 'AnyLog/1.23',
+        'destination': remote_destination
     }
     if json_format is True:
         headers['command'] += ' where format=json'
 
     if view_help is True:
-        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
-    else:
-        r, error = anylog_conn.get(headers=headers)
-        if r is False and exception is True:
-            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif not isinstance(r, bool):
-            anylog_dict = extract_results(cmd=headers['command'], r=r, exception=exception)
+        return help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+
+    r, error = anylog_conn.get(headers=headers)
+    if r is False and exception is True:
+        print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+    elif not isinstance(r, bool):
+        anylog_dict = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return anylog_dict
 
 
-def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
+def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, remote_destination:str=None, view_help:bool=False,
+                  exception:bool=False):
     """
     view running / not declared processes
     :url:
@@ -166,6 +170,7 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
     :args:
         anylog_conn:AnyLogConnector - AnyLog REST connection information
         json_format:bool - whether to get results in JSON format
+        remote_destination:bool - run request against a remote machine
         view_help:bool - whether to get help info for command
         exception:bool - whether to print exceptions
     :params:
@@ -178,20 +183,21 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:
     processes_dict = {}
     headers = {
         'command': 'get processes',
-        'User-Agent': 'AnyLog/1.23'
+        'User-Agent': 'AnyLog/1.23',
+        'destination': remote_destination
     }
 
     if json_format is True:
         headers['command'] += ' where format=json'
 
     if view_help is True:
-        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
-    else:
-        r, error = anylog_conn.get(headers=headers)
-        if r is False and exception is True:
-            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif not isinstance(r, bool):
-            processes_dict = extract_results(cmd=headers['command'], r=r, exception=exception)
+        return help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+
+    r, error = anylog_conn.get(headers=headers)
+    if r is False and exception is True:
+        print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+    elif not isinstance(r, bool):
+        processes_dict = extract_results(cmd=headers['command'], r=r, exception=exception)
 
     return processes_dict
 

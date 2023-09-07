@@ -42,7 +42,7 @@ def set_license_key(anylog_conn:AnyLogConnector, license_key:str, remote_destina
     return status
 
 
-def add_dict_params(anylog_conn:AnyLogConnector, content:dict, destination:str=None, exception:bool=False):
+def add_dict_params(anylog_conn:AnyLogConnector, configs:dict, destination:str=None, exception:bool=False):
     """
     Add parameters to dictionary
     :args:
@@ -63,29 +63,29 @@ def add_dict_params(anylog_conn:AnyLogConnector, content:dict, destination:str=N
         'destination': destination
     }
 
-    for key in content:
+    for config in configs:
+        skip = False
         try:
-            value = int(content[key])
+            value = int(configs[config])
         except:
-            value = content[key].strip()
+            value = configs[config].strip()
+            if len(value) == 0:
+                skip = True
 
-        headers["command"] = f"set {key}={value}"
-        if " " in value:
-            headers["command"] = f"set {key}='{value}'"
+        if skip is False:
+            headers["command"] = f"set {config.lower()}={value}"
+            if not isinstance(value, int) and " " in value:
+                headers["command"] = f"set {config.lower()}='{value}'"
 
-        r, error = anylog_conn.post(headers=headers)
-        if r is False:
-            status.append(False)
-            if exception is True:
-                print_rest_error(call_type='POST', cmd=headers['command'], exception=exception)
-        elif not isinstance(r, bool):
-            status.append(True)
+            r, error = anylog_conn.post(headers=headers)
+            if r is False:
+                status.append(False)
+                if exception is True:
+                    print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+            elif not isinstance(r, bool):
+                status.append(True)
 
-    num_false = status.count(False)
-    num_true = status.count(True)
-
-    status = True
-    if False in status:
+    if status.count(False) >= 1:
         status = False
 
     return status
