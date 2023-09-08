@@ -7,7 +7,7 @@ from file_io import read_configs
 
 def setup_configurations(anylog_conn:AnyLogConnector, config_file:str, exception:bool=False)->dict:
     """
-    Setup configuration for AnyLog node
+    Setup configuration (AnyLog dictionary) for AnyLog node based on a configuration file
     :args:
         anylog_conn:AnyLogConnector - connection to AnyLog
         config_file:str - configuration file
@@ -46,3 +46,6 @@ def setup_configurations(anylog_conn:AnyLogConnector, config_file:str, exception
             pass
 
     return node_configs
+
+
+def network_setup(anylog_conn:AnyLogConnector, configs:dict)
