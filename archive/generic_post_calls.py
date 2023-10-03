@@ -1,5 +1,3 @@
-import os.path
-
 from anylog_api_py.anylog_connector import AnyLogConnector
 from anylog_api_py.generic_get_calls import help_command
 from archive.rest_support import print_rest_error
@@ -44,13 +42,13 @@ def set_license_key(anylog_conn:AnyLogConnector, license_key:str, remote_destina
     return status
 
 
-def add_dict_params(anylog_conn:AnyLogConnector, configs:dict, remote_destination:str=None, exception:bool=False):
+def add_dict_params(anylog_conn:AnyLogConnector, configs:dict, destination:str=None, exception:bool=False):
     """
     Add parameters to dictionary
     :args:
         anylog_conn:AnyLogConnector - connection to AnyLog
         content:dict - key/value pairs to add to dic
-        remote_destination:str - remote destination to request against
+        destination:str - remote destination to request against
         exception:bool - whether to print exceptions
     :params:
         status:bool - initially used as a list of True/False, but ultimately becomes True/False based on which has more
@@ -62,7 +60,7 @@ def add_dict_params(anylog_conn:AnyLogConnector, configs:dict, remote_destinatio
     headers = {
         'command':  None,
         'User-Agent': 'AnyLog/1.23',
-        'destination': remote_destination
+        'destination': destination
     }
 
     for config in configs:
@@ -89,126 +87,6 @@ def add_dict_params(anylog_conn:AnyLogConnector, configs:dict, remote_destinatio
 
     if status.count(False) >= 1:
         status = False
-
-    return status
-
-
-def set_anylog_home(anylog_conn:AnyLogConnector, root_path:str, remote_destination:str=None, view_help:bool=False, exception:bool=False):
-    """
-    Declare the location of the root directory to the AnyLog Files.
-    :command:
-        set anylog home
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/getting%20started.md#switching-between-different-setups
-    :args:
-        anylog_conn:AnyLogConnector - connection to AnyLog
-        root_path:str - AnyLog root directory path
-        remote_destination:str - remote (TCP) IP and port connection
-        view_help:bool - whether to print help information
-        exception:bool - whether to print exceptions
-    :params:
-        status:bool
-        headers:dict - REST headers
-    :return:
-        if view_help is True, returns None
-        True if success
-        False if Fails
-    """
-    status = True
-    headers = {
-        "command": f"set anylog home {root_path}",
-        'User-Agent': 'AnyLog/1.23',
-        'destination': remote_destination
-    }
-
-    if view_help is True:
-        return help_command(anylog_conn=anylog_conn, command=headers["command"], exception=exception)
-
-    r, error = anylog_conn.post(headers=headers, payload=None)
-    if r is False:
-        status = False
-        if exception is True:
-            print_rest_error(call_type='POST', cmd=headers['command'], error=error)
-
-    return status
-
-
-def create_directories(anylog_conn:AnyLogConnector, remote_destination:str=None, view_help:bool=False, exception:bool=False):
-    """
-    Create the work directories at their default locations or locations configured using "set anylog home" command.
-    :command:
-        create work directories
-    :URL:
-         https://github.com/AnyLog-co/documentation/blob/master/getting%20started.md#local-directory-structure
-    :args:
-        anylog_conn:AnyLogConnector - connection to AnyLog
-        root_path:str - AnyLog root directory path
-        remote_destination:str - remote (TCP) IP and port connection
-        view_help:bool - whether to print help information
-        exception:bool - whether to print exceptions
-    :params:
-        status:bool
-        headers:dict - REST headers
-    :return:
-        if view_help is True, returns None
-        True if success
-        False if Fails
-    """
-    status = True
-    headers = {
-        "command": "create work directories",
-        "User-Agent": "AnyLog/1.23",
-        "destination": remote_destination
-    }
-
-    if view_help is True:
-        return help_command(anylog_conn=anylog_conn, command=headers["command"], exception=exception)
-
-    r, error = anylog_conn.post(headers=headers, payload=None)
-    if r is False:
-        status = False
-        if exception is True:
-            print_rest_error(call_type='POST', cmd=headers['command'], error=error)
-
-    return status
-
-
-def set_node_name(anylog_conn:AnyLogConnector, node_name:str='anylog-node', remote_destination:str=None, view_help:bool=False, exception:bool=False):
-    """
-    set node name
-    :command:
-        set node name {node_name}
-    :URL:
-         https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#set-node-name
-    :args:
-        anylog_conn:AnyLogConnector - connection to AnyLog
-        node_name:str - Node name
-        remote_destination:str - remote (TCP) IP and port connection
-        view_help:bool - whether to print help information
-        exception:bool - whether to print exceptions
-    :params:
-        status:bool
-        headers:dict - REST headers
-    :return:
-        if view_help is True, returns None
-        True if success
-        False if Fails
-    """
-    status = True
-    headers = {
-        "command": f"set node name {node_name}",
-        "User-Agent": "AnyLog/1.23",
-        "destination": remote_destination
-    }
-
-    if view_help is True:
-        return help_command(anylog_conn=anylog_conn, command=headers["command"], exception=exception)
-
-    r, error = anylog_conn.post(headers=headers, payload=None)
-    if r is False:
-        status = False
-        if exception is True:
-            print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status
 

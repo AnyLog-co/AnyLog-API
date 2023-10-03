@@ -8,6 +8,10 @@
 #----------------------------------------------------------------------------------------------------------------------#
 # process AnyLog-API/deploy_anylog/deployment_script.al
 
+set debug off
+set authentication off
+set echo queue on
+
 :set-params:
 anylog_server_port = 32548
 anylog_rest_port = 32549 

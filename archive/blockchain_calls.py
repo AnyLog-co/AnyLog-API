@@ -1,8 +1,8 @@
 # Blockchain Commands: https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
 from anylog_api_py.anylog_connector import AnyLogConnector
 from anylog_api_py.generic_get_calls import help_command
-from anylog_api_py.blockchain_support import generate_blockchain_get, generate_blockchain_insert
-from anylog_api_py.rest_support import print_rest_error, extract_results
+from archive.blockchain_support import generate_blockchain_get, generate_blockchain_insert
+from archive.rest_support import print_rest_error, extract_results
 
 def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockchain_destination:str, sync_time:str,
                     ledger_conn:str, view_help:bool=False, exception:bool=False)->bool:

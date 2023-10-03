@@ -1,7 +1,7 @@
 # Generic GET:  https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
 
 from anylog_api_py.anylog_connector import AnyLogConnector
-from anylog_api_py.rest_support import print_rest_error, extract_results
+from archive.rest_support import print_rest_error, extract_results
 
 
 def help_command(anylog_conn:AnyLogConnector, command:str=None, exception:bool=False):

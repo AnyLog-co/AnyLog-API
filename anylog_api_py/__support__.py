@@ -2,27 +2,6 @@ import ast
 import json
 
 
-def __format_merged_dict(configs:dict)->dict:
-    """
-    iterate through configs and update values to correct type
-    :args:
-        configs:dict - dictionary to iterate through
-    else:
-        updated configs
-    """
-    for key in configs:
-        if configs[key].lower() == 'true':
-            configs[key] = True
-        elif configs[key].lower() == 'false':
-            configs[key] = False
-        else:
-            try:
-                configs[key] = int(configs[key])
-            except:
-                pass
-    return configs
-
-
 def json_dumps(content:dict, indent:int=4, exception:bool=False)->str:
     """
     Convert dict to JSON string
@@ -79,30 +58,4 @@ def convert_literal(content, exception:bool=False):
                 print(f'{content} - Failed to evaluate content (Error: {error})')
 
     return content
-
-
-def dictionary_merge(file_config:dict, anylog_config:dict, exception:bool=False)->dict:
-    """
-    Merg dictionary params
-    :args:
-       file_config:dict - file configurations
-       anylog_config:dict - AnyLog dictionary
-    :params:
-        full_configs:dict - full list of configurations
-    :return:
-        full_configs
-    """
-    full_configs = {}
-    for param in file_config:
-        if param == 'LOCAL_IP':
-            full_configs['ip'] = file_config[param]
-        else:
-            full_configs[param.lower()] = file_config[param]
-
-    for param in anylog_config:
-        if param not in full_configs:
-            full_configs[param] = anylog_config[param]
-
-    return __format_merged_dict(configs=full_configs)
-
 

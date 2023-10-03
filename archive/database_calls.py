@@ -1,5 +1,5 @@
 from anylog_connector import AnyLogConnector
-import generic_get_calls
+from anylog_api_py import generic_get_calls
 import database_support
 import rest_support
 
