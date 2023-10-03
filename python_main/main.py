@@ -2,18 +2,14 @@ import argparse
 import os.path
 
 from anylog_api_py.anylog_connector import AnyLogConnector
-from anylog_api_py.generic_get_calls import get_status, get_dictionary
+from anylog_api_py.generic_get_calls import get_status
 from anylog_api_py.generic_post_calls import set_node_name
 
 from anylog_api_py.rest_support import check_conn_format
-from anylog_api_py.__support__ import dictionary_merge
-from node_configs import get_configs
-
-
-from file_io import read_configs
-from generic import declare_directories
+from generic import declare_directories, get_configs
 
 ROOT_DIR = os.path.expanduser(os.path.expandvars(__file__)).split('python_main')[0]
+
 
 def __convert_conn(conn:str)->(str, tuple):
     """
@@ -61,7 +57,7 @@ def main():
     node_name = 'anylog-node'
     if 'node_name' in node_configs:
         node_name = node_configs['node_name']
-    if not set_node_name(anylog_conn=anylog_conn, node_name=node_name, destination=None, view_help=False, exception=args.exception):
+    if not set_node_name(anylog_conn=anylog_conn, node_name=node_name, remote_destination=None, view_help=False, exception=args.exception):
         print(f"Failed to set node name to {node_name}. cannot continue...")
         exit(1)
 
@@ -70,7 +66,6 @@ def main():
     configurations
     """
     node_configs = get_configs(anylog_conn=anylog_conn, config_file=args.config_file, exception=args.exception)
-
 
 
 

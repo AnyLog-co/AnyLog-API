@@ -25,7 +25,7 @@ def json_loads(content:str, exception:bool=False)->dict:
     Convert JSON-string to dict
     :args:
         content:dict - content to convert
-        exception:bool - whether or not to print error message if fails to convert
+        exception:bool - whether to print error message if fails to convert
     :return:
         content
     """
@@ -48,7 +48,7 @@ def convert_literal(content, exception:bool=False):
     """
     if content.lower() == 'true':
         content = True
-    elif content.lower() ==  'false':
+    elif content.lower() == 'false':
         content = False
     else:
         try:
