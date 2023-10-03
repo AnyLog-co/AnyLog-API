@@ -7,6 +7,7 @@ from anylog_api_py.generic_post_calls import set_node_name
 
 from anylog_api_py.rest_support import check_conn_format
 from generic import declare_directories, get_configs
+from blockchain import config_policy
 
 ROOT_DIR = os.path.expanduser(os.path.expandvars(__file__)).split('python_main')[0]
 
@@ -67,6 +68,7 @@ def main():
     """
     node_configs = get_configs(anylog_conn=anylog_conn, config_file=args.config_file, exception=args.exception)
 
+    config_policy(anylog_conn=anylog_conn, node_configs=node_configs, exception=args.exception)
 
 
 if __name__ == '__main__':

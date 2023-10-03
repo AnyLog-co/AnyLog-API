@@ -55,36 +55,40 @@ def generate_blockchain_get(policy_type:str, where_conditions:dict=None, bring_c
     return command
 
 
-def generate_blockchain_insert(local_publish:bool=True, platform:str=None, ledger_conn:str=None)->str:
+def create_config_policy(name:str, company:str, external_ip:str="'!external_ip'", internal_ip:str="'!ip'",
+                  anylog_server_port:str="'!anylog_server_port'", anylog_rest_port="'!anylog_rest_port'",
+                  anylog_broker_port:str=None, tcp_bind:bool=False, rest_bind:bool=False, broker_bind:bool=False,
+                  scripts:list=[]):
     """
-    Generate blockchain insert statement
-    :URL:
-        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md#the-blockchain-insert-command
-    :sample command:
-        blockchain insert where policy = !policy and local = true and master = !master_node
-        blockchain insert where policy = !policy and local = true and blockchain = ethereum
-    :args:
-        local_publish:bool - A true/false value to determine an update to the local copy of the ledger
-        platform:str - connected blockchain platform
-        ledger_conn:str - The IP and Port value of a master node
-    :params:
-        command:str - generated blockchain insert command
-    :return:
-        command
+    Create a configuration policy
     """
-    command = 'blockchain insert where policy=!new_policy'
-    if local_publish is False:
-        command += " and local=false"
-    else:
-        command += " and local=true"
+    new_policy = {
+        "config": {
+            "name": name,
+            "company": company
+        }
+    }
 
-    if platform in ['ethereum', 'eos', 'jasmy']:
-        command += f" and blockchain={platform}"
+    new_policy['config']['ip'] = internal_ip
+    if tcp_bind is False:
+        new_policy['config']['ip'] = external_ip
+        new_policy['config']['local_ip'] = internal_ip
+    if rest_bind is True:
+        new_policy['config']['rest_ip'] = internal_ip
+    if anylog_broker_port is not None and broker_bind is True:
+        new_policy['config']['broker_ip'] = internal_ip
 
-    if ledger_conn is not None:
-        command += f' and master={ledger_conn}'
+    new_policy['config']['port'] = anylog_server_port
+    new_policy['config']['rest_port'] = anylog_rest_port
 
-    return command
+    if anylog_broker_port is not None:
+        new_policy['config']['broker_port'] = anylog_broker_port
+
+    if 'run scheduler 1' not in scripts:
+        scripts.append('run scheduler 1')
+    new_policy['config']['script'] = scripts
+
+    return new_policy
 
 
 def node_policy(policy_type:str, name:str, company:str, external_ip:str, local_ip:str, anylog_server_port:int,
@@ -308,6 +312,6 @@ def generic_policy(policy_type:str, content:dict, exception:bool=False)->str:
         policy as a JSON string
     """
     policy = {policy_type: content}
-
     return json_dumps(content=policy, indent=4, exception=exception)
+
 

@@ -1,8 +1,9 @@
 # Blockchain Commands: https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
 from anylog_api_py.anylog_connector import AnyLogConnector
 from anylog_api_py.generic_get_calls import help_command
-from archive.blockchain_support import generate_blockchain_get, generate_blockchain_insert
-from archive.rest_support import print_rest_error, extract_results
+from anylog_api_py.blockchain_support import generate_blockchain_get
+from anylog_api_py.rest_support import print_rest_error, extract_results
+from anylog_api_py.__support__ import json_dumps
 
 def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockchain_destination:str, sync_time:str,
                     ledger_conn:str, view_help:bool=False, exception:bool=False)->bool:
@@ -45,14 +46,18 @@ def blockchain_sync(anylog_conn:AnyLogConnector, blockchain_source:str, blockcha
     return status
 
 
-def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:dict=None, bring_conditions:str=None,
-               bring_values:str=None, separator:str=None, view_help:bool=False, exception:bool=False)->str:
+def get_policy(anylog_conn:AnyLogConnector, blockchain_get_cmd:str=None, policy_type:str=None, where_conditions:dict=None,
+               bring_conditions:str=None, bring_values:str=None, separator:str=None, view_help:bool=False,
+               exception:bool=False)->str:
     """
     Execute `blockchain get` command
+        if user inputs a blockchain_stmt value then that'll be used for the command, otherwise command will be built
+        using generate_blockchain_get
     :url:
         https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md#query-policies
     :args:
         anylog_conn:AnyLogConnector - connection to AnyLog
+        blockchain_get_cmd:str - complete `blockchain get` statement
         policy_type:str - policy types to get
         where_conditions:dict - dictionary of WHERE conditions (ex. {'company': 'New Company', 'rest_port': 32049})
         bring_conditions:str - bring conditions (ex. table, table.unique)
@@ -68,12 +73,17 @@ def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:di
     """
     policies = {}
     headers = {
-        'command': generate_blockchain_get(policy_type=policy_type, where_conditions=where_conditions, 
-                                           bring_conditions=bring_conditions, bring_values=bring_values,
-                                           separator=separator),
+        'command': blockchain_get_cmd,
         'User-Agent': 'AnyLog/1.23'
     }
-
+    if headers['command'] is None and policy_type is None:
+        if exception is True:
+            print(f"Missing policy type...")
+        return policies
+    elif headers['command'] is None:
+        headers['command'] = generate_blockchain_get(policy_type=policy_type, where_conditions=where_conditions,
+                                                     bring_conditions=bring_conditions, bring_values=bring_values,
+                                                     separator=separator)
     if view_help is True:
         help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
@@ -87,7 +97,7 @@ def get_policy(anylog_conn:AnyLogConnector, policy_type:str, where_conditions:di
     return policies
 
 
-def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False, exception:bool=False)->bool:
+def prepare_policy(anylog_conn:AnyLogConnector, policy:dict, view_help:bool=False, exception:bool=False)->bool:
     """
     Prepare a policy for deploying on blockchain
     :URL:
@@ -112,8 +122,10 @@ def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False
         'command': 'blockchain prepare policy !new_policy',
         'User-Agent': 'AnyLog/1.23'
     }
-    payload = f'<new_policy={policy}>'
-
+    if isinstance(policy, str):
+        payload = f'<new_policy={policy}>'
+    else:
+        payload = f"<new_policy={json_dumps(policy)}>"
 
     if view_help is True:
         help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
@@ -129,8 +141,8 @@ def prepare_policy(anylog_conn:AnyLogConnector, policy:str, view_help:bool=False
     return status
 
 
-def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool=True, platform:str=None,
-              ledger_conn:str=None, view_help:bool=False,  exception:bool=False)->bool:
+def post_policy(anylog_conn:AnyLogConnector, policy=None, ledger_conn:str=None, view_help:bool=False,
+                exception:bool=False)->bool:
     """
     Post policy to blockchain
     :url:
@@ -147,22 +159,23 @@ def post_policy(anylog_conn:AnyLogConnector, policy:str=None, local_publish:bool
     """
     status = None
     headers = {
-        'command': 'blockchain insert where policy=!new_policy',
+        'command': f'blockchain insert where policy=!new_policy and local=true',
         'User-Agent': 'AnyLog/1.23'
     }
-
+    if ledger_conn is not None:
+        headers['command'] += f" and master={ledger_conn}"
     if view_help is True:
         help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
     else:
         status = True
-        headers['command']=generate_blockchain_insert(local_publish=local_publish, platform=platform, ledger_conn=ledger_conn)
-
         if policy is not None:
-            payload = f'<new_policy={policy}>'
+            if isinstance(policy, str):
+                payload = f'<new_policy={policy}>'
+            else:
+                payload = f"<new_policy={json_dumps(policy)}>"
             r, error = anylog_conn.post(headers=headers, payload=payload)
         else:
             r, error = anylog_conn.post(headers=headers)
-
         if r is False:
             status = False
             if exception is True:

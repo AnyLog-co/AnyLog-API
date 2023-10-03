@@ -305,6 +305,45 @@ def run_scheduler_1(anylog_conn:AnyLogConnector, view_help:bool=False, exception
     return status
 
 
+def execute_config_policy(anylog_conn:AnyLogConnector, policy_id:str, view_help:bool=False, exception:bool=False):
+    """
+    Configure a node from the policy info
+    :command:
+        config from policy
+    :url:
+       https://github.com/AnyLog-co/documentation/blob/master/policies.md#assigning-a-configuration-policy-to-a-node
+    :args:
+        anylog_conn:AnyLogConnector - connection to AnyLog Node
+        policy_id:str - policy ID
+        view_help:bool - whether to print info about command
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+    :return:
+        True - success
+        False - fails
+        None - execute `help` command
+    """
+    status = None
+    headers = {
+        "command": f"config from policy where id={policy_id}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if view_help is True:
+        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = True
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            status = False
+            if exception is True:
+                print_rest_error(call_type='POST', cmd=headers['command'], error=error)
+
+    return status
+
+
 def declare_schedule_process(anylog_conn:AnyLogConnector, time:str, task:str, start:str=None, name:str=None,
                              view_help:bool=False, exception:bool=False)->bool:
     """
