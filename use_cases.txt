@@ -1,0 +1,32 @@
+1. Generic Node
+--> config policy
+
+2. master node
+--> config policy
+--> create database and table
+--> node policy
+    --> blockchain sync
+
+3. query
+--> config policy
+--> create database and table
+--> node policy
+    --> blockchain sync
+
+4. publisher
+--> config policy
+--> create database and table
+--> node policy
+    --> blockchain sync
+    --> run publisher
+
+5. operator
+--> config policy
+--> create database and table
+--> cluster policy
+--> node policy
+    --> blockchain sync
+    --> run operator
+
+6. monitoring
+--> config policy
