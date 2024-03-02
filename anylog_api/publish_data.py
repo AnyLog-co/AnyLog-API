@@ -1,3 +1,4 @@
+# URL:
 from anylog_api.anylog_connector import AnyLogConnector
 import anylog_api.anylog_connector_support as anylog_connector_support
 
@@ -5,6 +6,8 @@ import anylog_api.anylog_connector_support as anylog_connector_support
 def send_data_via_put(anylog_conn:AnyLogConnector, payload:str, db_name:str, table_name:str, exception:bool=False):
     """
     Send data into AnyLog via PUT
+    :URL:
+        https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-put-command
     :sample data:
     {
         "timestamp": "2023-01-04T10:15:32.245185Z",
@@ -43,6 +46,8 @@ def send_data_via_put(anylog_conn:AnyLogConnector, payload:str, db_name:str, tab
 def send_data_via_post(anylog_conn:AnyLogConnector, payload:str, topic:str, exception:bool=False):
     """
     Send data into AnyLog via POST - make sure there's a running message client to receive content coming via POST
+    :URL:
+        https://github.com/AnyLog-co/documentation/blob/master/adding%20data.md#using-a-post-command
     :sample data:
     {
         "db_name": "test",
