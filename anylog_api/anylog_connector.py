@@ -98,4 +98,3 @@ class AnyLogConnector:
                 r = False
         return r, error
 
-
