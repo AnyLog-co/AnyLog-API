@@ -95,9 +95,8 @@ def rest_help(anylog_conn:AnyLogConnector, command:str=None, exception:bool=Fals
         headers['command'] += f' {command}'
 
     r, error = anylog_conn.get(headers=headers)
-    if r is False:
-        if exception is True:
-            print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+    if r is False and exception is True:
+        print_rest_error(call_type='GET', cmd=headers['command'], error=error)
     elif not isinstance(r, bool):
         output = extract_results(cmd=headers['command'], r=r, exception=exception)
     if output is not None:
