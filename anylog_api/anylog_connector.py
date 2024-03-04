@@ -96,5 +96,6 @@ class AnyLogConnector:
             if int(r.status_code) != 200:
                 error = str(r.status_code)
                 r = False
+
         return r, error
 

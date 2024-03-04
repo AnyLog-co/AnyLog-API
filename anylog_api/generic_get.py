@@ -43,6 +43,7 @@ def get_status(anylog_conn:AnyLogConnector, json_format:bool=False, view_help:bo
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
         print_output:bool - whether to print results from executed command
+        destination:str - remote machine IP and Port
         exception:bool - whether to print exceptions
     :params:
         headers:dict - REST information
@@ -72,6 +73,7 @@ def get_dictionary(anylog_conn:AnyLogConnector, json_format:bool=False, view_hel
         anylog_connector:AnylogConnector - connection to AnyLog node
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
+        destination:str - remote machine IP and Port
         print_output:bool - whether to print results from executed command
         exception:bool - whether to print exceptions
     :params:
@@ -99,6 +101,7 @@ def get_hostname(anylog_conn:AnyLogConnector, view_help:bool=False, destination:
     :args:
         anylog_connector:AnylogConnector - connection to AnyLog node
         view_help:bool - whether to execute HELP against command (prints to screen)
+        destination:str - remote machine IP and Port
         print_output:bool - whether to print results from executed command
         exception:bool - whether to print exceptions
     :params:
@@ -128,6 +131,7 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=False, view_help
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
         print_output:bool - whether to print results from executed command
+        destination:str - remote machine IP and Port
         exception:bool - whether to print exceptions
     :params:
         headers:dict - REST information
@@ -156,6 +160,7 @@ def get_connections(anylog_conn:AnyLogConnector, json_format:bool=False, view_he
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
         print_output:bool - whether to print results from executed command
+        destination:str - remote machine IP and Port
         exception:bool - whether to print exceptions
     :params:
         headers:dict - REST information
@@ -186,6 +191,7 @@ def get_scheduler(anylog_conn:AnyLogConnector, scheduler_id:int=None, view_help:
         scheduler_id:int - optional ID for the scheduler
         view_help:bool - whether to execute HELP against command (prints to screen)
         print_output:bool - whether to print results from executed command
+        destination:str - remote machine IP and Port
         exception:bool - whether to print exceptions
     :params:
         headers:dict - REST information
@@ -216,6 +222,7 @@ def get_event_log(anylog_conn:AnyLogConnector, json_format:bool=False, view_help
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
         print_output:bool - whether to print results from executed command
+        destination:str - remote machine IP and Port
         exception:bool - whether to print exceptions
     :params:
         headers:dict - REST information
@@ -246,6 +253,7 @@ def get_error_log(anylog_conn:AnyLogConnector, json_format:bool=False, view_help
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
         print_output:bool - whether to print results from executed command
+        destination:str - remote machine IP and Port
         exception:bool - whether to print exceptions
     :params:
         headers:dict - REST information
@@ -276,6 +284,7 @@ def get_echo_queue(anylog_conn:AnyLogConnector, view_help:bool=False, destinatio
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
         print_output:bool - whether to print results from executed command
+        destination:str - remote machine IP and Port
         exception:bool - whether to print exceptions
     :params:
         headers:dict - REST information
@@ -292,7 +301,7 @@ def get_echo_queue(anylog_conn:AnyLogConnector, view_help:bool=False, destinatio
     return __generic_execute(anylog_conn=anylog_conn, headers=headers, view_help=view_help, print_output=print_output, exception=exception)
 
 
-def execute_test_network(anylog_conn:AnyLogConnector, view_help:bool=False, destination:str=None, print_output:bool=False, exception:bool=False):
+def execute_test_network(anylog_conn:AnyLogConnector, view_help:bool=False, print_output:bool=False, exception:bool=False):
     """
     Send a command to a group of nodes in the network and organize the replies from all participating nodes.
     :command:
@@ -314,8 +323,6 @@ def execute_test_network(anylog_conn:AnyLogConnector, view_help:bool=False, dest
         "command": "test network",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
-        headers['destination'] = destination
 
     return __generic_execute(anylog_conn=anylog_conn, headers=headers, view_help=view_help, print_output=print_output, exception=exception)
 
@@ -331,6 +338,7 @@ def execute_test_node(anylog_conn:AnyLogConnector, view_help:bool=False, destina
         anylog_connector:AnylogConnector - connection to AnyLog node
         json_format:bool - return `get status` in JSON format
         view_help:bool - whether to execute HELP against command (prints to screen)
+        destination:str - remote machine IP and Port
         print_output:bool - whether to print results from executed command
         exception:bool - whether to print exceptions
     :params:
