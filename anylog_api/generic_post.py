@@ -85,9 +85,3 @@ def reset_error_log(anylog_conn:AnyLogConnector, view_help:bool=False, destinati
     return status
 
 
-def reset_query_status(anylog_conn:AnyLogConnector, view_help:bool=False, destination:str=None, exception:bool=False):
-    """
-    Reset query status
-    :command:
-
-    """
