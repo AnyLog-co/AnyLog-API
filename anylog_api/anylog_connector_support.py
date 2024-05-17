@@ -1,5 +1,6 @@
 import requests
-from anylog_api.anylog_connector import AnyLogConnector
+import anylog_api.anylog_connector as anylog_connector
+from anylog_api.generic.get import get_version
 
 # Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
 NETWORK_ERRORS_GENERIC = {
@@ -70,39 +71,6 @@ NETWORK_ERRORS = {
 }
 
 
-def rest_help(anylog_conn:AnyLogConnector, command:str=None, exception:bool=False):
-    """
-    Given a command, get the `help` output for it
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/getting%20started.md#the-help-command
-    :args:
-        anylog_connector:AnylogConnector - connection to AnyLog node
-        command:str - command to get help for
-        exception:bool - whether to print exceptions
-    :params:
-        output:str - help information
-        headers:dict - REST header information
-        r:requests.get, error - output for GET request
-    :print:
-        prints the results for `help` command
-    """
-    output = None
-    headers = {
-        'command': 'help',
-        'User-Agent': 'AnyLog/1.23'
-    }
-    if command is not None:
-        headers['command'] += f' {command}'
-
-    r, error = anylog_conn.get(headers=headers)
-    if r is False and exception is True:
-        print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-    elif not isinstance(r, bool):
-        output = extract_results(cmd=headers['command'], r=r, exception=exception)
-    if output is not None:
-        print(output)
-
-
 def print_rest_error(call_type:str, cmd:str, error:str):
     """
     Print Error message
@@ -156,3 +124,15 @@ def extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
                 print(f'Failed to extract results for "{cmd}" (Error: {error})')
 
     return output
+
+
+def is_edgelake(conn:anylog_connector.AnyLogConnector, exception:bool=False):
+    """
+    Check if EdgeLake instance
+    """
+    status = False
+    output = get_version(conn=conn, exception=exception)
+    if 'EdgeLake' in output:
+        status=True
+    return status
+

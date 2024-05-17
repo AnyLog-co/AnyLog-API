@@ -37,7 +37,7 @@ class AnyLogConnector:
             error = str(e)
             r = False
         else:
-            if int(r.status_code) != 200:
+            if int(r.status_code) < 200 or int(r.status_code) > 299:
                 error = int(r.status_code)
                 r = False
 
@@ -62,7 +62,7 @@ class AnyLogConnector:
             error = str(e)
             r = False
         else:
-            if int(r.status_code) != 200:
+            if int(r.status_code) < 200 or int(r.status_code) > 299:
                 error = str(r.status_code)
                 r = False
 
@@ -93,7 +93,7 @@ class AnyLogConnector:
             error = str(e)
             r = False
         else:
-            if int(r.status_code) != 200:
+            if int(r.status_code) < 200 or int(r.status_code) > 299:
                 error = str(r.status_code)
                 r = False
 
