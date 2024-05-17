@@ -52,7 +52,7 @@ def get_help(conn:anylog_connector.AnyLogConnector, cmd:str=None, exception:bool
     print(output)
 
 
-def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, exception:bool=False)->bool:
+def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Check whether node is running
     :url:
@@ -61,6 +61,7 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         status:bool - whether node is accessible
@@ -68,7 +69,7 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
         output:str - results
     :return:
         None - prints help
-        True - node accessible 
+        True - node accessible
         False - node not accessible
     """
     status = None
@@ -82,6 +83,8 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        return headers['command']
     else:
         status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -93,7 +96,8 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
     return status
 
 
-def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False, exception:bool=False):
+def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None,
+                   view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     get dictionary
     :url:
@@ -102,6 +106,7 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=False
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         headers:dict - REST headers
@@ -122,6 +127,8 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=False
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        output = headers['command']
     else:
         status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -129,7 +136,8 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=False
     return output
 
 
-def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, exception:bool=False):
+def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+                  return_cmd:bool=False, exception:bool=False):
     """
     get node name
     :url:
@@ -138,6 +146,7 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         headers:dict - REST headers
@@ -156,6 +165,8 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        output = headers['command']
     else:
         status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -163,15 +174,15 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
     return output
 
 
-def get_error_log(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False, exception:bool=False):
+def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+                 return_cmd:bool=False, exception:bool=False):
     """
-    get error log
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/logging%20events.md#the-error-log
+    get hostname
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         headers:dict - REST headers
@@ -181,17 +192,17 @@ def get_error_log(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     """
     output = None
     headers = {
-        "command": "get error log",
+        "command": "get hostname",
         "User-Agent": "AnyLog/1.23"
     }
 
-    if json_format is True:
-        headers['command'] += " where format=json"
     if destination is not None:
         headers["destination"] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        output = headers['command']
     else:
         status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -199,83 +210,15 @@ def get_error_log(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     return output
 
 
-def get_event_log(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False, exception:bool=False):
-    """
-    get error log
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/logging%20events.md#the-error-log
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        destination:str - Remote node to query against
-        view_help:bool - get information about command
-        exception:bool - whether to print exception
-    :params:
-        headers:dict - REST headers
-        output:str - results
-    :return:
-        headers
-    """
-    output = None
-    headers = {
-        "command": "get error log",
-        "User-Agent": "AnyLog/1.23"
-    }
-
-    if json_format is True:
-        headers['command'] += " where format=json"
-    if destination is not None:
-        headers["destination"] = destination
-
-    if view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
-    else:
-        status = True
-        output = extract_get_results(conn=conn, headers=headers, exception=exception)
-
-    return output
-
-
-def get_echo_queue(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False, exception:bool=False):
+def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+                return_cmd:bool=False, exception:bool=False):
     """
     get echo queue
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
-        exception:bool - whether to print exception
-    :params:
-        headers:dict - REST headers
-        output:str - results
-    :return:
-        output
-    """
-    output = None
-    headers = {
-        "command": "get error log",
-        "User-Agent": "AnyLog/1.23"
-    }
-
-    if json_format is True:
-        headers['command'] += " where format=json"
-    if destination is not None:
-        headers["destination"] = destination
-
-    if view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
-    else:
-        status = True
-        output = extract_get_results(conn=conn, headers=headers, exception=exception)
-
-    return output
-
-
-def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, exception:bool=False):
-    """
-    get echo queue
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        destination:str - Remote node to query against
-        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         headers:dict - REST headers
@@ -294,13 +237,10 @@ def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, vie
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        output = headers['command']
     else:
         status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
-
-if __name__ == '__main__':
-    conn = anylog_connector.AnyLogConnector(conn='127.0.0.1:2148', auth=(), timeout=30)
-    print(get_error_log(conn=conn, help=True, exception=True))
-    print(get_error_log(conn=conn, json_format=True, exception=True))

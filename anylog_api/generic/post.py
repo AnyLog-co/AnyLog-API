@@ -30,7 +30,7 @@ def execute_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:dict, pa
 
 
 def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destination:str=None, view_help:bool=False,
-              exception:bool=False):
+              return_cmd:bool=False, exception:bool=False):
     """
     set debug (used mainly in scripts)
         - on
@@ -43,6 +43,7 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
         state:str - debug state
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         status;bool - command status
@@ -66,52 +67,15 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
             print(f"Invalid value for state {state} (Options; on, off, interactive]")
     elif view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    else:
-        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-    return status
-
-
-def set_echo_queue(conn:anylog_connector.AnyLogConnector, state:str='on', destination:str=None, view_help:bool=False,
-                   exception:bool=False):
-    """
-    set echo queue
-        - on
-        - off
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        state:str - debug state
-        destination:str - Remote node to query against
-        view_help:bool - get information about command
-        exception:bool - whether to print exception
-    :params:
-        status;bool - command status
-        headers:dict - REST headers
-    :return:
-        None - if not executed
-        True - if success
-        False - if fails
-    """
-    status = None
-    headers = {
-        "command": f"set echo queue {state}",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if destination is not None:
-        headers['destination'] = destination
-
-    if state not in ['on','off']:
-        status = False
-        if exception is True:
-            print(f"Invalid value for state {state} (Options; on, off, interactive]")
-    elif view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
     return status
 
 
 def set_authentication(conn:anylog_connector.AnyLogConnector, state:str='on', destination:str=None, view_help:bool=False,
-                       exception:bool=False):
+                       return_cmd:bool=False, exception:bool=False):
     """
     set authentication
         - on
@@ -121,6 +85,7 @@ def set_authentication(conn:anylog_connector.AnyLogConnector, state:str='on', de
         state:str - debug state
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         status;bool - command status
@@ -144,6 +109,8 @@ def set_authentication(conn:anylog_connector.AnyLogConnector, state:str='on', de
             print(f"Invalid value for state {state} (Options; on, off, interactive]")
     elif view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
     return status
@@ -156,6 +123,7 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         params:dict - dictionary of key / value pairs to set node with
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     """
     headers = {
@@ -173,7 +141,9 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         else:
             execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destination:str=None,  view_help:bool=False, exception:bool=False):
+
+def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destination:str=None,
+                  return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
     """
     Set node name
     :args:
@@ -181,6 +151,7 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
         node_name:str - node name
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         status;bool - command status
@@ -200,13 +171,16 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
-def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  view_help:bool=False, exception:bool=False):
+def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  returnn_cmd:bool=False,
+             view_help:bool=False, exception:bool=False):
     """
     Set root path
     :args:
@@ -214,6 +188,7 @@ def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=No
         path:str - root directory path
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         status;bool - command status
@@ -233,19 +208,22 @@ def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=No
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif returnn_cmd is True:
+        return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
-def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  view_help:bool=False, exception:bool=False):
+def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
     """
     Disable the CLI
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         status;bool - command status
@@ -265,13 +243,15 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  vi
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
-def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None,  view_help:bool=False, exception:bool=False):
+def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None,  return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
     """
     create work directories
     :tree:
@@ -294,6 +274,7 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
         status;bool - command status
@@ -313,6 +294,8 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 

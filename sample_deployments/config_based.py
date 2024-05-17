@@ -58,6 +58,8 @@ def main():
     for key in node_configs:
         if key not in full_configs:
             full_configs[key] = node_configs[key]
+    if 'hostname' not in full_configs:
+        full_configs['hostname'] = generic_get.get_hostname(conn=anylog_conn, destination=None, view_help=False, exception=args.exception)
 
     # check if EdgeLake
     is_edgelake = anylog_connector_support.is_edgelake(conn=anylog_conn, exception=args.exception)
