@@ -1,6 +1,4 @@
 import requests
-import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_version
 
 # Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
 NETWORK_ERRORS_GENERIC = {
@@ -124,15 +122,3 @@ def extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
                 print(f'Failed to extract results for "{cmd}" (Error: {error})')
 
     return output
-
-
-def is_edgelake(conn:anylog_connector.AnyLogConnector, exception:bool=False):
-    """
-    Check if EdgeLake instance
-    """
-    status = False
-    output = get_version(conn=conn, exception=exception)
-    if 'EdgeLake' in output:
-        status=True
-    return status
-

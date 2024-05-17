@@ -1,10 +1,10 @@
 import anylog_api.anylog_connector as anylog_connector
+from anylog_api.generic.get import get_help
+from anylog_api.generic.post import execute_cmd
 
 
-def run_msg_broker(conn:anylog_connector.AnyLogConnector, broker:str, port:int=None, username:str=None,
-                       password:str=None, log:bool=False, topic:bool='*', dbms:str='my_database',
-                       table:str='table_name', values:dict={}): # , view_help:bool=False, return_cmd:bool=False,
-                       # exception:bool=False):
+def __build_msg_client(broker:str, port:int=None, username:str=None, password:str=None, log:bool=False, topic:bool='*',
+                       dbms:str='my_database', table:str='table_name', values:dict={})->str:
     cmd = f"<run msg client where broker={broker}"
     if port is not None:
         cmd += f" and port={port}"
@@ -30,11 +30,39 @@ def run_msg_broker(conn:anylog_connector.AnyLogConnector, broker:str, port:int=N
                     cmd += f"{param}={param_value} and "
                     if "bring" in param_value:
                         cmd = cmd.replace(param_value, f'"{param_value}"')
-                cmd = cmd.rstrip(" and ") +')'
-        cmd = cmd.rstrip(" and") + "\n)>"
+                cmd = cmd.rstrip(" and ") + ')'
+        cmd = cmd.rstrip(" and")
 
-    print(cmd)
+    cmd += "\n)>"
+
+    return cmd
+
+def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, port:int=None, username:str=None,
+                   password:str=None, log:bool=False, topic:bool='*', dbms:str='my_database',
+                   table:str='table_name', values:dict={}, destination:str=None, view_help:bool=False,
+                   return_cmd:bool=False, exception:bool=False):
+    # publish cmd
+    status = None
+    headers = {
+        "command": __build_msg_client(broker=broker, port=port, username=username, password=password, log=log,
+                                      topic=topic, dbms=dbms, table=table, values=values),
+        "User-Agent": "AnyLog/1.23"
+    }
+    if destination is not None:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        return headers['command']
+    else:
+        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return status
 
 
 if __name__ == '__main__':
-    run_msg_broker(conn=None, broker='local', values={"timestamp": {"type": "timestamp", "value": "now()"}, "col1": {"type": "float", "value": "bring [col1]", "optional": 'true'}})
+    print(run_msg_client(conn=None, broker='local',
+                   values={"timestamp": {"type": "timestamp", "value": "now()"},
+                           "col1": {"type": "float", "value": "bring [col1]", "optional": 'true'}},
+                   return_cmd=True))

@@ -50,7 +50,7 @@ def main():
         print(f"Failed to communicate with node against {anylog_conn.conn}. Cannot continue...")
         exit(1)
 
-    # set configurations
+    # set env parameters
     node_configs = generic_get.get_dictionary(conn=anylog_conn, json_format=True, destination=None, view_help=False, exception=args.exception)
     full_configs = {}
     for file_path in args.configs:
@@ -62,7 +62,9 @@ def main():
         full_configs['hostname'] = generic_get.get_hostname(conn=anylog_conn, destination=None, view_help=False, exception=args.exception)
 
     # check if EdgeLake
-    is_edgelake = anylog_connector_support.is_edgelake(conn=anylog_conn, exception=args.exception)
+    is_edgelake = False
+    if 'EdgeLake' in generic_get.get_version(conn=anylog_conn, exception=args.exception):
+        is_edgelake = True
 
     # set set-configs
     generic_post.set_debug(conn=anylog_conn, state='off', destination=None, view_help=False, exception=args.exception)
