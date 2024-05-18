@@ -5,26 +5,6 @@ import anylog_api.anylog_connector as anylog_connector
 import anylog_api.anylog_connector_support as anylog_connector_support
 
 
-def extract_get_results(conn:anylog_connector.AnyLogConnector, headers:dict, exception:bool=False):
-    """
-    execute / extract results for GET request
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        headers:dict - REST headers
-        exception:bool - whether to print exception
-    :params:
-        output - results from GET request
-    :return:
-        output
-    """
-    output = None
-    r, error = conn.get(headers=headers)
-    if r is False and exception is True:
-        anylog_connector_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-    elif not isinstance(r, bool):
-        output = anylog_connector_support.extract_results(cmd=headers['command'], r=r, exception=exception)
-    return output
-
 
 def get_help(conn:anylog_connector.AnyLogConnector, cmd:str=None, exception:bool=False):
     """

@@ -3,30 +3,7 @@ import anylog_api.anylog_connector_support as anylog_connector_support
 from anylog_api.generic.get import get_help
 
 
-def execute_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:dict, payload:str=None, exception:bool=False):
-    """
-    Execute command (both POST and PUT)
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        cmd:str - PUT or POST
-        headers:dict - REST headers
-        exception:bool - whether to print exception
-    :params:
-        status:bool - whether execution succeed or failed
-    :return:
-        output
-    """
-    status = True
-    if cmd == 'post':
-        r, error = conn.post(headers=headers, payload=payload)
-    elif cmd == 'put':
-        r, error = conn.put(headers=headers, payload=payload)
 
-    if r is False:
-        status = False
-        if exception is True:
-            anylog_connector_support.print_rest_error(call_type=cmd.upper(), cmd=headers['command'], error=error)
-    return status
 
 
 def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destination:str=None, view_help:bool=False,
