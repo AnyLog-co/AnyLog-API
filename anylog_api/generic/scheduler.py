@@ -1,20 +1,12 @@
-"""
-prepare
-insert
-delete
-get
-"""
 import anylog_api.anylog_connector as anylog_connector
+from anylog_api.generic.get import get_help
 from anylog_api.generic.post import execute_cmd
 
-def blockchain_sync(conn:anylog_connector.AnyLogConnector, source:str='master', time:str='30 seconds', dest:str='file',
-                    connection:str='!ledger_conn', destination:str=None,  return_cmd:bool=False, view_help:bool=False,
-                    exception:bool=False):
-    """
 
-    """
+def run_scheduler1(conn:anylog_connector.AnyLogConnector, scheduler_id:int=1, destination:str=None,  return_cmd:bool=False,
+                   view_help:bool=False, exception:bool=False):
     headers = {
-        "command": f"run blockchain sync where source={source} and time={time} and dest={dest} and connection={connection}",
+        "command": f"run scheduler {scheduler_id}",
         "User-Agent": "AnyLog/1.23"
     }
 
@@ -29,5 +21,3 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, source:str='master', 
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
-
-

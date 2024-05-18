@@ -251,7 +251,8 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  re
     return status
 
 
-def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None,  return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
+def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None,  return_cmd:bool=False,
+                     view_help:bool=False, exception:bool=False):
     """
     create work directories
     :tree:
