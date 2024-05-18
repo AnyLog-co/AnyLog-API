@@ -1,9 +1,7 @@
-# https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
-
+# URL https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
 
 import anylog_api.anylog_connector as anylog_connector
-import anylog_api.anylog_connector_support as anylog_connector_support
-
+from anylog_api.anylog_connector_support import extract_get_results
 
 
 def get_help(conn:anylog_connector.AnyLogConnector, cmd:str=None, exception:bool=False):
@@ -76,7 +74,7 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
     return status
 
 
-def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None,
+def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=True, destination:str=None,
                    view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     get dictionary
@@ -148,7 +146,6 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
     elif return_cmd is True:
         output = headers['command']
     else:
-        status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
