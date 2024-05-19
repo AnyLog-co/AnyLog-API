@@ -29,9 +29,15 @@
     * connect / create
     * disconnect
     * view databases
-    * virtual tables
-    * get tables where 
-    * get columns
+    * check if database exists 
+    * drop database
+  * table
+    * create table
+    * get tables
+    * check if table exists
+    * drop table
+    * drop partition
+    * gt virtuaal tables
   * publish_data
     * PUT data 
     * POST data 
@@ -46,6 +52,7 @@
     * exit publisher
   * streaming
     * get streaming
+    * get data nodes
   * Query
 * blockchain
   * create policy
