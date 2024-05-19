@@ -52,7 +52,15 @@ def add_conditions(headers:dict, **conditions):
     :returns:
         None: The function modifies the headers dictionary in place.
     """
-    condition_list = [f"{key}={value}" for key, value in conditions.items() if value]
+    condition_list = []
+    for key, value in conditions:
+        if isinstance(value, bool) and value is True:
+            condition_list.append(f"{key}=true")
+        elif isinstance(value, bool) and value is False:
+            condition_list.append(f"{key}=false")
+        else:
+            condition_list.append(f"{key}={value}")
+            
     if condition_list:
         headers['command'] += " where " + " and ".join(condition_list)
 
