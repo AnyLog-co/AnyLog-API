@@ -40,8 +40,11 @@
     * exit msg client
     * run operator 
     * get operator
+    * exit operator
     * run publisher
     * get publisher
+    * exit publisher
+  * streaming
     * get streaming
   * Query
 * blockchain
@@ -52,3 +55,5 @@
   * prepare
   * publish
   * query
+  * authentication
+    * disable authentication

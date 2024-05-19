@@ -1,9 +1,7 @@
 import anylog_api.anylog_connector as anylog_connector
-import anylog_api.anylog_connector_support as anylog_connector_support
 from anylog_api.generic.get import get_help
-
-
-
+from anylog_api.generic.get import get_dictionary
+from anylog_api.anylog_connector_support import execute_publish_cmd
 
 
 def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destination:str=None, view_help:bool=False,
@@ -48,53 +46,14 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
     return status
 
 
-def set_authentication(conn:anylog_connector.AnyLogConnector, state:str='on', destination:str=None, view_help:bool=False,
-                       return_cmd:bool=False, exception:bool=False):
+def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
+               exception:bool=False):
     """
-    set authentication
-        - on
-        - off
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        state:str - debug state
-        destination:str - Remote node to query against
-        view_help:bool - get information about command
-        return_cmd:bool - return command rather than executing it
-        exception:bool - whether to print exception
-    :params:
-        status;bool - command status
-        headers:dict - REST headers
-    :return:
-        None - if not executed
-        True - if success
-        False - if fails
-    """
-    status = None
-    headers = {
-        "command": f"set authentication {state}",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if destination is not None:
-        headers['destination'] = destination
-
-    if state not in ['on','off']:
-        status = False
-        if exception is True:
-            print(f"Invalid value for state {state} (Options; on, off, interactive]")
-    elif view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
-        return headers['command']
-    else:
-        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-    return status
-
-
-def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False, exception:bool=False):
-    """
+    add dictionary param
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         params:dict - dictionary of key / value pairs to set node with
@@ -102,6 +61,8 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         view_help:bool - get information about command
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
+    :params:
+        headers:dict - REST head information
     """
     headers = {
         "command": None,
@@ -117,7 +78,6 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
             break
         else:
             execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
 
 def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destination:str=None,
                   return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
@@ -276,5 +236,43 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return status
+
+
+def execute_process(anylog_conn:AnyLogConnector, file_path:str, view_help:bool=False, exception:bool=False)->bool:
+    """
+    Execute an AnyLog file via REST - file must be accessible on the AnyLog instance
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/node%20configuration.md#the-configuration-process
+    :args:
+        anylog_conn:AnyLogConnector - AnyLog connection information
+        file_path:str - file (on the AnyLog instance) to be executed
+        view_help:bool - whether to print help
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        headers:dict - REST header information
+        r:bool, error:str - whether the command failed & why
+    :return:
+        True - Success
+        False - Fails
+        None - print help information
+    """
+    status = None
+    headers = {
+        'command': 'process',
+        'User-Agent': 'AnyLog/1.23'
+    }
+
+    if view_help is True:
+        generic_get_calls.help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
+    else:
+        status = True
+        r, error = anylog_conn.post(headers=headers)
+        if r is False:
+            status = False
+            if exception is True:
+                rest_support.print_rest_error(call_type='POST', cmd=headers['command'], error=error)
 
     return status

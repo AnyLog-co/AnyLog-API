@@ -1,3 +1,8 @@
+"""
+Module for network configuration of a node.
+If IP / port for REST connection changes, then the consequent command(s) will fail without a change to the IP/Port values
+"""
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd

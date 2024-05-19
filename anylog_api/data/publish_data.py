@@ -435,42 +435,6 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
 
     return status
 
-def get_streming(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False,
-                 return_cmd:bool=False, exception:bool=False):
-    """
-    get streaming
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        json_format:bool - Set `get operator` output in JSON format
-        view_help:bool - get information about command
-        return_cmd:bool - return command rather than executing it
-        exception:bool - whether to print exception
-    :params:
-        output - content retured
-        headers:dict - REST headers
-    :return:
-        if return_cmd == True -- command to execute
-        if view_help == True - None
-        results for query
-    """
-    output = None
-    headers = {
-        "command": "get streaming",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if json_format is True:
-        headers['command'] += " where format=json"
-    if destination is not None:
-        headers['destination'] = destination
-
-    if view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
-        return headers['command']
-    else:
-        status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
-    return status
 
 def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, destination:str=None,
                    view_help:bool=False, return_cmd:bool=False, exception:bool=False):
@@ -512,3 +476,75 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
     return status
 
 
+def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+                  return_cmd:bool=False, exception:bool=False):
+    """
+    disconnect operator
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        headers:dict - REST headers
+    :return:
+        if return_cmd == True -- command to execute
+        if view_help == True - None
+        if execution succeeds - True
+        if execution fails - False
+    """
+    status = None
+    headers = {
+        "command": "exit operator",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination is not None:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        return headers['command']
+    else:
+        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return status
+
+
+def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+                   return_cmd:bool=False, exception:bool=False):
+    """
+    disconnect publisher
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        headers:dict - REST headers
+    :return:
+        if return_cmd == True -- command to execute
+        if view_help == True - None
+        if execution succeeds - True
+        if execution fails - False
+    """
+    status = None
+    headers = {
+        "command": "exit publisher",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination is not None:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    elif return_cmd is True:
+        return headers['command']
+    else:
+        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return status
