@@ -23,15 +23,15 @@ def json_loads(content, exception:bool=False):
 
 def json_dumps(content, indent:int=0, exception:bool=False):
     """
-        Convert dictionary into serialized JSON
-        :args:
-            content - content to convert into dictionary
-            indent:int - JSON indent
-            exception:bool - whether to print exception
-        :params:
-            output - content as dictionary form
-        :return:
-            output
+    Convert dictionary into serialized JSON
+    :args:
+        content - content to convert into dictionary
+        indent:int - JSON indent
+        exception:bool - whether to print exception
+    :params:
+        output - content as dictionary form
+    :return:
+        output
         """
     output = None
     try:

@@ -11,42 +11,7 @@ import rest_support
 
 
 
-def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
-    """
-    Get network information
-    :args:
-        anylog_conn:AnyLogConnector - AnyLog REST connection information
-        json_format:bool - whether to get results in JSON format
-        view_help:bool - whether to get help info for command
-        exception:bool - whether to print exceptions
-    :params:
-        status:bool
-        connections:dict - dict of AnyLog processes
-        r:bool, error:str - whether the command failed & why
-    :return:
-        connections
-    """
-    connections = {}
-    header={
-        'command': 'get connections',
-        'User-Agent': 'AnyLog/1.23'
-    }
 
-    if json_format is True:
-        header['command'] += ' where format=json'
-
-    if view_help is True:
-        help_command(anylog_conn=anylog_conn, command=header['command'], exception=exception)
-        connections = None
-    else:
-        r, error = anylog_conn.get(header=header)
-        if r is False:
-            if exception is True:
-                rest_support.print_rest_error(call_type='GET', cmd=header['command'], error=error)
-        elif not isinstance(r, bool):
-            connections = rest_support.extract_results(cmd=header['command'], r=r, exception=exception)
-
-    return connections
 
 
 

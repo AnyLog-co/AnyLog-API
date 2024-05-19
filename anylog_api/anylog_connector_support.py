@@ -161,9 +161,9 @@ def execute_publish_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:
         output
     """
     status = True
-    if cmd == 'post':
+    if cmd.upper() == 'POST':
         r, error = conn.post(headers=headers, payload=payload)
-    elif cmd == 'put':
+    elif cmd.upper() == 'PUT':
         r, error = conn.put(headers=headers, payload=payload)
 
     if r is False:

@@ -12,7 +12,18 @@
     * POST
       * dictionary
     * logs
-      * 
+      * reset error
+      * reset event
+      * start/stop echo queue
+      * get error
+      * get log
+      * get echo queue 
+      * get processes
+    * networking
+      * network_connection - connection to TCP, REST, msg broker
+      * get connections
+      * get rest calls
+    * geolocation (module to get geolocation of a node)
 * data
   * database
     * connect / create
@@ -20,8 +31,18 @@
     * view databases
     * virtual tables
     * get tables where 
-    * get colummns
-  * Publish Data (PUT / POST)
+    * get columns
+  * publish_data
+    * PUT data 
+    * POST data 
+    * run msg client
+    * get msg client
+    * exit msg client
+    * run operator 
+    * get operator
+    * run publisher
+    * get publisher
+    * get streaming
   * Query
 * blockchain
   * create policy
