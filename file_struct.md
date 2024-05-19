@@ -6,8 +6,13 @@
     * GET
       * status
       * dictionary
+      * node name
+      * hostname
+      * version
     * POST
       * dictionary
+    * logs
+      * 
 * data
   * database
     * connect / create

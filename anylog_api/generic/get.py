@@ -30,7 +30,8 @@ def get_help(conn:anylog_connector.AnyLogConnector, cmd:str=None, exception:bool
     print(output)
 
 
-def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False,
+               exception:bool=False):
     """
     Check whether node is running
     :url:
@@ -108,7 +109,6 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=True,
     elif return_cmd is True:
         output = headers['command']
     else:
-        status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -181,7 +181,6 @@ def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
     elif return_cmd is True:
         output = headers['command']
     else:
-        status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -217,7 +216,6 @@ def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, vie
     elif return_cmd is True:
         output = headers['command']
     else:
-        status = True
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output

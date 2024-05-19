@@ -8,42 +8,7 @@ import rest_support
 
 
 
-def get_processes(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
-    """
-    view running / not declared processes
-    :url:
-        https://github.com/AnyLog-co/documentation/blob/master/monitoring%20nodes.md#the-get-processes-command
-    :args:
-        anylog_conn:AnyLogConnector - AnyLog REST connection information
-        json_format:bool - whether to get results in JSON format
-        view_help:bool - whether to get help info for command
-        exception:bool - whether to print exceptions
-    :params:
-        status:bool
-        processes_dict - dict of AnyLog processes
-        r:bool, error:str - whether the command failed & why
-    :return:
-        processes_dict
-    """
-    processes_dict = {}
-    headers = {
-        'command': 'get processes',
-        'User-Agent': 'AnyLog/1.23'
-    }
 
-    if json_format is True:
-        headers['command'] += ' where format=json'
-
-    if view_help is True:
-        help_command(anylog_conn=anylog_conn, command=headers['command'], exception=exception)
-    else:
-        r, error = anylog_conn.get(headers=headers)
-        if r is False and exception is True:
-            rest_support.print_rest_error(call_type='GET', cmd=headers['command'], error=error)
-        elif not isinstance(r, bool):
-            processes_dict = rest_support.extract_results(cmd=headers['command'], r=r, exception=exception)
-
-    return processes_dict
 
 
 def get_network_info(anylog_conn:AnyLogConnector, json_format:bool=True, view_help:bool=False, exception:bool=False)->str:
