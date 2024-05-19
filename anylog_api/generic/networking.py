@@ -100,7 +100,7 @@ def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, intern
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -136,7 +136,7 @@ def get_network_info(conn:anylog_connector.AnyLogConnector, json_format:bool=Tru
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         connections = headers['command']
     else:
         connections = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -171,7 +171,7 @@ def get_rest_calls(conn:anylog_connector.AnyLogConnector, destination:str=None, 
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         rest_calls = headers['command']
     else:
         rest_calls = extract_get_results(conn=conn, headers=headers, exception=exception)

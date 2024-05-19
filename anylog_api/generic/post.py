@@ -42,7 +42,7 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
             print(f"Invalid value for state {state} (Options; on, off, interactive]")
     elif view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -108,7 +108,7 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -180,7 +180,7 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  re
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)

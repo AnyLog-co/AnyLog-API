@@ -217,7 +217,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
     if view_help is True:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n","").replace("\t", " ")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         status = headers['command']
     else:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
@@ -267,7 +267,7 @@ def run_operator(conn:anylog_connector.AnyLogConnector, operator_id:str, create_
     if view_help is True:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n","").replace("\t", " ")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         status = headers['command']
     else:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
@@ -311,7 +311,7 @@ def run_publisher(conn:anylog_connector.AnyLogConnector, compress_file:bool=True
     if view_help is True:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         status = headers['command']
     else:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
@@ -351,7 +351,7 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -390,7 +390,7 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -428,7 +428,7 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -468,7 +468,7 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -505,7 +505,7 @@ def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, v
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -542,7 +542,7 @@ def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, 
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)

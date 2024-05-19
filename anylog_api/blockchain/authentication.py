@@ -39,7 +39,7 @@ def set_authentication(conn:anylog_connector.AnyLogConnector, enable_auth:bool=F
             print(f"Invalid value for state {state} (Options; on, off, interactive]")
     elif view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)

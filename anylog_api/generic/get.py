@@ -62,7 +62,7 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = True
@@ -106,7 +106,7 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=True,
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         output = headers['command']
     else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -143,7 +143,7 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         output = headers['command']
     else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -178,7 +178,7 @@ def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         output = headers['command']
     else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
@@ -213,7 +213,7 @@ def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, vie
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         output = headers['command']
     else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)

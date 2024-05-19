@@ -50,7 +50,7 @@ def set_location(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
+    if return_cmd is True:
         return headers['command']
     else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
@@ -80,7 +80,7 @@ def extract_geolocation(conn:anylog_connector.AnyLogConnector, destination:str=N
 
     if 'geolocation' in dictionary_values and isinstance(dictionary_values):
         output = dictionary_values['geolocation']
-    elif return_cmd is True:
+    if return_cmd is True:
         output = dictionary_values
 
     return output
