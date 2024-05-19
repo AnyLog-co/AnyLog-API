@@ -1,3 +1,20 @@
+"""
+The following module provides the ability to get geolocation of a node via REST
+
+Sample Geolocation
+{
+    'ip' : '73.202.144.172',
+    'hostname' : 'c-73-202-142-172.hsd1.ca.comcast.net',
+    'city' : 'San Jose',
+    'region' : 'California',
+    'country' : 'US',
+    'loc' : '37.2560,-121.8939',
+    'org' : 'AS7922 Comcast Cable Communications, LLC',
+    'postal' : '95125',
+    'timezone' : 'America/Los_Angeles',
+    'readme' : 'https://ipinfo.io/missingauth'
+} 
+"""
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.generic.get import get_dictionary
@@ -100,4 +117,5 @@ def get_geolocation(conn:anylog_connector.AnyLogConnector, destination:str=None,
                                      exception=exception)
     if return_cmd is True:
         return status, output
+    
     return output
