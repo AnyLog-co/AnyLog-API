@@ -1,11 +1,10 @@
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
-from anylog_api.generic.get import get_dictionary
 from anylog_api.anylog_connector_support import execute_publish_cmd
 
 
-def set_authentication(conn:anylog_connector.AnyLogConnector, enable_auth:bool=False, destination:str=None, view_help:bool=False,
-                       return_cmd:bool=False, exception:bool=False):
+def set_authentication(conn:anylog_connector.AnyLogConnector, enable_auth:bool=False, destination:str=None,
+                       view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     set authentication off / on - code will not work in EdgeLake
     :args:
@@ -33,15 +32,11 @@ def set_authentication(conn:anylog_connector.AnyLogConnector, enable_auth:bool=F
     if destination is not None:
         headers['destination'] = destination
 
-    if state not in ['on','off']:
-        status = False
-        if exception is True:
-            print(f"Invalid value for state {state} (Options; on, off, interactive]")
-    if view_help is True:
+    elif view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        status = headers['command']
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
     return status
 

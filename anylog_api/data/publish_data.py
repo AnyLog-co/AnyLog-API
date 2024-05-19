@@ -121,7 +121,7 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
 
     if return_cmd is True:
         status = headers
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='PUT', headers=headers, payload=serialize_data, excepton=exception)
 
     return status
@@ -160,7 +160,7 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
 
     if return_cmd is True:
         status = headers
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=serialize_data, excepton=exception)
 
     return status
@@ -352,8 +352,8 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        output = headers['command']
+    elif view_help is False:
         status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -391,11 +391,11 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
-        status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = headers['command']
+    elif view_help is False:
+        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return status
+    return output
 
 
 def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False,
@@ -429,11 +429,11 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
-        status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = headers['command']
+    elif view_help is False:
+        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return status
+    return output
 
 
 def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, destination:str=None,
@@ -469,8 +469,8 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        output = headers['command']
+    elif view_help is False:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -506,8 +506,8 @@ def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, v
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        output = headers['command']
+    elif view_help is False:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -543,8 +543,8 @@ def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        output = headers['command']
+    elif view_help is False:
         status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

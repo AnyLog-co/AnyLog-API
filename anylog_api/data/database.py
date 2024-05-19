@@ -2,6 +2,7 @@ import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.generic.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.__support__ import add_conditions
 
 
 def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', host:str=None, port:int=None,
@@ -23,20 +24,12 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
         exception:bool - whether to print error messages
     """
     headers = {
-        "command": f"connect dbms {db_name} where type={db_type}",
+        "command": f"connect dbms {db_name}",
         "User-Agent": "AnyLog/1.23"
     }
-
-    if host:
-        headers['command'] += f" and ip={host}"
-    if port:
-        headers['command'] += f" and port={port}"
-    if user:
-        headers['command'] += f" and user={user}"
-    if password:
-        headers['command'] += f" and password={password}"
+    add_conditions(headers, type=db_type, ip=host, port=port, user=user, password=password)
     if memory is True and db_name == 'sqlite':
-        headers['command'] += f" and memory=true"
+        add_conditions(headers, type=db_type, ip=host, port=port, user=user, password=password, memory='truee')
 
     if destination is not None:
         headers['destination'] = destination
@@ -45,7 +38,7 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -79,14 +72,14 @@ def disconnect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, destinat
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
 def drop_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', host:str=None, port:int=None,
-                 user:str=None, password:str=None, memory:bool=False, destination:str=None, view_help:bool=False,
+                 user:str=None, password:str=None, destination:str=None, view_help:bool=False,
                  return_cmd:bool=False, exception:bool=False):
     """
     Disconnect logical database
@@ -107,19 +100,7 @@ def drop_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='s
         "command": f"drop dbms {db_name} from {db_type}",
         "User-Agent": "AnyLog/1.23"
     }
-
-    if host or port or user or password:
-        headers['command'] += " where "
-    if host:
-        headers['command'] += f"ip={host} and "
-    if port:
-        headers['command'] += f"port={port} and "
-    if user:
-        headers['command'] += f"user={user} and "
-    if password:
-        headers['command'] += f"password={password} and "
-    if memory is True and db_name == 'sqlite':
-        headers['command'] += f"memory=true"
+    add_conditions(headers, ip=host, port=port, user=user, password=password)
 
     if destination is not None:
         headers['destination'] = destination
@@ -128,7 +109,7 @@ def drop_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='s
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         staatus = headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -158,9 +139,9 @@ def get_databases(conn:anylog_connectorAnyLogConnector, json_format:bool=False, 
         'command': 'get databases',
         'User-Agent': 'AnyLog/1.23'
     }
-
     if json_format is True:
         headers['command'] += ' where format=json'
+        add_conditions(headers, format='json')
 
     if destination is not None:
         headers['destination'] = destination
@@ -169,7 +150,7 @@ def get_databases(conn:anylog_connectorAnyLogConnector, json_format:bool=False, 
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return output
