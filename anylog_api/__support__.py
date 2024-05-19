@@ -42,3 +42,17 @@ def json_dumps(content, indent:int=0, exception:bool=False):
     return output
 
 
+
+def add_conditions(headers:dict, **conditions):
+    """
+    Adds conditions to the 'command' key in the headers dictionary.
+    :args:
+        headers (dict): The headers dictionary containing the 'command' key.
+        **conditions: Arbitrary keyword arguments representing conditions to be added.
+    :returns:
+        None: The function modifies the headers dictionary in place.
+    """
+    condition_list = [f"{key}={value}" for key, value in conditions.items() if value]
+    if condition_list:
+        headers['command'] += " where " + " and ".join(condition_list)
+
