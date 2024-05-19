@@ -30,7 +30,7 @@ def reset_error_log(conn:anylog_connector.AnyLogConnector, destination:str=None,
     if destination is not None:
         headers['destination'] = destination
 
-    elif view_help is True:
+    if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     elif return_cmd is True:
         return headers['command']
@@ -65,7 +65,7 @@ def reset_event_log(conn:anylog_connector.AnyLogConnector, destination:str=None,
     if destination is not None:
         headers['destination'] = destination
 
-    elif view_help is True:
+    if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     elif return_cmd is True:
         return headers['command']
@@ -142,7 +142,7 @@ def reset_echo_queue(conn:anylog_connector.AnyLogConnector, destination:str=None
     if destination is not None:
         headers['destination'] = destination
 
-    elif view_help is True:
+    if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     elif return_cmd is True:
         return headers['command']
@@ -178,7 +178,7 @@ def echo_msg(conn:anylog_connector.AnyLogConnector, msg:str, destination:str=Non
     if destination is not None:
         headers['destination'] = destination
 
-    elif view_help is True:
+    if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     elif return_cmd is True:
         return headers['command']
