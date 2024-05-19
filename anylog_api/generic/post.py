@@ -40,7 +40,7 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
         status = False
         if exception is True:
             print(f"Invalid value for state {state} (Options; on, off, interactive]")
-    elif view_help is True:
+    if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
