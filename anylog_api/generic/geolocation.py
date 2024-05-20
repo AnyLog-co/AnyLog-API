@@ -78,7 +78,7 @@ def extract_geolocation(conn:anylog_connector.AnyLogConnector, destination:str=N
     dictionary_values = get_dictionary(conn=conn, json_format=True, destination=destination, view_help=view_help,
                                        return_cmd=return_cmd, exception=exception)
 
-    if 'geolocation' in dictionary_values and isinstance(dictionary_values):
+    if isinstance(dictionary_values, dict) and 'geolocation' in dictionary_values:
         output = dictionary_values['geolocation']
     if return_cmd is True:
         output = dictionary_values

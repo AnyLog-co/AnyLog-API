@@ -12,7 +12,7 @@ def __build_msg_client(broker:str, topic:str, port:int=None, username:str=None, 
     Build message client command
     :args:
         broker:str - broker
-        topic:str - topic nmae
+        topic:str - topic name
         port:int - port associated with broker value
         username:str - user associated with broker
         password:str - password associated with user
@@ -38,7 +38,7 @@ def __build_msg_client(broker:str, topic:str, port:int=None, username:str=None, 
     if username is not None:
         cmd += f" and username={username}"
     if password is not None:
-        cmd += f" and passwword={password}"
+        cmd += f" and password={password}"
     cmd += " and log=false"
     if log is True:
         cmd = cmd.replace("false", "true")
@@ -177,7 +177,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
     :args:
         conn:anylog_connector.AnyLogConnector
         broker:str - broker
-        topic:str - topic nmae
+        topic:str - topic name
         port:int - port associated with broker value
         username:str - user associated with broker
         password:str - password associated with user
@@ -340,7 +340,7 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output - content retured
+        output - content returned
         headers:dict - REST headers
     :return:
         if return_cmd == True -- command to execute
@@ -379,7 +379,7 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output - content retured
+        output - content returned
         headers:dict - REST headers
     :return:
         if return_cmd == True -- command to execute
@@ -418,7 +418,7 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output - content retured
+        output - content returned
         headers:dict - REST headers
     :return:
         if return_cmd == True -- command to execute

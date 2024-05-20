@@ -10,53 +10,6 @@ from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.generic.get import get_help
 
 
-def __generate_connection_command(conn_type:str, internal_ip:str, internal_port:int, external_ip:str=None,
-                                  external_port:int=None, bind:bool=False, threads:int=3, rest_timeout:int=30)->str:
-    """
-    Generate connection to network command
-    :args:
-        conn_type:str - connection type (TCP, REST, broker)
-        internal_ip:str - internal/local  ip
-        internal_port  - internal/local ip
-        external_ip:str - external ip
-        external_port:str - external port
-        bind:bool - whether to bind or not
-        threads:int - number of threads
-        rest_timeout:bool - REST timeout
-    :params:
-        command:str - generatedd command
-    :return:
-        command
-    """
-    if conn_type.upper() == 'TCP':
-        command = 'run tcp server where'
-    elif conn_type.upper() == 'REST':
-        command = 'run rest server where '
-    elif conn_type.lower() == 'broker':
-        command = 'run message broker where '
-
-    if external_ip is not None:
-        command += f'external_ip={external_ip} and '
-    else:
-        command += f'external_ip={internal_ip} and '
-    if external_port is not None:
-        command += f'external_ip={external_port} and '
-    else:
-        command += f'external_ip={internal_port} and '
-    command += f'internal_ip={internal_ip} and internal_port={internal_port} and '
-
-    if bind is True:
-        command += ' bind=true and '
-    else:
-        command += ' bind=false and '
-    command += f'threads={threads}'
-
-    if conn_type.upper() == 'REST':
-        command += f' timeout={rest_timeout}'
-
-    return command
-
-
 def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, internal_ip:str, internal_port:int,
                     external_ip:str=None, external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30,
                     destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):

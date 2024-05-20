@@ -29,7 +29,7 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
     }
     add_conditions(headers, type=db_type, ip=host, port=port, user=user, password=password)
     if memory is True and db_name == 'sqlite':
-        add_conditions(headers, type=db_type, ip=host, port=port, user=user, password=password, memory='truee')
+        add_conditions(headers, type=db_type, ip=host, port=port, user=user, password=password, memory='true')
 
     if destination is not None:
         headers['destination'] = destination
@@ -108,7 +108,7 @@ def drop_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='s
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        staatus = headers['command']
+        status = headers['command']
     elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 

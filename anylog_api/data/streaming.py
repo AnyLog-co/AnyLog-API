@@ -15,7 +15,7 @@ def get_streaming(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output - content retured
+        output - content returned
         headers:dict - REST headers
     :return:
         if return_cmd == True -- command to execute
@@ -55,7 +55,7 @@ def get_data_nodes(conn:anylog_connector.AnyLogConnector, company_name:str=None,
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output - content retured
+        output - content returned
         headers:dict - REST headers
     :return:
         if return_cmd == True -- command to execute
