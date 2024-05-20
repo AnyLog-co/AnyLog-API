@@ -109,7 +109,7 @@ def get_geolocation(conn:anylog_connector.AnyLogConnector, destination:str=None,
         else
             -> output
     """
-
+    output = {}
     status = set_location(conn=conn, destination=destination, view_help=view_help, return_cmd=return_cmd,
                           exception=exception)
     if True in [status, return_cmd, view_help]:

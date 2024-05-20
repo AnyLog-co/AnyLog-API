@@ -23,6 +23,7 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
         view_help:bool - whether to view help for command
         exception:bool - whether to print error messages
     """
+    status = None
     headers = {
         "command": f"connect dbms {db_name}",
         "User-Agent": "AnyLog/1.23"
@@ -129,7 +130,7 @@ def get_databases(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
         view_help:bool - whether to view help for command
         exception:bool - whether to print error messages
     :params:
-        output:str - results from REST request
+        output - results from REST request
         headers:dict - REST header requests
         r:request.get, error:str - REST request results
     :return:

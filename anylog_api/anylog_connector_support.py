@@ -86,7 +86,7 @@ def __print_rest_error(call_type:str, cmd:str, error:str):
     error_msg = f'Failed to execute {call_type} for "{cmd}" '
     try:
         error = int(error)
-    except:
+    except Exception as err:
         pass
     if isinstance(error, int):
         if error in NETWORK_ERRORS:
@@ -162,13 +162,17 @@ def execute_publish_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:
         output
     """
     status = True
+    r = None
+    error = None
+
     if cmd.upper() == 'POST':
         r, error = conn.post(headers=headers, payload=payload)
     elif cmd.upper() == 'PUT':
         r, error = conn.put(headers=headers, payload=payload)
 
-    if r is False:
+    if isinstance(r, bool) and r is False:
         status = False
         if exception is True:
             __print_rest_error(call_type=cmd.upper(), cmd=headers['command'], error=error)
+
     return status

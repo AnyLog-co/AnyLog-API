@@ -203,7 +203,7 @@ def drop_table_partition(conn:anylog_connector.AnyLogConnctor, db_name:str, tabl
     return status
 
 
-def get_virtual_tables(conn:anylog_connector.AnyLogConnctor, table_name:str=None, show_info:bool=False,
+def get_virtual_tables(conn:anylog_connector.AnyLogConnector, table_name:str=None, show_info:bool=False,
                        destination:str=None, return_cmd:bool=False, view_help:bool=False, exception:bool=False):
     """
     list of tables managed by the network

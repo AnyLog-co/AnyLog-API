@@ -11,7 +11,7 @@ from anylog_api.generic.get import get_help
 
 
 def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, internal_ip:str, internal_port:int,
-                    external_ip:str=None, external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30,
+                    external_ip:str=None, external_port:int=None, bind:bool=False, threads:int=3, rest_timeout:int=None,
                     destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Connect to a network
@@ -41,11 +41,10 @@ def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, intern
         'User-Agent': 'AnyLog/1.23'
     }
 
-    if conn_type.upper() not in ['TCP', 'REST'] and conn.lower() == 'broker':
+    if conn_type.upper() not in ['TCP', 'REST'] and conn_type.lower() == 'broker':
         if exception is True:
             print(f"Invalid connection type {conn_type}")
         return False
-
 
     if conn_type.upper() == 'TCP':
         headers['command'] = 'run tcp server'
