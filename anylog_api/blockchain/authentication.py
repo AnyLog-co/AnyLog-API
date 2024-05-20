@@ -1,6 +1,6 @@
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.generic.get import get_help
 
 
 def set_authentication(conn:anylog_connector.AnyLogConnector, enable_auth:bool=False, destination:str=None,

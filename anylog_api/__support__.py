@@ -44,7 +44,7 @@ def json_dumps(content, indent:int=0, exception:bool=False):
 
 def add_conditions(headers:dict, **conditions):
     """
-    Adds conditions to the 'command' key in the headers dictionary.
+    Adds conditions to the 'command' key in the header dictionary
     :args:
         headers (dict): The headers dictionary containing the 'command' key.
         **conditions: Arbitrary keyword arguments representing conditions to be added.

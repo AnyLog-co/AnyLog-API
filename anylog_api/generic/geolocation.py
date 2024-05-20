@@ -16,9 +16,9 @@ Sample Geolocation
 } 
 """
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
-from anylog_api.generic.get import get_dictionary
 from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.generic.get import get_dictionary
+from anylog_api.generic.get import get_help
 
 
 def set_location(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,

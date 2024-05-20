@@ -1,8 +1,8 @@
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
 from anylog_api.__support__ import add_conditions
-from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.generic.get import get_help
 
 
 def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str=None,

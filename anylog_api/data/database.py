@@ -1,8 +1,8 @@
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
-from anylog_api.anylog_connector_support import extract_get_results
-from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.__support__ import add_conditions
+from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.generic.get import get_help
 
 
 def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', host:str=None, port:int=None,
@@ -151,7 +151,7 @@ def get_databases(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
 

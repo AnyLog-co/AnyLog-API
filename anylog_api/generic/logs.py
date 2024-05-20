@@ -1,7 +1,7 @@
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
-from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.generic.get import get_help
 
 
 def reset_error_log(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,

@@ -4,10 +4,11 @@ If IP / port for REST connection changes, then the consequent command(s) will fa
 """
 
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
-from anylog_api.anylog_connector_support import extract_get_results
-from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.__support__ import add_conditions
+from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.generic.get import get_help
+
 
 def __generate_connection_command(conn_type:str, internal_ip:str, internal_port:int, external_ip:str=None,
                                   external_port:int=None, bind:bool=False, threads:int=3, rest_timeout:int=30)->str:

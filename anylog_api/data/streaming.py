@@ -1,7 +1,7 @@
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
-from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.__support__ import add_conditions
+from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.generic.get import get_help
 
 
 def get_streaming(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False,

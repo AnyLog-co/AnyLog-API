@@ -1,9 +1,9 @@
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.generic.get import get_help
-from anylog_api.anylog_connector_support import extract_get_results
-from anylog_api.anylog_connector_support import execute_publish_cmd
-from anylog_api.__support__ import json_dumps
 from anylog_api.__support__ import add_conditions
+from anylog_api.__support__ import json_dumps
+from anylog_api.anylog_connector_support import execute_publish_cmd
+from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.generic.get import get_help
 
 
 def __build_msg_client(broker:str, topic:str, port:int=None, username:str=None, password:str=None, log:bool=False,
@@ -237,7 +237,7 @@ def run_operator(conn:anylog_connector.AnyLogConnector, operator_id:str, create_
     :args:
         conn:AnyLogConnector - connection to AnyLog
         operator_id:str - (policy) ID of the operator policy
-        create_table:bool - A True value creates a table if the table doesn't exists.
+        create_table:bool - A True value creates a table if the table doesn't exist.
         update_tsd_info - True/False to update a summary table (tsd_info table in almgm dbms) with status of files ingested.
         compress_json - True/False to enable/disable compression of the JSON file.
         compress_sql - True/False to enable/disable compression of the SQL file.
