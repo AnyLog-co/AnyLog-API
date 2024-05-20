@@ -38,7 +38,7 @@ def get_streaming(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
 
@@ -78,7 +78,7 @@ def get_data_nodes(conn:anylog_connector.AnyLogConnector, company_name:str=None,
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
 

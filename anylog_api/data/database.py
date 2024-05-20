@@ -96,6 +96,7 @@ def drop_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='s
         view_help:bool - whether to view help for command
         exception:bool - whether to print error messages
     """
+    status = None
     headers = {
         "command": f"drop dbms {db_name} from {db_type}",
         "User-Agent": "AnyLog/1.23"

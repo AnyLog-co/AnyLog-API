@@ -76,7 +76,7 @@ def get_tables(conn:anylog_connector.AnyLogConnector, db_name:str='*', json_form
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
 
@@ -233,7 +233,7 @@ def get_virtual_tables(conn:anylog_connector.AnyLogConnctor, table_name:str=None
     if return_cmd is True:
         output = headers['command']
     else:
-        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
 

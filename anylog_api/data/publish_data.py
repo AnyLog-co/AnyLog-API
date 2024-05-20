@@ -6,80 +6,6 @@ from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.generic.get import get_help
 
 
-def __build_msg_client(broker:str, topic:str, port:int=None, username:str=None, password:str=None, log:bool=False,
-                       policy_id:str=None, dbms:str=None, table:str=None, values:dict={})->str:
-    """
-    Build message client command
-    :args:
-        broker:str - broker
-        topic:str - topic name
-        port:int - port associated with broker value
-        username:str - user associated with broker
-        password:str - password associated with user
-        log:bool - whether to enable logging or not
-        policy_id:str - policy to be used with message client
-        - OR -
-        dbms:str - logical database name to be used with message client
-        table:str - physical table to be used with message client
-        values:dict - mapping information  Describe:
-            {
-                "timestamp": {"type": "timestamp", "value": "now()"},
-                "col1": {"type": "float", "value": "bring [col1]", "optional": 'true', 'default': 3},
-                "col2": {"type": "string", "value": "bring [col2]", "optional": 'true', 'default': 'a'}
-           }
-    :params:
-        cmd:str - run msg client where cmd
-    :return:
-        cmd
-    """
-    cmd = f"<run msg client where broker={broker}"
-    if port is not None:
-        cmd += f" and port={port}"
-    if username is not None:
-        cmd += f" and username={username}"
-    if password is not None:
-        cmd += f" and password={password}"
-    cmd += " and log=false"
-    if log is True:
-        cmd = cmd.replace("false", "true")
-    cmd += f" and topic=(\n\tname={topic} and "
-    if policy_id is not None:
-        cmd += f"\n\tpolicy={policy_id}"
-    else:
-        if dbms is not None:
-            cmd += f"\n\tdbms={dbms} and "
-        if table is not None:
-            cmd += f"\n\ttable={table} and"
-        if values:
-            for key, values_dict in values.items():
-                if 'value' not in values_dict and 'type' not in values_dict:
-                    continue
-                if values_dict['type'] == 'timestamp':
-                    cmd += f"\n\tcolumn.{key}.timestamp={values_dict["value"]} and"
-                    if "bring" in values_dict["value"]:
-                        cmd = cmd.replace(values_dict["value"], f'"{values_dict["value"]}"')
-                else:
-                    if values_dict['type'] not in ['string', 'int', 'float', 'bool', 'timestamp']:
-                        values_dict['type'] = 'string'
-                    cmd += f"\n\tcolumn.{key.replce(' ', '_')}=("
-                    for param, param_value in values_dict.items():
-                        cmd += f"{param}={param_value} and "
-                        if isinstance(param_value, str) and "bring" in param_value:
-                            cmd = cmd.replace(param_value, f'"{param_value}"')
-                        elif param == 'default' and isinstance(param_value, str):
-                            cmd = cmd.replace(f"{param}={param_value}", f'{param}="{param_value}"')
-                        elif isinstance(param_value, bool):
-                            bools = {True: "true", False: "false"}
-                            cmd = cmd.replace(param_value, f'"{bools["param_value"]}"')
-
-                    cmd = cmd.rstrip(" and ") + ')'
-            cmd = cmd.rstrip(" and")
-
-    cmd += "\n)>"
-
-    return cmd
-
-
 def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_name:str, mode:str='streaming',
              return_cmd:bool=False, exception:bool=False):
     """
@@ -124,7 +50,7 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
     if return_cmd is True:
         status = headers
     else:
-        status = execute_publish_cmd(conn=conn, cmd='PUT', headers=headers, payload=serialize_data, excepton=exception)
+        status = execute_publish_cmd(conn=conn, cmd='PUT', headers=headers, payload=serialize_data, exception=exception)
 
     return status
 
@@ -163,7 +89,7 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
     if return_cmd is True:
         status = headers
     else:
-        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=serialize_data, excepton=exception)
+        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=serialize_data, exception=exception)
 
     return status
 
@@ -208,10 +134,43 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
     """
     status = None
     headers = {
-        "command": __build_msg_client(broker=broker, topic=topic, port=port, username=username, password=password,
-                                      log=log, policy_id=policy_id, dbms=db_name, table=table_name, values=values),
+        "command": 'run msg client',
         "User-Agent": 'AnyLog/1.23'
     }
+
+    topic_info = f"(name={topic}"
+    if policy_id:
+        topic_info += f" and policy={policy_id})"
+    else:
+        if db_name:
+            topic_info += f" and dbms={db_name}"
+        if table_name:
+            topic_info += f" and table={table_name}"
+        if values:
+            for key, values_dict in values.items():
+                if 'value' not in values_dict or 'type' not in values_dict:
+                    continue
+                elif values_dict['type'] == 'timestamp':
+                    cmd += f"\n\tcolumn.{key}.timestamp={values_dict["value"]} and"
+                    if "bring" in values_dict["value"]:
+                        cmd = cmd.replace(values_dict["value"], f'"{values_dict["value"]}"')
+                else:
+                    if values_dict['type'] not in ['string', 'int', 'float', 'bool', 'timestamp']:
+                        values_dict['type'] = 'string'
+                    cmd += f"\n\tcolumn.{key.replce(' ', '_')}=("
+                    for param, param_value in values_dict.items():
+                        cmd += f"{param}={param_value} and "
+                        if isinstance(param_value, str) and "bring" in param_value:
+                            cmd = cmd.replace(param_value, f'"{param_value}"')
+                        elif param == 'default' and isinstance(param_value, str):
+                            cmd = cmd.replace(f"{param}={param_value}", f'{param}="{param_value}"')
+                        elif isinstance(param_value, bool) and param is True:
+                            cmd = cmd.replace(param_value, f'true')
+                        elif isinstance(param_value, bool) and param is False:
+                            cmd = cmd.replace(param_value, f'false')
+            cmd += ")"
+
+    add_conditions(headers, broker=broker, port=port, username=username, password=password, log=log, topic=topic)
 
     if destination:
         headers['destination'] = destination
@@ -223,7 +182,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         status = headers['command']
     elif view_help is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
-        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, excepton=exception)
+        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return status
 
@@ -324,7 +283,7 @@ def run_publisher(conn:anylog_connector.AnyLogConnector, compress_file:bool=True
         status = headers['command']
     elif view_help is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
-        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, excepton=exception)
+        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return status
 
@@ -363,9 +322,9 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        status = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
-    return status
+    return output
 
 
 def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False,
@@ -402,7 +361,7 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
 
@@ -440,7 +399,7 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
 
