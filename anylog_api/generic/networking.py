@@ -101,7 +101,7 @@ def get_network_info(conn:anylog_connector.AnyLogConnector, json_format:bool=Tru
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         connections = headers['command']
-    else:
+    elif view_help is False:
         connections = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return connections
@@ -136,7 +136,7 @@ def get_rest_calls(conn:anylog_connector.AnyLogConnector, destination:str=None, 
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         rest_calls = headers['command']
-    else:
+    elif view_help is False:
         rest_calls = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return rest_calls

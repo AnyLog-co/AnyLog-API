@@ -52,7 +52,7 @@ def set_location(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

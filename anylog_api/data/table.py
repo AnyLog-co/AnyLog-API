@@ -34,7 +34,7 @@ def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -61,12 +61,14 @@ def get_tables(conn:anylog_connector.AnyLogConnector, db_name:str='*', json_form
     """
     output = None
     headers = {
-        'command': f'get tables where dbms={db_name}',
+        'command': f'get tables',
         'User-Agent': 'AnyLog/1.23'
     }
 
     if json_format is True:
-        add_conditions(headers, format="json")
+        add_conditions(headers, dbms=db_name, format="json")
+    else:
+        add_conditions(headers, dbms=db_name)
 
     if destination:
         headers['destination'] = destination
@@ -82,13 +84,14 @@ def get_tables(conn:anylog_connector.AnyLogConnector, db_name:str='*', json_form
 
 
 def check_table_exists(conn:anylog_connector.AnyLogConnctor, db_name:str, table_name:str, destination:str=None,
-                       return_cmd:bool=False, view_help:bool=False, exception:bool=False):
+                       is_local:bool=False, return_cmd:bool=False, view_help:bool=False, exception:bool=False):
     """
     check if database exists
     :args:
         conn:AnyLogConnector - connection to AnyLog
         db_name:str - logical database to view
         table_name:str - table to check if exists
+        is_local:bool - whether the table is locally exists
         destination:str - remote destination to query
         view_help:bool - whether to print help info for AnyLog command
         exception:bool - whether to print error messages
@@ -99,18 +102,20 @@ def check_table_exists(conn:anylog_connector.AnyLogConnctor, db_name:str, table_
         exists True
         else False
     """
-    status = None
+    status = False
     output = get_tables(conn=conn, db_name=db_name, json_format=True, destination=destination,
                         return_cmd=return_cmd, view_help=view_help, exception=exception)
 
     if return_cmd is True:
         status = output
-    if table_name in output[db_name]:
+    elif isinstance(output, dict) and db_name in output and table_name in output[db_name]:
         status = True
-    else:
-        status = False
+        if is_local is True:
+            if output[db_name][table_name]['local'] in ['False', 'false', False]:
+                status = False
 
     return status
+
 
 def drop_table(conn:anylog_connector.AnyLogConnctor, db_name:str, table_name:str, destination:str=None,
                return_cmd:bool=False, view_help:bool=False, exception:bool=False):
@@ -192,10 +197,11 @@ def drop_table_partition(conn:anylog_connector.AnyLogConnctor, db_name:str, tabl
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return output
+    return status
+
 
 def get_virtual_tables(conn:anylog_connector.AnyLogConnctor, table_name:str=None, show_info:bool=False,
                        destination:str=None, return_cmd:bool=False, view_help:bool=False, exception:bool=False):
@@ -232,7 +238,7 @@ def get_virtual_tables(conn:anylog_connector.AnyLogConnctor, table_name:str=None
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output

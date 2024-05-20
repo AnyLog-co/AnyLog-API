@@ -27,7 +27,6 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
         True -->  data sent
         False --> Fails to send data
     """
-    status = None
     headers = {
         'command': 'data',
         'dbms': db_name,
@@ -73,7 +72,6 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
         True -->  data sent
         False --> Fails to send data
     """
-    status = None
     headers = {
         'command': 'data',
         'topic': topic,
@@ -355,7 +353,6 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
     if destination is not None:
         headers['destination'] = destination
 
-
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
@@ -437,9 +434,9 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
+        status = headers['command']
     elif view_help is False:
-        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
@@ -474,7 +471,7 @@ def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, v
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
+        status = headers['command']
     elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
@@ -511,7 +508,7 @@ def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
+        status = headers['command']
     elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 

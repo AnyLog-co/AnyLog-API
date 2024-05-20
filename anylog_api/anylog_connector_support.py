@@ -116,7 +116,7 @@ def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
     output = None
     try:
         output = r.json()
-    except Exception as error:
+    except Exception as err:
         try:
             output = r.text
         except Exception as error:
