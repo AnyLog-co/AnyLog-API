@@ -27,7 +27,7 @@ def get_help(conn:anylog_connector.AnyLogConnector, cmd:str=None, exception:bool
         headers['command'] += " " + cmd
 
     output = extract_get_results(conn=conn, headers=headers, exception=exception)
-    print(output)
+    print(f"Inputted Command: {headers['command']} \n{output}")
 
 
 def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False,

@@ -10,7 +10,12 @@
       * hostname
       * version
     * POST
-      * dictionary
+      * set debug 
+      * add params to dictionary
+      * set node name 
+      * set root path
+      * disable cli
+      * create work directories
     * logs
       * reset error
       * reset event
@@ -37,7 +42,7 @@
     * check if table exists
     * drop table
     * drop partition
-    * gt virtuaal tables
+    * gt virtual tables
   * publish_data
     * PUT data 
     * POST data 
@@ -53,6 +58,12 @@
   * streaming
     * get streaming
     * get data nodes
+    * set_buffer_threshold
+    * enable_streamer
+    * set_partitions
+    * get partitions
+    * run blobs archiver 
+    * help get blobs archiver
   * Query
 * blockchain
   * create policy
