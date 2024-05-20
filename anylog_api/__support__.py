@@ -42,7 +42,6 @@ def json_dumps(content, indent:int=0, exception:bool=False):
     return output
 
 
-
 def add_conditions(headers:dict, **conditions):
     """
     Adds conditions to the 'command' key in the headers dictionary.
@@ -58,7 +57,7 @@ def add_conditions(headers:dict, **conditions):
             condition_list.append(f"{key}=true")
         elif isinstance(value, bool) and value is False:
             condition_list.append(f"{key}=false")
-        else:
+        elif value is not None:
             condition_list.append(f"{key}={value}")
             
     if condition_list:

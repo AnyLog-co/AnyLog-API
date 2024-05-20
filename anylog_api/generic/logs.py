@@ -33,9 +33,10 @@ def reset_error_log(conn:anylog_connector.AnyLogConnector, destination:str=None,
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        status = headers['command']
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
     return status
 
 
@@ -68,13 +69,14 @@ def reset_event_log(conn:anylog_connector.AnyLogConnector, destination:str=None,
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        status = headers['command']
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
     return status
 
 
-def set_echo_queue(conn:anylog_connector.AnyLogConnector, state:str='on', destination:str=None, view_help:bool=False,
+def set_echo_queue(conn:anylog_connector.AnyLogConnector, enable_echo_queue:bool=True, destination:str=None, view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
     """
     set echo queue
@@ -97,21 +99,20 @@ def set_echo_queue(conn:anylog_connector.AnyLogConnector, state:str='on', destin
     """
     status = None
     headers = {
-        "command": f"set echo queue {state}",
+        "command": f"set echo queue on",
         "User-Agent": "AnyLog/1.23"
     }
+    if enable_echo_queue is False:
+        headers['command'] = headers['command'].replace("on", "off")
+
     if destination is not None:
         headers['destination'] = destination
 
-    if state not in ['on','off']:
-        status = False
-        if exception is True:
-            print(f"Invalid value for state {state} (Options; on, off, interactive]")
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        status = headers['command']
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
     return status
 
@@ -146,7 +147,7 @@ def reset_echo_queue(conn:anylog_connector.AnyLogConnector, destination:str=None
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
     return status
 
@@ -181,8 +182,8 @@ def echo_msg(conn:anylog_connector.AnyLogConnector, msg:str, destination:str=Non
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        status = headers['command']
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
     return status
 
@@ -220,7 +221,7 @@ def get_error_log(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -259,7 +260,7 @@ def get_event_log(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -296,7 +297,7 @@ def get_echo_queue(conn:anylog_connector.AnyLogConnector, json_format:bool=False
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -336,7 +337,7 @@ def get_processes(conn:anylog_connector.AnyLogConnector, json_format:bool=True, 
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output

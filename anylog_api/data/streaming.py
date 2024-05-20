@@ -1,8 +1,6 @@
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import extract_get_results
-from anylog_api.anylog_connector_support import execute_publish_cmd
-from anylog_api.__support__ import json_dumps
 from anylog_api.__support__ import add_conditions
 
 
@@ -29,16 +27,17 @@ def get_streaming(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
         "command": "get streaming",
         "User-Agent": "AnyLog/1.23"
     }
+
     if json_format is True:
-        headers['command'] += " where format=json"
+        add_conditions(headers, format="json")
+
     if destination is not None:
         headers['destination'] = destination
-
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return output
@@ -78,11 +77,8 @@ def get_data_nodes(conn:anylog_connector.AnyLogConnector, company_name:str=None,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return output
 
-
-if __name__ == '__main__':
-    print(get_data_nodes(conn=None, db_name='edgex', return_cmd=True))

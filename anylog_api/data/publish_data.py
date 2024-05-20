@@ -3,6 +3,8 @@ from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.__support__ import json_dumps
+from anylog_api.__support__ import add_conditions
+
 
 def __build_msg_client(broker:str, topic:str, port:int=None, username:str=None, password:str=None, log:bool=False,
                        policy_id:str=None, dbms:str=None, table:str=None, values:dict={})->str:
@@ -111,7 +113,7 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
 
     if mode not in ['streaming', 'file']:
         headers['mode'] = 'streaming'
-        if excepton is True:
+        if exception is True:
             print(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
 
     if not all(isinstance(payload, x) for x in [dict, list]):
@@ -121,7 +123,7 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
 
     if return_cmd is True:
         status = headers
-    elif view_help is False:
+    else:
         status = execute_publish_cmd(conn=conn, cmd='PUT', headers=headers, payload=serialize_data, excepton=exception)
 
     return status
@@ -160,7 +162,7 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
 
     if return_cmd is True:
         status = headers
-    elif view_help is False:
+    else:
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=serialize_data, excepton=exception)
 
     return status
@@ -219,7 +221,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    else:
+    elif view_help is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, excepton=exception)
 
@@ -257,9 +259,13 @@ def run_operator(conn:anylog_connector.AnyLogConnector, operator_id:str, create_
     """
     status = None
     headers = {
-        'command': f"run operator where create_table={create_table} and update_tsd_info={update_tsd_info} and compress_json={compress_json} and compress_sql={compress_sql} and archive_json={archive_json} and archive_sql={archive_sql} and master_node={ledger_conn} and policy={operator_id} and threads={threads}",
+        'command': f"run operator",
         'User-Agent': 'AnyLog/1.23'
     }
+
+    add_conditions(headers, create_table=create_table, update_tsd_info=update_tsd_info, compress_json=compress_json,
+                   compress_sql=compress_sql, archive_json=archive_json, archive_sql=archive_sql, master_node=ledger_conn,
+                   policy=operator_id, threads=threads)
 
     if destination:
         headers['destination'] = destination
@@ -269,9 +275,9 @@ def run_operator(conn:anylog_connector.AnyLogConnector, operator_id:str, create_
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    else:
+    elif view_help is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
-        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, excepton=exception)
+        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return status
 
@@ -301,9 +307,12 @@ def run_publisher(conn:anylog_connector.AnyLogConnector, compress_file:bool=True
     """
     status = None
     headers = {
-        'command': f"run publisher where compress_json={compress_file} and compress_sql={compress_file} and master_node={ledger_conn} and dbms_name={dbms_file_location} and table_name={table_file_location}",
+        'command': f"run publisher",
         'User-Agent': 'AnyLog/1.23'
     }
+
+    add_conditions(headers, compress_json=compress_file, compress_sql=compress_file, master_node=ledger_conn,
+                   dbms_name=dbms_file_location, table_name=table_file_location)
 
     if destination:
         headers['destination'] = destination
@@ -313,7 +322,7 @@ def run_publisher(conn:anylog_connector.AnyLogConnector, compress_file:bool=True
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    else:
+    elif view_help is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, excepton=exception)
 
@@ -344,8 +353,8 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         "User-Agent": "AnyLog/1.23"
     }
 
-    if client_id is not None:
-        headers['command'] += f" where id = {client_id}"
+    add_conditions(headers, id=client_id)
+
     if destination is not None:
         headers['destination'] = destination
 
@@ -508,7 +517,7 @@ def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, v
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
@@ -545,6 +554,6 @@ def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, 
     if return_cmd is True:
         output = headers['command']
     elif view_help is False:
-        status = execute_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

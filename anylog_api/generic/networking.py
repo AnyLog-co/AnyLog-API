@@ -4,9 +4,10 @@ If IP / port for REST connection changes, then the consequent command(s) will fa
 """
 
 import anylog_api.anylog_connector as anylog_connector
+from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd
-
+from anylog_api.__support__ import add_conditions
 
 def __generate_connection_command(conn_type:str, internal_ip:str, internal_port:int, external_ip:str=None,
                                   external_port:int=None, bind:bool=False, threads:int=3, rest_timeout:int=30)->str:
@@ -57,7 +58,7 @@ def __generate_connection_command(conn_type:str, internal_ip:str, internal_port:
 
 def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, internal_ip:str, internal_port:int,
                     external_ip:str=None, external_port:int=None, bind:bool=True, threads:int=3, rest_timeout:int=30,
-                    view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                    destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Connect to a network
     :args:
@@ -81,6 +82,10 @@ def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, intern
         None - print help information
     """
     status = None
+    headers = {
+        'command': None,
+        'User-Agent': 'AnyLog/1.23'
+    }
 
     if conn_type.upper() not in ['TCP', 'REST'] and conn.lower() == 'broker':
         if exception is True:
@@ -88,22 +93,26 @@ def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, intern
         return False
 
 
-    headers = {
-        'command': __generate_connection_command(conn_type=conn_type, internal_ip=internal_ip,
-                                                 internal_port=internal_port, external_ip=external_ip,
-                                                 external_port=external_port, bind=bind, threads=threads,
-                                                 rest_timeout=rest_timeout),
-        'User-Agent': 'AnyLog/1.23'
-    }
+    if conn_type.upper() == 'TCP':
+        headers['command'] = 'run tcp server'
+    elif conn_type.upper() == 'REST':
+        headers['command'] = 'run rest server '
+    elif conn_type.lower() == 'broker':
+        headers['command'] = 'run message broker '
+
+    add_conditions(headers, external_ip=external_ip, internal_ip=internal_ip, external_port=external_port,
+                   internal_port=internal_port, bind=bind, timeout=rest_timeout, threads=threads)
+
     if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    else:
+        status = headers['command']
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
     return status
 
 
@@ -130,7 +139,7 @@ def get_network_info(conn:anylog_connector.AnyLogConnector, json_format:bool=Tru
     }
 
     if json_format is True:
-        header['command'] += ' where format=json'
+        headers['command'] += ' where format=json'
     if destination is not None:
         headers["destination"] = destination
 

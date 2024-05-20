@@ -1,11 +1,12 @@
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
-from anylog_api.generic.anylog_connector_support import extract_get_results
+from anylog_api.__support__ import add_conditions
+from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd
 
 
-def create_table(conn:AnyLogConnector, db_name:str, table_name:str, view_help:bool=False,
-                 exception:bool=False):
+def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str=None,
+                 view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     create table within a given database - as long as the `CREATE TABLE` statement exists in the blockchain
     :args:
@@ -39,7 +40,7 @@ def create_table(conn:AnyLogConnector, db_name:str, table_name:str, view_help:bo
     return status
 
 
-def get_tables(conn:AnyLogConnector, db_name:str='*', json_format:bool=True, destination:str=None,
+def get_tables(conn:anylog_connector.AnyLogConnector, db_name:str='*', json_format:bool=True, destination:str=None,
                return_cmd:bool=False, view_help:bool=False, exception:bool=False):
     """
     View list of tables in database (if set)
@@ -65,7 +66,8 @@ def get_tables(conn:AnyLogConnector, db_name:str='*', json_format:bool=True, des
     }
 
     if json_format is True:
-        headers['command'] += ' and format=json'
+        add_conditions(headers, format="json")
+
     if destination:
         headers['destination'] = destination
 
@@ -73,7 +75,7 @@ def get_tables(conn:AnyLogConnector, db_name:str='*', json_format:bool=True, des
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif view_help is False:
         output = extract_get_results(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return output
@@ -102,7 +104,7 @@ def check_table_exists(conn:anylog_connector.AnyLogConnctor, db_name:str, table_
                         return_cmd=return_cmd, view_help=view_help, exception=exception)
 
     if return_cmd is True:
-        status  = output
+        status = output
     if table_name in output[db_name]:
         status = True
     else:
@@ -143,11 +145,10 @@ def drop_table(conn:anylog_connector.AnyLogConnctor, db_name:str, table_name:str
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    else:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return output
-
+    return status
 
 
 def drop_table_partition(conn:anylog_connector.AnyLogConnctor, db_name:str, table_name:str, partition_table:str=None,

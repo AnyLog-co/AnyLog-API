@@ -1,6 +1,6 @@
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
-from anylog_api.generic.anylog_connector_support import extract_get_results
+from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.__support__ import add_conditions
 
@@ -115,7 +115,7 @@ def drop_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='s
     return status
 
 
-def get_databases(conn:anylog_connectorAnyLogConnector, json_format:bool=False, destination:str=None,
+def get_databases(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None,
                   view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Get list of databases
@@ -139,9 +139,9 @@ def get_databases(conn:anylog_connectorAnyLogConnector, json_format:bool=False, 
         'command': 'get databases',
         'User-Agent': 'AnyLog/1.23'
     }
+
     if json_format is True:
-        headers['command'] += ' where format=json'
-        add_conditions(headers, format='json')
+        add_conditions(headers, format="json")
 
     if destination is not None:
         headers['destination'] = destination
@@ -156,7 +156,8 @@ def get_databases(conn:anylog_connectorAnyLogConnector, json_format:bool=False, 
     return output
 
 
-def check_db_exists(conn:AnyLogConnector, db_name:str, destination:str=None, view_help:bool=False, exception:bool=False):
+def check_db_exists(conn:anylog_connector.AnyLogConnector, db_name:str, destination:str=None, view_help:bool=False,
+                    exception:bool=False):
     """
     check if database exists
     :args:
