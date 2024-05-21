@@ -1,6 +1,11 @@
 import json
+import os.path
 import re
 
+import dotenv
+
+import anylog_api.anylog_connector as anylog_connector
+from anylog_api.generic.get import get_dictionary
 
 def json_loads(content, exception:bool=False):
     """
@@ -87,3 +92,37 @@ def check_interval(time_interval:str, exception:bool=False)->bool:
         status = False
 
     return status
+
+
+def get_generic_params(conn:anylog_connector.AnyLogConnector, exception:bool=False):
+    """
+    get default configuration values
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        exception:bool - whether to print exceptions
+    :params:
+        env_values:dict - Env Values
+        config_file:str - configuration file
+        default_configs:dict - configuration from AnyLog/EdgeLake dict
+    :return:
+        default_configs
+    """
+    env_values = None
+    config_file = os.path.join(os.path.expanduser(os.path.expandvars(os.path.dirname(__file__))), 'default_configs.env')
+    default_configs = get_dictionary(conn=conn, json_format=True, view_help=False, return_cmd=False, exception=exception)
+
+    try:
+        env_values = dotenv.dotenv_values(config_file)
+    except Exception as error:
+        if exception is True:
+            print(f"Failed to extract content from default config file (Error: {error})")
+    else:
+        env_values = dict(env_values)
+
+    if env_values is not None:
+        for env_value in env_values:
+            if env_value.lower() not in default_configs:
+                default_configs[env_value.lower()] = env_values[env_value]
+
+    return default_configs
+
