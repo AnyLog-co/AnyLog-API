@@ -1,5 +1,4 @@
 import requests
-
 import anylog_api.anylog_connector as anylog_connector
 
 # Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json

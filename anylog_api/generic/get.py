@@ -65,12 +65,12 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
     if return_cmd is True:
         return headers['command']
     elif view_help is False:
-        status = True
+        status = False
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
-        if isinstance(output, dict) and 'Status' in output and ('not' in output['Status'] or 'running' not in output['Status']):
-            status = False
-        elif isinstance(output, str) and ('not' in output or 'running' not in output):
-            status = False
+        if isinstance(output, dict) and 'Status' in output and ('not' not in output['Status'] and 'running' in output['Status']):
+            status = True
+        elif isinstance(output, str) and ('not' not in output and 'running' in output):
+            status = True
 
     return status
 

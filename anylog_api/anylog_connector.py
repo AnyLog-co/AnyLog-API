@@ -16,6 +16,8 @@ class AnyLogConnector:
         """
         self.conn = conn
         self.auth = auth
+        if self.auth is None:
+            self.auth = ()
         self.timeout = timeout
 
     def get(self, headers:dict)->(str, str):
