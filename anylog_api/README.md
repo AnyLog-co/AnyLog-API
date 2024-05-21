@@ -18,7 +18,7 @@
       * set root path
       * disable cli
       * create work directories
-    * logs
+    * [logs](generic/logs.py)
       * reset error
       * reset event
       * start/stop echo queue
@@ -26,13 +26,13 @@
       * get log
       * get echo queue 
       * get processes
-    * networking
+    * [networking](generic/networking.py)
       * network_connection - connection to TCP, REST, msg broker
       * get connections
       * get rest calls
       * test node 
       * test network
-    * monitoring
+    * [monitoring](generic/monitoring.py)
       * get stats 
       * disk information 
       * cpu information 
@@ -41,20 +41,20 @@
       * network io 
     * geolocation (module to get geolocation of a node)
 * data
-  * database
+  * [database](data/database.py)
     * connect / create
     * disconnect
     * view databases
     * check if database exists 
     * drop database
-  * table
+  * [table](data/table.py)
     * create table
     * get tables
     * check if table exists
     * drop table
     * drop partition
     * gt virtual tables
-  * publish_data
+  * [publish_data](data/publish_data.py)
     * PUT data 
     * POST data 
     * run msg client
@@ -66,7 +66,7 @@
     * run publisher
     * get publisher
     * exit publisher
-  * streaming
+  * [streaming](data/streaming.py)
     * get streaming
     * get data nodes
     * set_buffer_threshold
@@ -75,17 +75,23 @@
     * get partitions
     * run blobs archiver 
     * help get blobs archiver
-  * Query
+  * [Query](data/query.py)
     * increment query builder
     * period query builder
     * generic query builder / exeucte
 * blockchain
-  * create policy
+  * [policies](blockchain/policy.py)
     * cluster
-    * node
+    * node - operator, master, publisher, query
     * config
-  * prepare
-  * publish
-  * query
-  * authentication
+    * anmp
+    * table
+  * [commands](blockchain/cmds.py)
+    * get
+    * prepare 
+    * post
+    * seed <-- configured to POST not sure if it's correct...  
+    * sync 
+    * reload
+  * [authentication](blockchain/authentication.py)
     * disable authentication
