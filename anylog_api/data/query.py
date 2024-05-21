@@ -157,6 +157,8 @@ def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, output_format
                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Generate and execute query
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/queries.md
     :supported query types:
         1. fully defined by user (sql_cmd)
         2. increments

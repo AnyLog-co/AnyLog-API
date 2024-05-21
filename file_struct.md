@@ -2,6 +2,8 @@
 * anylog_connector_support (execution)
 * __support__
   * JSON functions
+  * adding where conditions
+  * check interval for schedule / partition / blockchain sync 
 * generic
     * GET
       * status
