@@ -1,4 +1,5 @@
 import json
+import re
 
 
 def json_loads(content, exception:bool=False):
@@ -63,3 +64,26 @@ def add_conditions(headers:dict, **conditions):
     if condition_list:
         headers['command'] += " where " + " and ".join(condition_list)
 
+
+def check_interval(time_interval:str, exception:bool=False)->bool:
+    """
+    Validate if user-defined interval is supported
+    :args:
+        time_interval:str - user defined interval
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        time_interval_pattern:str - supported intervals
+    :return:
+        True - valid interval
+        False - invalid interval
+    """
+    status = True
+    time_interval_pattern = r'^\d*\s*(second|seconds|minute|minutes|day|days|month|months|year|years)$'
+
+    if not bool(re.match(time_interval_pattern, time_interval.strip())):
+        if exception is True:
+            print(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
+        status = False
+
+    return status

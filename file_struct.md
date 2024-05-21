@@ -65,6 +65,9 @@
     * run blobs archiver 
     * help get blobs archiver
   * Query
+    * increment query builder
+    * period query builder
+    * generic query builder / exeucte
 * blockchain
   * create policy
     * cluster
