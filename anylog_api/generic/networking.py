@@ -140,3 +140,48 @@ def get_rest_calls(conn:anylog_connector.AnyLogConnector, destination:str=None, 
 
     return rest_calls
 
+
+def test_node(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False,
+              exception:bool=False):
+    """
+    Validate if node is working properly
+    """
+    output = None
+    headers = {
+        "command": "test node",
+        "User-Agent": "AnyLog/1.23"
+    }
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    elif view_help is False:
+        output = extract_get_results(conn=conn, headers=headers, exception=exception)
+
+    return output
+
+
+def test_network(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+                 return_cmd:bool=False, exception:bool=False):
+    """
+    Validate if node is able to communicate with all other nodes in the network
+    """
+    output = None
+    headers = {
+        "command": "test network",
+        "User-Agent": "AnyLog/1.23"
+    }
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    elif view_help is False:
+        output = extract_get_results(conn=conn, headers=headers, exception=exception)
+
+    return output
