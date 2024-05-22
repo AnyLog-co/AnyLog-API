@@ -7,7 +7,7 @@ The following package simplifies the accessibility to the AnyLog/EdgeLake API.
 Either EdgeLake or AnyLog node running with Network REST configuration already preset with desired connection information 
 values. Otherwise, API tool will not be able to communicate with the node.  
 
-[Sample Script](start_node.al)
+* [Sample Script](start_node.al)
 ```anylog
 :tcp-networking:
 <run tcp server where
@@ -29,6 +29,8 @@ on error goto broker-networking-error
     internal_ip=!ip and internal_port=!anylog_broker_port and
     bind=!broker_bind and threads=!broker_threads>
 ```
+
+* [Configuration File](anylog_api/default_configs.env) - Full list of configurations for deploying a node via 
  
 
 
