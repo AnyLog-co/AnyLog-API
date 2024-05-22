@@ -85,11 +85,16 @@ def read_configs(config_file:str, exception:bool=False)->dict:
         configs
     """
     configs = {}
-    try:
-       configs = dotenv.dotenv_values(config_file)
-    except Exception as error:
-        if exception is True:
-            print(f"Failed to read config file {config_file} (Error: {error})")
+    if isinstance(config_file, list):
+        for config in config_file:
+            output =   read_configs(config_file=config, exception=exception)
+            configs = {**configs, **output}
+    else:
+        try:
+           configs = dotenv.dotenv_values(config_file)
+        except Exception as error:
+            if exception is True:
+                print(f"Failed to read config file {config_file} (Error: {error})")
     if len(configs) > 0: # convert to lower case keys
         return {key.lower(): value for key, value in configs.items()}
     return configs

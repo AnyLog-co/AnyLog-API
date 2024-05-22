@@ -39,9 +39,8 @@ def __set_params(conn:anylog_connector.AnyLogConnector, config_files:str, except
         # merge configs
         if file_configs:
             for config in file_configs:
-                generic_params[config.lower()] = file_configs[config]
-            generic_post.set_params(conn=conn, params=generic_params, destination=None, view_help=False,
-                                    exception=exception)
+                if file_configs[config]:
+                    generic_params[config.lower()] = file_configs[config]
         err_msg = ""
         for config in ['node_type', 'node_name', 'company_name', 'ledger_conn']:
             if config not in generic_params or generic_params[config] == "":
@@ -50,7 +49,25 @@ def __set_params(conn:anylog_connector.AnyLogConnector, config_files:str, except
                 else:
                     err_msg += f", {config}"
         if err_msg != "":
+            print(err_msg)
             __node_state(conn=conn, exception=exception)
+        else:
+            generic_post.set_params(conn=conn, params=generic_params, destination=None, view_help=False,
+                                    exception=exception)
+        return generic_params
+
+
+def __configure_directories(conn:anylog_connector.AnyLogConnector, anylog_path:str, exception:bool=False):
+    """
+    Configure directories in node
+    :process:
+        1. st anylog home path
+        2. create work directories
+    """
+    generic_post.set_path(conn=conn, path=anylog_path, destination=None, view_help=False, returnn_cmd=False,
+                          exception=exception)
+
+    generic_post.create_work_dirs(conn=conn, destination=None, view_help=False, return_cmd=False, exception=exception)
 
 
 def __node_state(conn:anylog_connector.AnyLogConnector, exception:bool=False):
@@ -89,8 +106,14 @@ def main():
     conn, auth = next(iter(args.conn.items()))
     anylog_conn = anylog_connector.AnyLogConnector(conn, auth=auth, timeout=args.timeout)
 
+    # prepare node
     __validate_connection(conn=anylog_conn, exception=args.exception)
-    __set_params(conn=anylog_conn, exception=args.exception)
+    node_params = __set_params(conn=anylog_conn, config_files=args.configs, exception=args.exception)
+    __configure_directories(conn=anylog_conn, anylog_path=node_params['anylog_path'], exception=args.exception)
+
+    if node_params['node_type'] == 'generic':
+        pass
+
     __node_state(conn=anylog_conn, exception=args.exception)
 
 

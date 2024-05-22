@@ -71,7 +71,10 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         headers['destination'] = destination
 
     for key in params:
-        headers['command'] = f'set {key} = {params[key]}'
+        if params[key] in ['false', 'False', 'True', 'true', 'file']:
+            headers['command'] = f'set {key.strip()} = {params[key].strip()}'
+        elif params[key] != "":
+            headers['command'] = f'{key.strip()} = {params[key].strip()}'
         if view_help is True:
             get_help(conn=conn, cmd=headers['command'], exception=exception)
             break
