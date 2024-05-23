@@ -41,11 +41,12 @@ def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where
 
     if where_condition:
         headers['command'] += f" where {where_condition}"
-    if bring_condition:
-        if bring_case:
-            headers['command'] += f" bring.{bring_case} {bring_condition}"
-        else:
-            headers['command'] += f" bring {bring_condition}"
+    if bring_case:
+        headers['command'] += f" bring.{bring_case}"
+    if bring_condition and bring_case:
+        headers['command'] += f" {bring_condition}"
+    elif bring_condition:
+        headers['command'] += f" bring {bring_condition}"
     if seperator:
         headers['command'] += f" separator='{seperator}'"
 

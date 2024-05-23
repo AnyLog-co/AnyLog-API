@@ -58,7 +58,7 @@ def add_conditions(headers:dict, **conditions):
         None: The function modifies the headers dictionary in place.
     """
     condition_list = []
-    for key, value in conditions:
+    for key, value in conditions.items():
         if isinstance(value, bool) and value is True:
             condition_list.append(f"{key}=true")
         elif isinstance(value, bool) and value is False:
