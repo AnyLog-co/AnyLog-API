@@ -41,10 +41,7 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
         if exception is True:
             print(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
 
-    if not all(isinstance(payload, x) for x in [dict, list]):
-        serialize_data = payload
-    else:
-        serialize_data = json_dumps(payload)
+    serialize_data = json_dumps(payload)
 
     if return_cmd is True:
         status = headers
@@ -79,10 +76,12 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
         'Content-Type': 'text/plain'
     }
 
-    if not all(isinstance(payload, x) for x in [dict, list]):
-        serialize_data = payload
-    else:
+    if isinstance(payload, list):
+        serialize_data = [json_dumps(row) for row in payload]
+    elif isinstance(payload, dict):
         serialize_data = json_dumps(payload)
+    else:
+        serialize_data = payload
 
     if return_cmd is True:
         status = headers
@@ -94,8 +93,8 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
 
 def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str, port:int=None, username:str=None,
                    password:str=None, log:bool=False, policy_id:str=None, db_name:str=None, table_name:str=None,
-                   values:dict={}, destination:str=None, view_help:bool=False, return_cmd:bool=False,
-                   exception:bool=False):
+                   values:dict={}, is_rest_broker:bool=False, destination:str=None, view_help:bool=False,
+                   return_cmd:bool=False, exception:bool=False):
     """
     Enable message client for POST, MQTT, Kafka
     :args:
@@ -132,44 +131,48 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
     """
     status = None
     headers = {
-        "command": 'run msg client',
+        "command": '<run msg client',
         "User-Agent": 'AnyLog/1.23'
     }
 
-    topic_info = f"(name={topic}"
+    topic_info = f"(name={topic} "
     if policy_id:
-        topic_info += f" and policy={policy_id})"
+        topic_info += f"and policy={policy_id})>"
     else:
         if db_name:
-            topic_info += f" and dbms={db_name}"
+            topic_info += f"and\n\tdbms={db_name} and"
+            if "bring" in db_name:
+                topic_info = topic_info.replace(db_name, f'"{db_name}"')
         if table_name:
-            topic_info += f" and table={table_name}"
+            topic_info += f"\n\ttable={table_name}"
+            if "bring" in table_name:
+                topic_info = topic_info.replace(table_name, f'"{table_name}"')
+
         if values:
             for key, values_dict in values.items():
-                if 'value' not in values_dict or 'type' not in values_dict:
-                    continue
-                elif values_dict['type'] == 'timestamp':
-                    cmd += f"\n\tcolumn.{key}.timestamp={values_dict["value"]} and"
-                    if "bring" in values_dict["value"]:
-                        cmd = cmd.replace(values_dict["value"], f'"{values_dict["value"]}"')
-                else:
-                    if values_dict['type'] not in ['string', 'int', 'float', 'bool', 'timestamp']:
-                        values_dict['type'] = 'string'
-                    cmd += f"\n\tcolumn.{key.replce(' ', '_')}=("
-                    for param, param_value in values_dict.items():
-                        cmd += f"{param}={param_value} and "
-                        if isinstance(param_value, str) and "bring" in param_value:
-                            cmd = cmd.replace(param_value, f'"{param_value}"')
-                        elif param == 'default' and isinstance(param_value, str):
-                            cmd = cmd.replace(f"{param}={param_value}", f'{param}="{param_value}"')
-                        elif isinstance(param_value, bool) and param is True:
-                            cmd = cmd.replace(param_value, f'true')
-                        elif isinstance(param_value, bool) and param is False:
-                            cmd = cmd.replace(param_value, f'false')
-            cmd += ")"
+                topic_info += " and\n\t"
+                if 'value' in values_dict and 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
+                    topic_info += f'column.{key.replace(' ', '_').replace('-', '_')}.timestamp={values_dict['value']}'
+                    if 'bring' in values_dict['value']:
+                        topic_info = topic_info.replace(values_dict['value'], f'"{values_dict['value']}"')
+                elif 'value' not in values_dict and 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
+                    topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp=now()"
+                elif 'value' in values_dict and 'type' in values_dict and values_dict['type'].lower() in ['string', 'int', 'float', 'bool', 'timestamp']:
+                    topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type={values_dict['type'].lower()} and value={values_dict['value']})"
+                    if 'bring' in values_dict['value']:
+                        topic_info = topic_info.replace(values_dict['value'], f'"{values_dict['value']}"')
+                elif 'value' in values_dict and ('type' not in values_dict or values_dict['type'].lower() not in ['string', 'int', 'float', 'bool', 'timestamp']):
+                    topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
+                    if 'bring' in values_dict['value']:
+                        topic_info = topic_info.replace(values_dict['value'], f'"{values_dict['value']}"')
+        topic_info += "\n)>"
 
-    add_conditions(headers, broker=broker, port=port, username=username, password=password, log=log, topic=topic)
-
+    if broker == "rest" or is_rest_broker is True:
+        add_conditions(headers, broker=broker, port=port, username=username, password=password, user_agent="anylog",
+                       log=log, topic=topic_info)
+        headers['command'] = headers['command'].replace("user_agent", "user-agent")
+    else:
+        add_conditions(headers, broker=broker, port=port, username=username, password=password, log=log, topic=topic_info)
     if destination:
         headers['destination'] = destination
 

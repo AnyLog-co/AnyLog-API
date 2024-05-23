@@ -41,7 +41,10 @@ def json_dumps(content, indent:int=0, exception:bool=False):
         """
     output = None
     try:
-        return json.dumps(content, indent=indent)
+        if indent > 0:
+            output = json.dumps(content, indent=indent)
+        else:
+            output = json.dumps(content)
     except Exception as error:
         if exception is True:
             print(f"Failed to convert content into serialized JSON format (Error: {error})")
