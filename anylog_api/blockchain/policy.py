@@ -1,3 +1,5 @@
+import ast
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.__support__ import json_dumps
 from anylog_api.generic.geolocation import get_geolocation
@@ -17,8 +19,8 @@ def __base_policy(name:str, company:str, external_ip:str, local_ip:str, anylog_s
         "company": company,
         "ip": external_ip,
         "local_ip": local_ip,
-        "port": anylog_server_port,
-        "rest_port": anylog_rest_port
+        "port": ast.literal_eval(anylog_server_port),
+        "rest_port": ast.literal_eval(anylog_rest_port)
     }
 
     if anylog_broker_port:
@@ -166,7 +168,7 @@ def node_policy(conn:anylog_connector.AnyLogConnector, node_type:str, name:str, 
     if set_geolocation is True:
         geolocation = get_geolocation(conn=conn, destination=destination, view_help=False, return_cmd=False,
                                       exception=exception)
-        for key in ['loc', 'country', 'state', 'city']:
+        for key in ['loc', 'country', 'region', 'city']:
             policy[node_type][key] = geolocation[key]
     if other_params and isinstance(other_params, dict):
         for param in other_params:

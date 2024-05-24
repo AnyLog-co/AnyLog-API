@@ -118,7 +118,7 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
     if return_cmd is True:
         status = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, headers=headers, payload=None, exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return status
 

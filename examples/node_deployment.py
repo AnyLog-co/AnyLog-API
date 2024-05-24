@@ -1,4 +1,6 @@
 import argparse
+import ast
+
 import __support__ as support
 
 import anylog_api.anylog_connector as anylog_connector
@@ -8,6 +10,8 @@ import anylog_api.generic.logs as logs_cmds
 import anylog_api.generic.networking as generic_networking
 from anylog_api.__support__ import get_generic_params
 
+import anylog_api.blockchain.cmds as blockchain_cmds
+import anylog_api.blockchain.policy as blockchain_policy
 
 def __validate_connection(conn:anylog_connector.AnyLogConnector, exception:bool=False):
     """
@@ -70,6 +74,57 @@ def __configure_directories(conn:anylog_connector.AnyLogConnector, anylog_path:s
     generic_post.create_work_dirs(conn=conn, destination=None, view_help=False, return_cmd=False, exception=exception)
 
 
+def __declare_node_policy(conn:anylog_connector.AnyLogConnector, node_configs:dict, cluster_id:str=None,
+                          exception:bool=False):
+    node_type = node_configs['node_type']
+    node_name = node_configs['node_name']
+    company = node_configs['company_name']
+    external_ip = None
+    local_ip = None
+    anylog_server_port = None
+    anylog_rest_port = None
+    anylog_broker_port = None
+    tcp_bind = False
+    rest_bind = False
+    broker_bind = False
+    if 'external_ip' in node_configs:
+        external_ip = node_configs['external_ip']
+    if 'ip' in node_configs:
+        local_ip = node_configs['ip']
+    if 'anylog_server_port' in node_configs:
+        anylog_server_port = node_configs['anylog_server_port']
+    if 'anylog_rest_port' in node_configs:
+        anylog_rest_port = node_configs['anylog_rest_port']
+    if 'anylog_broker_port' in node_configs:
+        anylog_broker_port = node_configs['anylog_broker_port']
+    if cluster_id is None and 'cluster_id' in node_configs:
+        cluster_id = node_configs['cluster_id']
+    if 'tcp_bind' in node_configs:
+        tcp_bind = node_configs['tcp_bind']
+    if 'rest_bind' in node_configs:
+        rest_bind = node_configs['rest_bind']
+    if 'broker_bind' in node_configs:
+        broker_bind = node_configs['broker_bind']
+
+
+
+    is_blockckchain = blockchain_cmds.get_policy(conn=conn, policy_type=node_type,
+                                                 where_condition=f"name={node_name} and company={company}")
+    if is_blockckchain is None:
+        policy = blockchain_policy.node_policy(conn=conn, node_type=node_type, name=node_name, company=company,
+                                               external_ip=external_ip, local_ip=local_ip,
+                                               anylog_server_port=anylog_server_port, anylog_rest_port=anylog_rest_port,
+                                               anylog_broker_port=anylog_broker_port, tcp_bind=tcp_bind,
+                                               rest_bind=rest_bind, broker_bind=broker_bind,  cluster_id=cluster_id,
+                                               set_geolocation=True, policy_id=None, other_params={}, scripts=[],
+                                               exception=exception)
+
+        blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=None, view_help=False, return_cmd=False,
+                                       exception=exception)
+
+
+
+
 def __node_state(conn:anylog_connector.AnyLogConnector, exception:bool=False):
     """
     Check the state of the node
@@ -95,6 +150,8 @@ def __node_state(conn:anylog_connector.AnyLogConnector, exception:bool=False):
     exit(1)
 
 
+
+
 def main():
     parse = argparse.ArgumentParser()
     parse.add_argument("conn", type=support.check_conn, default='127.0.0.1:32549', help='REST connection information')
@@ -111,14 +168,15 @@ def main():
     node_params = __set_params(conn=anylog_conn, config_files=args.configs, exception=args.exception)
     __configure_directories(conn=anylog_conn, anylog_path=node_params['anylog_path'], exception=args.exception)
 
-    if node_params['node_type'] == 'generic':
-        pass
+    # blockchain seed
+    if node_params['node_type'] not in ['generic', 'master']:
+        if not blockchain_cmds.execute_seed(conn=anylog_conn, ledger_conn=node_params['ledger_conn'], destination="",
+                                            view_help=False, return_cmd=False, exception=args.exception):
+            print("Failed to execute blockchain seed  command")
+
+    __declare_node_policy(conn=anylog_conn, node_configs=node_params, cluster_id=None, exception=args.exception)
 
     __node_state(conn=anylog_conn, exception=args.exception)
-
-
-
-
 
 
 if __name__ == '__main__':

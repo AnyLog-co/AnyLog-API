@@ -15,6 +15,8 @@ Sample Geolocation
     'readme' : 'https://ipinfo.io/missingauth'
 } 
 """
+import ast
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.generic.get import get_dictionary
@@ -79,7 +81,7 @@ def extract_geolocation(conn:anylog_connector.AnyLogConnector, destination:str=N
                                        return_cmd=return_cmd, exception=exception)
 
     if isinstance(dictionary_values, dict) and 'geolocation' in dictionary_values:
-        output = dictionary_values['geolocation']
+        output = ast.literal_eval(dictionary_values['geolocation'])
     if return_cmd is True:
         output = dictionary_values
 
