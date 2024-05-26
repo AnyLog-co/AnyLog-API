@@ -137,7 +137,7 @@ def __declare_node_policy(conn:anylog_connector.AnyLogConnector, node_configs:di
                                                external_ip=external_ip, local_ip=local_ip,
                                                anylog_server_port=anylog_server_port, anylog_rest_port=anylog_rest_port,
                                                anylog_broker_port=anylog_broker_port, tcp_bind=tcp_bind,
-                                               rest_bind=rest_bind, broker_bind=broker_bind,  cluster_id=cluster_id,
+                                               rest_bind=rest_bind, broker_bind=broker_bind, cluster_id=cluster_id,
                                                set_geolocation=True, policy_id=None, other_params={}, scripts=[],
                                                exception=exception)
 
