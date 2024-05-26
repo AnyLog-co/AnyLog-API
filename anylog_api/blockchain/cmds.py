@@ -233,7 +233,7 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:str, destinatio
     if return_cmd is True:
         status = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, headers=headers, payload=f"<new_policy={policy}>", exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=f"<new_policy={policy}>", exception=exception)
 
     return status
 
@@ -272,7 +272,7 @@ def publish_policy(conn:anylog_connector.AnyLogConnector, policy:str, ledger_con
     if return_cmd is True:
         status = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, headers=headers, payload=f"<new_policy={policy}>", exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=f"<new_policy={policy}>", exception=exception)
 
     return status
 

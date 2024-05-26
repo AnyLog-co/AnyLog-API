@@ -76,6 +76,7 @@ def __configure_directories(conn:anylog_connector.AnyLogConnector, anylog_path:s
 
 def __declare_node_policy(conn:anylog_connector.AnyLogConnector, node_configs:dict, cluster_id:str=None,
                           exception:bool=False):
+    status = False
     node_type = node_configs['node_type']
     node_name = node_configs['node_name']
     company = node_configs['company_name']
@@ -106,11 +107,9 @@ def __declare_node_policy(conn:anylog_connector.AnyLogConnector, node_configs:di
     if 'broker_bind' in node_configs:
         broker_bind = node_configs['broker_bind']
 
-
-
-    is_blockckchain = blockchain_cmds.get_policy(conn=conn, policy_type=node_type,
+    is_blockchain = blockchain_cmds.get_policy(conn=conn, policy_type=node_type,
                                                  where_condition=f"name={node_name} and company={company}")
-    if is_blockckchain is None:
+    if is_blockchain is None:
         policy = blockchain_policy.node_policy(conn=conn, node_type=node_type, name=node_name, company=company,
                                                external_ip=external_ip, local_ip=local_ip,
                                                anylog_server_port=anylog_server_port, anylog_rest_port=anylog_rest_port,
@@ -121,6 +120,20 @@ def __declare_node_policy(conn:anylog_connector.AnyLogConnector, node_configs:di
 
         blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=None, view_help=False, return_cmd=False,
                                        exception=exception)
+
+        node_dictionary = get_generic_params(conn=conn, exception=exception)
+        if 'new_policy' in node_dictionary:
+            policy = node_dictionary['new_policy']
+            status = blockchain_cmds.publish_policy(conn=conn, policy=policy, ledger_conn=node_configs['ledger_conn'],
+                                                    local=True, destination=None, view_help=False, return_cmd=False,
+                                                    exception=exception)
+
+        if status is True:
+            print(f"Successfully created {node_type} policy")
+        else:
+            print(f"Failed to create {node_type} policy")
+
+        return status
 
 
 
@@ -176,7 +189,7 @@ def main():
 
     __declare_node_policy(conn=anylog_conn, node_configs=node_params, cluster_id=None, exception=args.exception)
 
-    __node_state(conn=anylog_conn, exception=args.exception)
+    # __node_state(conn=anylog_conn, exception=args.exception)
 
 
 if __name__ == '__main__':
