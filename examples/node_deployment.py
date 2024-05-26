@@ -76,6 +76,29 @@ def __configure_directories(conn:anylog_connector.AnyLogConnector, anylog_path:s
 
 def __declare_node_policy(conn:anylog_connector.AnyLogConnector, node_configs:dict, cluster_id:str=None,
                           exception:bool=False):
+    """
+    Declare node policy
+    :args:
+        conn:anylog_connector.AnyLogConnector - AnyLog REST connections
+        node_configs:dict - node configurations
+        cluster_id:str - for operator, the corresponding cluster policy ID
+        exception:bool - whether to print exceptions
+    :params:
+        status:bool
+        node_type:str - node type
+        node_name:str - node name
+        company:str - company name / policy owner
+        external_ip:str - external IP address
+        local_ip:str - local IP address
+        anylog_server_port:int - TCP service port
+        anylog_rest_port:int - REST service port
+        anylog_broker_port:int - Message broker service port
+        tcp_bind:bool - whether to enable binding against local IP for TCP service
+        rest_bind:bool - whether to enable binding against local IP for REST service
+        broker_bind:bool - whether to enable binding against local IP for message broker service
+    :return:
+        status
+    """
     status = False
     node_type = node_configs['node_type']
     node_name = node_configs['node_name']
