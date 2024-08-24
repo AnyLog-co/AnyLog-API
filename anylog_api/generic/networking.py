@@ -8,6 +8,7 @@ from anylog_api.__support__ import add_conditions
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.generic.get import get_help
+import anylog_api.__support__ as support
 
 
 def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, internal_ip:str, internal_port:int,
@@ -68,6 +69,74 @@ def network_connect(conn:anylog_connector.AnyLogConnector, conn_type:str, intern
 
     return status
 
+
+def setup_smtp_connection(conn:anylog_connector.AnyLogConnector, email:str, password:str, host:str=None, port:int=None,
+                          ssl:bool=False, destination:str=None, view_help:bool=False, return_cmd:bool=False,
+                          exception:bool=False):
+    """
+    Enable smtp server
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/background%20processes.md#smtp-client
+    :args:
+        conn:anylog_connector.AnyLogConnector - REST connection information
+        email:str - The sender email address
+        password:str - The sender email password
+        host:str - The connection URL to the email server (system default gmail)
+        port:int - The email server port to use
+        ssl:bool - Using an SMTP with secure connection (system default - False)
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        headers:dict - REST header information
+        smtp_settings:dict - dict of hosts for most popular mail services
+    :return:
+        True - Success
+        False - Fails
+        None - print help information
+    """
+    status = None
+    smtp_settings = {
+        "aol.com": "smtp.aol.com",
+        "att.net": "smtp.mail.att.net",
+        "comcast.net": "smtp.comcast.net",
+        "icloud.com": "smtp.mail.me.com",
+        "gmail.com": "smtp.gmail.com",
+        "outlook.com": "smtp-mail.outlook.com",
+        "yahoo.com": "smtp.mail.yahoo.com"
+    }
+
+    if not support.check_email(email=email, exception=exception) is False:
+        return status
+
+    headers = {
+        "command": "run smtp client",
+        'User-Agent': 'AnyLog/1.23'
+    }
+    if destination is not None:
+        headers["destination"] = destination
+
+    if host is None:
+        for x in smtp_settings:
+            if x in email:
+                host = smtp_settings[x]
+
+    add_conditions(headers=headers, email=email, password=password, host=host, port=port, ssl=ssl)
+
+    if view_help is True:
+        status = get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        status = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, exception=exception)
+
+    return status
+
+
+# def send_sms_msg(conn:anylog_connector.AnyLogConnector, number:str, gateway:str, subject:str=None, message:str=None,
+#                  destination:str=None,, view_help: bool = False, return_cmd: bool = False, exception: bool = False):
 
 def get_network_info(conn:anylog_connector.AnyLogConnector, json_format:bool=True, destination:str=None,
                      view_help:bool=False, return_cmd:bool=False, exception:bool=False):

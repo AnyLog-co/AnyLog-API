@@ -97,6 +97,30 @@ def check_interval(time_interval:str, exception:bool=False)->bool:
     return status
 
 
+def check_email(email:str, exception:bool=False)->bool:
+    """
+    Check whether email is valid
+    :args:
+        email:str - user defined email
+        exception:bool - whether to print exception
+    :params:
+        status:bool
+        email_pattern:str - supported pattern
+    :return:
+        True - valid email
+        False - invalid email
+    """
+    status = True
+    email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+
+    if not bool(re.match(email_pattern, email.strip())):
+        status = False
+        if exception is True:
+            print(f"Invalid email format")
+
+    return status
+
+
 def get_generic_params(conn:anylog_connector.AnyLogConnector, exception:bool=False):
     """
     get default configuration values

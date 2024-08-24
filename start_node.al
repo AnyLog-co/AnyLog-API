@@ -5,9 +5,9 @@
 
 :set-params:
 on error ignore
-anylog_server_port = 32048
-anylog_rest_port = 32049
-# anylog_broker_port = 32049
+anylog_server_port = 2048
+anylog_rest_port = 2049
+# anylog_broker_port = 2049
 
 set tcp_bind = false
 set rest_bind = false
