@@ -81,7 +81,7 @@ def build_increments_query(table_name:str, time_interval:str, units:int, time_co
     sql_cmd += f' FROM {table_name} '
 
     if where_condition:
-        sql_cmd += f"WHERE {where_condition}"
+        sql_cmd += f"WHERE {where_condition} "
     if group_by:
         sql_cmd += "GROUP BY "
         for value in group_by:
@@ -197,7 +197,7 @@ def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str
     output = {"command": None, "results": None}
     if view_help is True:
         if return_cmd is True:
-            print(headers['command'])
+            print(headers['command'], "\n")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     else:
         output['results'] = extract_get_results(conn=conn, headers=headers, exception=exception)

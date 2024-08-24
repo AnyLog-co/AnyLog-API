@@ -1,6 +1,7 @@
 """
 Sample Configs:
-    10.0.0.228:2049 test rand_data --time-column timestamp --where-conditions "timestamp >= NOW() - 2 hours and timestamp <= NOW() - 1 hour" --limit 10 --order-by
+    23.239.12.151:32349 edgex rand_data --output-format table --time-column timestamp --where-conditions "timestamp >= NOW() - 2 hours and timestamp <= NOW() - 1 hour" --limit 10 --return-cmd --order-by
+    23.239.12.151:32349 litsanleandro ping_sensor --values webid --output-format table --time-column timestamp --where-conditions "timestamp >= NOW() - 2 hours and timestamp <= NOW() - 1 hour" --limit 10 --return-cmd --order-by --return-cmd --disable-calc-min --disable-calc-avg --disable-calc-max
 """
 
 import argparse
