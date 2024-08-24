@@ -87,7 +87,7 @@ def check_interval(time_interval:str, exception:bool=False)->bool:
         False - invalid interval
     """
     status = True
-    time_interval_pattern = r'^\d*\s*(second|seconds|minute|minutes|day|days|month|months|year|years)$'
+    time_interval_pattern = r'^\d*\s*(second|seconds|minute|minutes|hour|hours|day|days|month|months|year|years)$'
 
     if not bool(re.match(time_interval_pattern, time_interval.strip())):
         if exception is True:

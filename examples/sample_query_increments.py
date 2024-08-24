@@ -1,7 +1,7 @@
 """
 Sample Configs:
     23.239.12.151:32349 edgex rand_data --output-format table --time-column timestamp --where-conditions "timestamp >= NOW() - 2 hours and timestamp <= NOW() - 1 hour" --limit 10 --return-cmd --order-by
-    23.239.12.151:32349 litsanleandro ping_sensor --values webid --output-format table --time-column timestamp --where-conditions "timestamp >= NOW() - 2 hours and timestamp <= NOW() - 1 hour" --limit 10 --return-cmd --order-by --return-cmd --disable-calc-min --disable-calc-avg --disable-calc-max
+    23.239.12.151:32349 litsanleandro ping_sensor --interval hour --values webid --output-format table --time-column timestamp --where-conditions "timestamp >= NOW() - 1 hour" --include percentagecpu_sensor --extend "@table_name as table" --order-by --return-cmd --disable-calc-min --disable-calc-avg --disable-calc-max
 """
 
 import argparse
@@ -15,16 +15,41 @@ def main():
     """
     Send data via POST - REST
     :positional arguments:
-        conn    Connection information to send data into AnyLog/EdgeLake
+        conn:str        connection information to send data into AnyLog/EdgeLake
+        db_name:str     logical database name
+        table:str       physical table name
     :options:
         -h, --help                      show this help message and exit
-        --db-name       DB_NAME         logical database name
-        --table-name    TABLE_NAME      physical table name
-        --total-rows    TOTAL_ROWS      number of rows to generate
-        --wait-time     WAIT_TIME       How long to wait between each row
-        --publish-mode {streaming,file} Publishing mode
-        --timeout       TIMEOUT         REST request timeout
-        --exception     [EXCEPTION]     Whether to print exceptions
+        --time-column   TIME_COLUMN     timestamp column to query against
+        --interval      INTERVAL        time interval for query
+            second
+            minute
+            hour
+            day
+            week
+            month
+            year
+        --time-units    TIME_UNITS      numerical value for time interval
+        --values        VALUES          comma sepeerated list of values
+        --disable-calc-min  [DISABLE_CALC_MIN]      disable calculating minimum value(s)
+        --disable-calc-avg  [DISABLE_CALC_AVG]      disable calculating average value(s)
+        --disable-calc-max  [DISABLE_CALC_MAX]      disable calculating maximum value(s)
+        --disable-row-count [DISABLE_ROW_COUNT]     disable calculating total row count
+        --where-conditions  WHERE_CONDITIONS        User defined where conditions
+        --order-by          [ORDER_BY]              whether to enable order by (min / max) timestamp
+        --limit             LIMIT                   limit number of rows to return. if set to 0, then no limit
+        --output-format     OUTPUT_FORMAT           SQL request output format
+            json
+            table
+            json:list
+        --stat              [STAT]                  whether to return statistics
+        --timezone          TIMEZONE                Result timezone
+        --include           INCLUDE                 list of tables to query against
+        --extend            EXTEND                  blockchain info to include in results
+        --timeout           TIMEOUT                 REST request timeout
+        --view-help         [VIEW_HELP]             get help on command
+        --return-cmd        [RETURN_CMD]            return generated command
+        --exception         [EXCEPTION]             Whether to print exceptions
     :params:
         conn:str - REST IP:Port
         auth:tuple - REST authentication
