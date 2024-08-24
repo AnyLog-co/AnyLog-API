@@ -51,7 +51,7 @@ def main():
                                 values={
                                     "timestamp": {"type": "timestamp", "value": "bring [timestamp]"},
                                     "value": {"type": "float", "value": "bring [value]"}
-                                }, destination="", is_rest_broker=True, view_help=False, return_cmd=True, exception=args.exception)
+                                }, destination="", is_rest_broker=True, view_help=False, return_cmd=False, exception=args.exception)
 
 
     # Generate rows - notice db_name and table are specified in the data generator
