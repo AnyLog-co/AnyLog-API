@@ -1,7 +1,7 @@
 """
 Sample Configs:
     23.239.12.151:32349 litsanleandro ping_sensor --output-format table --time-column insert_timestamp --values timestamp,value --where-conditions "parentelement='1ab3b14e-93b1-11e9-b465-d4856454f4ba'" --return-cmd
-    23.239.12.151:32349 litsanleandro ping_sensor --output-format table --time-column insert_timestamp --values timestamp,device_name,count(*) --group-by timestamp,device_name --order-by "timestamp desc" --return-cmd
+    23.239.12.151:32349 litsanleandro ping_sensor --time-column timestamp --interval day --time-units 1 --values device_id,count(*) --group-by device_id --output-format table
 """
 
 import argparse
@@ -32,7 +32,8 @@ def main():
         --time-units    TIME_UNITS      numerical value for time interval
         --values        VALUES          comma sepeerated list of values
         --where-conditions  WHERE_CONDITIONS        User defined where conditions
-        --order-by          [ORDER_BY]              whether to enable order by (min / max) timestamp
+        --group-by          GROUP_BY
+        --order-by          ORDER_BY              whether to enable order by (min / max) timestamp
         --limit             LIMIT                   limit number of rows to return. if set to 0, then no limit
         --output-format     OUTPUT_FORMAT           SQL request output format
             json

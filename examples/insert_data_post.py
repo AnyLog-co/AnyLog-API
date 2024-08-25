@@ -15,8 +15,8 @@ def main():
         --db-name       DB_NAME         logical database name
         --table-name    TABLE_NAME      physical table name
         --total-rows    TOTAL_ROWS      number of rows to generate
+        --topic         TOPIC           REST topic name
         --wait-time     WAIT_TIME       How long to wait between each row
-        --publish-mode {streaming,file} Publishing mode
         --timeout       TIMEOUT         REST request timeout
         --exception     [EXCEPTION]     Whether to print exceptions
     :params:
