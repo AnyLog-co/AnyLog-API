@@ -98,8 +98,8 @@ def build_increments_query(table_name:str, time_interval:str, units:int, time_co
     return sql_cmd
 
 
-def build_period_query(table_name:str, time_interval:str, units:int, time_column:str, value_columns,
-                       start_ts='NOW()', calc_min:bool=True, calc_avg:bool=True, calc_max:bool=True, row_count:bool=True,
+def build_period_query(table_name:str, time_interval:str, units:int, time_column:str, value_columns:list,
+                       start_ts='NOW()', where_conditions:str=None, group_by:str=None, order_by_columns:str=None, limit:int=0,
                        exception:bool=False)->str:
     """
     The period function finds the first occurrence of data before or at a specified date (and if a filter-criteria is
@@ -119,14 +119,12 @@ def build_period_query(table_name:str, time_interval:str, units:int, time_column
         table_name:str - logical table name
         time_interval:str - time interval (second, minute, hour, day, week, month, year)
         unit:int - value for time interval
-        time_column:str - timestamp column name
+        time_column:str - timestamp column name (used in period function)
+        value_columns:list - list or string of value column names
         start_ts:str - start timestamp
-        value_columns - list or string of value column names
-        calc_min:bool - calculate min value
-        calc_avg:bool - calculate avg value
-        calc_max:bool - calculate max value
-        row_count:bool - calculate row count
         where_condition:str - user defined where condition
+        group_by:str - comma - separated values to group by
+        order_by_columns:str - comma separated values to order by (with asc/desc)
         exception:bool - print exception
     :params:
         sql_cmd:str - generated sql
@@ -141,31 +139,28 @@ def build_period_query(table_name:str, time_interval:str, units:int, time_column
             print(f"Missing timestamp column name")
         return ""
 
-    sql_cmd = "SELECT"
-    if all(False is x for x in [calc_min, calc_max]):
-        sql_cmd += f" {time_column},"
-    if calc_min is True:
-        sql_cmd += f" MIN({time_column}) AS min_ts,"
-    if calc_max is True:
-        sql_cmd += f" MAX({time_column}) AS max_ts,"
+    period_cmd = f"period({time_interval}, {units}, {start_ts},{time_column})"
+    sql_cmd = "select "
 
-    if not isinstance(value_columns, list):
-        value_columns = value_columns.split(",")
+    if type(value_columns) not in [tuple, list]:
+        value_columns = value_columns.strip().split(",")
     for value_column in value_columns:
-        if all(False is x for x in [calc_min, calc_avg, calc_max, row_count]):
-            sql_cmd += f" {value_column}"
-        if calc_min is True:
-            sql_cmd += f" MIN({value_column}) AS min_{value_column},"
-        if calc_avg is True:
-            sql_cmd += f" AVG({value_column}) AS avg_{value_column},"
-        if calc_max is True:
-            sql_cmd += f" MAX({value_column}) AS max_{value_column},"
-        if row_count is True:
-            sql_cmd += f" COUNT({value_column}) AS row_count,"
+        sql_cmd += f"{value_column},"
 
-    sql_cmd = sql_cmd.rsplit(",", 1)[0] = f' FROM {table_name} WHERE period({time_interval}, {units}, {start_ts}, {time_column});'
+    sql_cmd = sql_cmd.rsplit(",", 1)[0] + f" FROM {table_name} WHERE {period_cmd}"
+
+    if where_conditions:
+        sql_cmd += f" and {where_conditions}"
+
+    if group_by:
+        sql_cmd += f" GROUP BY {group_by}"
+    if order_by_columns:
+        sql_cmd += f" ORDER BY {order_by_columns}"
+    if limit > 0 :
+        sql_cmd += f" limit {limit}"
 
     return sql_cmd
+
 
 def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, destination:str='network',
                output_format:str='json', stat:bool=True, timezone:str=None, include:list=[], extend:list=[],
