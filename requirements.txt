@@ -1,2 +1,6 @@
+setuptools>=0.0
+Cython>=0.0
+
+# ast>=0.0
 python-dotenv>=0.0
 requests>=0.0
