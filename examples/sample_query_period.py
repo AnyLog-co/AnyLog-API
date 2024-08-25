@@ -13,7 +13,7 @@ import __support__ as support
 
 def main():
     """
-    Send data via POST - REST
+    Query data using period function
     :positional arguments:
         conn:str        connection information to send data into AnyLog/EdgeLake
         db_name:str     logical database name
