@@ -151,20 +151,20 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         if values:
             for key, values_dict in values.items():
                 topic_info += " and\n\t"
-                if 'value' in values_dict and 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
-                    topic_info += f'column.{key.replace(' ', '_').replace('-', '_')}.timestamp={values_dict['value']}'
-                    if 'bring' in values_dict['value']:
-                        topic_info = topic_info.replace(values_dict['value'], f'"{values_dict['value']}"')
-                elif 'value' not in values_dict and 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
-                    topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp=now()"
-                elif 'value' in values_dict and 'type' in values_dict and values_dict['type'].lower() in ['string', 'int', 'float', 'bool', 'timestamp']:
-                    topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type={values_dict['type'].lower()} and value={values_dict['value']})"
-                    if 'bring' in values_dict['value']:
-                        topic_info = topic_info.replace(values_dict['value'], f'"{values_dict['value']}"')
-                elif 'value' in values_dict and ('type' not in values_dict or values_dict['type'].lower() not in ['string', 'int', 'float', 'bool', 'timestamp']):
-                    topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
-                    if 'bring' in values_dict['value']:
-                        topic_info = topic_info.replace(values_dict['value'], f'"{values_dict['value']}"')
+                if 'value' in values_dict and 'bring' in values_dict['value']:
+                    values_dict['value'] = '"' + values_dict['value'] + "'"
+
+                if 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
+                    if 'value' not in values_dict:
+                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp=now()"
+                    else:
+                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp={values_dict['value']}"
+                elif 'value' in values_dict:
+                    if 'type' not in values_dict or values_dict['type'].lower() not in ['string', 'int', 'float', 'bool', 'timestamp']:
+                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
+                    else:
+                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type={values_dict['type'].lower()} and value={values_dict['value']})"
+
         topic_info += "\n)>"
 
     if broker == "rest" or is_rest_broker is True:
