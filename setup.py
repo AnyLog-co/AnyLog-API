@@ -79,13 +79,13 @@ for dirname in os.listdir(SOURCE_PATH):
 
 for file_path in ANYLOG_MODULES:
     if not file_path.endswith("__init__.py"):
-        if os.name == "nt":
-            ext_name = file_path.rsplit('.', 1)[0].replace("\\", '.').split(".AnyLog-Network.")[-1]
-        else:
-            ext_name = file_path.rsplit('.', 1)[0].replace(os.path.sep, '.').split(".AnyLog-Network.")[-1]
-        ext = Extension(ext_name, [file_path])
-        EXTENSIONS.append(ext)
+        # Generate relative path and convert to a valid Python module name
+        rel_path = os.path.relpath(file_path, SOURCE_PATH)
+        module_name = rel_path.replace(os.path.sep, '.').rsplit('.', 1)[0]  # Convert to module name
 
+        # Create the Extension object
+        ext = Extension(module_name, [file_path])
+        EXTENSIONS.append(ext)
 
 try:
     setup(
