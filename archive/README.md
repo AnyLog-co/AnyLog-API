@@ -11,7 +11,7 @@
       * node name
       * hostname
       * version
-    * [POST](generic/post.py)
+    * [POST](../anylog_api/generic/post.py)
       * set debug 
       * add params to dictionary
       * set node name 
