@@ -1,5 +1,5 @@
 import argparse
-import ast
+import os
 
 import __support__ as support
 
@@ -19,8 +19,8 @@ def __validate_connection(conn:anylog_connector.AnyLogConnector, exception:bool=
         print(f"Failed to communicated with {conn.conn}. cannot continue...")
         exit(1)
 
-s
-def __set_params(conn:anylog_connector.AnyLogConnector, config_files:str, exception:bool=False):
+
+def __set_dictionary(conn:anylog_connector.AnyLogConnector, config_files:str, exception:bool=False):
     """
     Set node configurations
     :process:
@@ -30,7 +30,7 @@ def __set_params(conn:anylog_connector.AnyLogConnector, config_files:str, except
         4. if node_type is missing goto node_state
     """
     # get preset / default params
-    generic_params = generic_get.get_dictionary(conn=anylog_connector, json_format=True, destination="", view_help=False,
+    generic_params = generic_get.get_dictionary(conn=conn, json_format=True, destination="", view_help=False,
                                                 return_cmd=False, exception=exception)
     file_configs = {}
 
@@ -78,18 +78,43 @@ def main():
     parse.add_argument('--edgelake',  type=bool, const=True, nargs='?', default=False, help='Connect to EdgeLake instance')
     parse.add_argument('--exception', type=bool, const=True, nargs='?', default=False, help='Print exception')
     args = parse.parse_args()
+    args.configs = os.path.expanduser(os.path.expandvars(args.configs[0]))
 
     conn, auth = next(iter(args.conn.items()))
     anylog_conn = anylog_connector.AnyLogConnector(conn, auth=auth, timeout=args.timeout)
 
+    # set license if using AnyLog
+    if args.edgelake is False:
+        params = support.read_configs(config_file=args.configs, exception=args.exception)
+        if 'LICENSE_KEY' in params:
+            generic_post.set_license_key(conn=anylog_conn, license_key=params['LICENSE_KEY'], view_help=False,
+                                         return_cmd=False, exception=args.exception)
     # validate node
-    node_status = generic_get.get_status(conn=anylog_conn, destination="", view_help=False, return_cmd=False,
-                                         exception=args.exception)
-    print(node_status)
+    node_status = generic_get.get_status(conn=anylog_conn, view_help=False, return_cmd=False, exception=args.exception)
+    if node_status is False:
+        print(f"Failed to communicate with node against {conn}. Cannot continue...")
+        exit(1)
+
+    # set node params to be used
+    node_params = __set_dictionary(conn=anylog_conn, config_files=args.configs, exception=args.exception)
+    if not generic_post.set_path(conn=anylog_conn, path=node_params['anylog_path'], exception=args.exception):
+        print(f"Failed to set root_path to {node_params['anylog_path']}")
+    if not generic_post.set_node_name(conn=anylog_conn, node_name=node_params['node_name'], exception=args.exception):
+        print(f"Failed to set node name to {node_params['node_name']}")
+    if not generic_post.create_work_dirs(conn=anylog_conn, exception=args.exception):
+        print(f"Failed to create work directories")
+    generic_post.set_params(conn=anylog_conn, params={'local_scripts': node_params['local_scripts'],
+                                                      'test_dir': node_params['test_dir']}, exception=args.exception)
+
+    if node_params['node_type'] != 'generic':
+        pass
+
+    # view processes
+    print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))
 
     # # prepare node
     # __validate_connection(conn=anylog_conn, exception=args.exception)
-    # node_params = __set_params(conn=anylog_conn, config_files=args.configs, exception=args.exception)
+    #
     # __configure_directories(conn=anylog_conn, anylog_path=node_params['anylog_path'], exception=args.exception)
     #
     # # blockchain seed
