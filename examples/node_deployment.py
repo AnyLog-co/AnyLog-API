@@ -86,9 +86,11 @@ def main():
     # set license if using AnyLog
     if args.edgelake is False:
         params = support.read_configs(config_file=args.configs, exception=args.exception)
-        if 'LICENSE_KEY' in params:
-            generic_post.set_license_key(conn=anylog_conn, license_key=params['LICENSE_KEY'], view_help=False,
+        if 'license_key' in params:
+            generic_post.set_license_key(conn=anylog_conn, license_key=params['license_key'], view_help=False,
                                          return_cmd=False, exception=args.exception)
+            print("License Key\n" + generic_get.get_license_key(conn=anylog_conn, view_help=False, return_cmd=False, exception=args.exception))
+
     # validate node
     node_status = generic_get.get_status(conn=anylog_conn, view_help=False, return_cmd=False, exception=args.exception)
     if node_status is False:
@@ -112,22 +114,6 @@ def main():
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))
 
-    # # prepare node
-    # __validate_connection(conn=anylog_conn, exception=args.exception)
-    #
-    # __configure_directories(conn=anylog_conn, anylog_path=node_params['anylog_path'], exception=args.exception)
-    #
-    # # blockchain seed
-    # status, cmd = blockchain_cmds.execute_seed(conn=anylog_conn, ledger_conn=node_params['ledger_conn'], destination="",
-    #                                            view_help=False, return_cmd=False,  exception=args.exception)
-    # if status is False:
-    #     print(f"Failed to execute blockchain seed from {node_params['ledger_conn']}")
-    #
-    # # check policy
-    #
-    #
-    # # __node_state(conn=anylog_conn, exception=args.exception)
-    #
 
 if __name__ == '__main__':
     main()
