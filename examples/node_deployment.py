@@ -6,7 +6,7 @@ import __support__ as support
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.generic.get as generic_get
 import anylog_api.generic.post as generic_post
-import anylog_api.blockchain.cmds as blockchain_cmds
+import examples.nodes as node_deployment
 
 
 def __validate_connection(conn:anylog_connector.AnyLogConnector, exception:bool=False):
@@ -108,8 +108,29 @@ def main():
     generic_post.set_params(conn=anylog_conn, params={'local_scripts': node_params['local_scripts'],
                                                       'test_dir': node_params['test_dir']}, exception=args.exception)
 
-    if node_params['node_type'] != 'generic':
+    if node_params['node_type'] != 'publisher' and args.edgelake is True:
+        print(f"Publisher node not supported with EdgeLake.")
+        is_operator = None
+        error = ""
+        input_cmd = "Would you like to run an operator node instead [y/N]? "
+        while is_operator not in ['y', 'n']:
+            is_operator = input(error + input_cmd).lower()
+            if is_operator not in ['y', 'n']:
+                error = f"Invalid value {is_operator}, please try again... "
+            elif is_operator is 'y':
+                node_params['node_type'] = 'operator'
+                generic_post.set_params(conn=anylog_conn, params={'node_type': 'operator'}, exception=args.exception)
+
+    if node_params['node_type'] == 'master':
+        node_deployment.master(conn=anylog_conn, params=params, exception=args.exception)
+    elif node_params['node_type'] == 'operator':
         pass
+    elif node_params['node_type'] == 'query':
+        pass
+    elif node_params['node_type'] == 'publisher' and args.edgelake is False:
+        pass
+    elif node_params['node_type'] != 'generic':
+        print(f"Invalid node type {node_params['node_type']}. Nothing left todo...")
 
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))

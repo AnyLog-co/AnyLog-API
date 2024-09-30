@@ -1,4 +1,4 @@
-import anylog_api.anylog_connector  as anylog_connector
+import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 # from anylog_api.generic.get import get_dictionary
 from anylog_api.anylog_connector_support import execute_publish_cmd
@@ -39,7 +39,7 @@ def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where
         headers['destination'] = destination
 
     if where_condition:
-        headers['command'] += f" where {where_condition}"
+            headers['command'] += f" where {where_condition}"
     if bring_case:
         headers['command'] += f" bring.{bring_case}"
     if bring_condition and bring_case:
