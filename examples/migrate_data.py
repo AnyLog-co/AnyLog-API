@@ -69,7 +69,8 @@ def __get_data(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:st
     output = query_data.query_data(conn=conn, db_name=db_name,
                                    sql_query=query,
                                    output_format='json', stat=False, timezone='utc', view_help=False,
-                                   return_cmd=False, exception=exception)
+                                   return_cmd=True, exception=exception)
+
     # clean un-need columns from each row
     try:
         for row in output['results']['Query']:
@@ -101,7 +102,6 @@ def main():
         min_ts, max_ts:datetime.datetime - min / max timestamp values
         future_ts:datetime.datetime  - min_ts + 12hours
         payloads:list - (cleaned) data to publish from Query to Operator
-
     """
     parse = argparse.ArgumentParser()
     parse.add_argument('conn1', type=support.check_conn, default='127.0.0.1:32349', help='(Query) REST connection to get data from')
