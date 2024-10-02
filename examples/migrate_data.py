@@ -1,4 +1,5 @@
 import argparse
+import ast
 import datetime
 import json
 import anylog_api.anylog_connector as anylog_connector
@@ -77,6 +78,7 @@ def __get_data(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:st
             for key in ['row_id', 'insert_timestamp', 'tsd_name', 'tsd_id']:
                 if time_column != key and key in row:
                     del row[key]
+
             data.append(row)
     except:
         pass
