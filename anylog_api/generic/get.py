@@ -122,6 +122,7 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=True,
         https://github.com/AnyLog-co/documentation/blob/master/monitoring%20nodes.md#the-get-dictionary-command
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        json_format:bool - return results in JSON format
         destination:str - Remote node to query against
         view_help:bool - get information about command
         return_cmd:bool - return command rather than executing it

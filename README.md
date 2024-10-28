@@ -40,7 +40,7 @@ on error goto broker-networking-error
 
 
 ## Examples
-* [Node Deployment](examples/node_deployment.py)
+* [Node Deployment](example_node_deployment/create_policy.py)
   * generic
   * master
   * operator
