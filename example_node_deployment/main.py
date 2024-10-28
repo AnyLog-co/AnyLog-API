@@ -7,9 +7,10 @@ import anylog_api.generic.get as generic_get
 import anylog_api.generic.post as generic_post
 import anylog_api.generic.scheduler as scheduler
 
-import __support__ as support
-import __support_files__ as support_file
+import example_node_deployment.__support__ as support
+import example_node_deployment.__support_files__ as support_file
 from example_node_deployment.database import connect_dbms
+import example_node_deployment.create_policy as create_policy
 from examples.__support__ import  check_conn
 
 
@@ -88,6 +89,19 @@ def main():
                                  view_help=False, return_cmd=False, exception=args.exception)
 
     # create policy
+    cluster_id = None
+    if params['node_type'] == 'operator':
+        if 'cluster_name' not in params:
+            params['cluster_name'] = 'new-cluster'
+        cluster_id = create_policy.create_cluster(conn=conn, cluster_name=params['cluster_name'],
+                                                  owner=params['company_name'], ledger_conn=params['ledger_conn'],
+                                                  db_name=None, table=None, parent=None, destination="",
+                                                  view_help=False, return_cmd=False, exception=args.exception)
+    policy_id = create_policy.generate_policy(conn=conn, params=params, destination=None, view_help=False,
+                                              return_cmd=False, exception=False)
+
+    if params['node_type'] == 'operator':
+        pass
 
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))

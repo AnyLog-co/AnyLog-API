@@ -1,6 +1,41 @@
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.blockchain.cmds as blockchain_cmds
 
+
+def create_cluster_policy(name:str, owner:str, db_name:str=None, table:str=None, parent:str=None):
+    """
+    Declare cluster policy
+    :args:
+        name:str - cluster name
+        owner:str - company name / cluster owner
+    :optional-args:  if specified, then the cluster will only work against given database and/or tabale OR associated with a parent cluster
+        db_name:str - specific database name
+        table:str - specific table name
+        parent:str - cluster parent ID
+    :params:
+        node_policy
+    :return:
+        node_policy
+    """
+    cluster_policy = {
+        "cluster": {
+            "name": name,
+            "company": owner
+        }
+    }
+    if db_name and parent:
+        cluster_policy['cluster']['parent'] = parent
+    if db_name and table:
+        cluster_policy['cluster']['table'] = [
+            {
+                "dbms": db_name,
+                "table": table
+            }
+        ]
+    elif db_name:
+        cluster_policy['cluster']['dbms'] = db_name
+    return cluster_policy
+
 def create_node_policy(node_type:str, node_name:str, owner:str, ip:str, anylog_server_port:int, anylog_rest_port:str,
                        local_ip:str=None, anylog_broker_port:int=None, cluster_id:str=None, is_main:bool=False,
                        location:dict=None, other_params:dict=None, scripts:list=None):
