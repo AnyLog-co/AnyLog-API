@@ -211,7 +211,7 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     if return_cmd is True:
         cmd = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
 
     return status, cmd
 
