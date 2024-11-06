@@ -1,6 +1,7 @@
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destination:str=None, view_help:bool=False,
@@ -49,6 +50,39 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
     return status
 
 
+# def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
+#                exception:bool=False):
+#     """
+#     add dictionary param
+#     :args:
+#         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+#         params:dict - dictionary of key / value pairs to set node with
+#         destination:str - Remote node to query against
+#         view_help:bool - get information about command
+#         return_cmd:bool - return command rather than executing it
+#         exception:bool - whether to print exception
+#     :params:
+#         headers:dict - REST head information
+#     """
+#     headers = {
+#         "command": None,
+#         "User-Agent": "AnyLog/1.23"
+#     }
+#     if destination is not None:
+#         headers['destination'] = destination
+#
+#     for key in params:
+#         if params[key] in ['false', 'False', 'True', 'true', 'file']:
+#             headers['command'] = f'set {key.strip()} = {params[key].strip()}'
+#         elif params[key] != "":
+#             headers['command'] = f'{key.strip()} = {params[key].strip()}'
+#         if view_help is True:
+#             get_help(conn=conn, cmd=headers['command'], exception=exception)
+#             break
+#         else:
+#             execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+
 def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
                exception:bool=False):
     """
@@ -70,16 +104,35 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
     if destination is not None:
         headers['destination'] = destination
 
-    for key in params:
-        if params[key] in ['false', 'False', 'True', 'true', 'file']:
-            headers['command'] = f'set {key.strip()} = {params[key].strip()}'
-        elif params[key] != "":
-            headers['command'] = f'{key.strip()} = {params[key].strip()}'
-        if view_help is True:
-            get_help(conn=conn, cmd=headers['command'], exception=exception)
-            break
+    # Define a function to handle the command execution for each key-value pair
+    def execute_command(key, value):
+        if value in ['false', 'False', 'True', 'true', 'file']:
+            command = f'set {key.strip()} = {value.strip()}'
+        elif value != "":
+            command = f'{key.strip()} = {value.strip()}'
+        else:
+            return  # Skip empty values
+        headers['command'] = command
+
+        if view_help:
+            get_help(conn=conn, cmd=command, exception=exception)
         else:
             execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    # Use ThreadPoolExecutor with a maximum of 10 threads
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Submit each command as a task to the executor
+        futures = [executor.submit(execute_command, key, params[key]) for key in params]
+
+        # Wait for all futures to complete
+        for future in as_completed(futures):
+            # Optionally handle any exceptions
+            try:
+                future.result()  # We could check results or exceptions here if needed
+            except Exception as e:
+                if exception:
+                    print(f"Exception during command execution: {e}")
+
 
 
 def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destination:str=None,

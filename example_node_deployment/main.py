@@ -78,28 +78,28 @@ def main():
                                                       'test_dir': node_params['test_dir']}, exception=args.exception)
 
     # schedule 1
-    scheduler.run_scheduler(conn=conn, schedule_id=1, exception=args.exception)
+    scheduler.run_scheduler(conn=anylog_conn, schedule_id=1, exception=args.exception)
 
     # create database / tables
-    connect_dbms(conn=conn, params=params, destination=None, view_help=False, return_cmd=False,
+    connect_dbms(conn=anylog_conn, params=node_params, destination=None, view_help=False, return_cmd=False,
                  exception=args.exception)
 
     # blockchain seed
-    blockchain_cmds.execute_seed(conn=conn, ledger_conn=params['ledger_conn'], destination="",
+    blockchain_cmds.execute_seed(conn=anylog_conn, ledger_conn=node_params['ledger_conn'], destination="",
                                  view_help=False, return_cmd=False, exception=args.exception)
 
     # create policy
     cluster_id = None
-    if params['node_type'] == 'operator':
+    if node_params['node_type'] == 'operator':
         if 'cluster_name' not in params:
             params['cluster_name'] = 'new-cluster'
         cluster_id = create_policy.create_cluster(conn=conn, cluster_name=params['cluster_name'],
                                                   owner=params['company_name'], ledger_conn=params['ledger_conn'],
                                                   db_name=None, table=None, parent=None, destination="",
                                                   view_help=False, return_cmd=False, exception=args.exception)
-    policy_id = create_policy.generate_policy(conn=conn, params=params, destination=None, view_help=False,
+    policy_id = create_policy.generate_policy(conn=anylog_conn, params=node_params, destination=None, view_help=False,
                                               return_cmd=False, exception=False)
-
+    print(policy_id)
     if params['node_type'] == 'operator':
         pass
 

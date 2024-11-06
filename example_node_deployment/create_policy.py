@@ -71,8 +71,10 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
         2. node policy
         3. scheduler 1
     """
+    policy_id = None
     # validate params
     support.validate_configs(params=params)
+    i = 0
     ip, local_ip = support.extract_ips(params=params)
 
     # check policy exists
@@ -81,38 +83,47 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
                                            bring_case="first", destination=destination, view_help=view_help,
                                            return_cmd=return_cmd, exception=exception)
 
-    # declare policy
-    location = get_location(conn=conn, params=params, destination=destination, view_help=view_help,
-                            return_cmd=return_cmd, exception=exception)
-    if not is_policy and 'anylog_broker_port' in params:
-        policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
-                                                        owner=params['company_name'], ip=ip, local_ip=local_ip,
-                                                        anylog_server_port=params['anylog_server_port'],
-                                                        anylog_rest_port=params['anylog_rest_port'],
-                                                        anylog_broker_port=params['anylog_broker_port'],
-                                                        location=location, cluster_id=None, other_params=None,
-                                                        scripts=None)
-    else:
-        policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
-                                                        owner=params['company_name'], ip=ip, local_ip=local_ip,
-                                                        anylog_server_port=params['anylog_server_port'],
-                                                        anylog_rest_port=params['anylog_rest_port'],
-                                                        anylog_broker_port=None, location=location,
-                                                        cluster_id=None, other_params=None, scripts=None)
+    if not is_policy:
+        location = get_location(conn=conn, params=params, destination=destination, view_help=view_help,
+                                return_cmd=return_cmd, exception=exception)
+        if 'anylog_broker' in params:
+            policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
+                                                            owner=params['company_name'], ip=ip, local_ip=local_ip,
+                                                            anylog_server_port=params['anylog_server_port'],
+                                                            anylog_rest_port=params['anylog_rest_port'],
+                                                            anylog_broker_port=params['anylog_broker_port'],
+                                                            location=location, cluster_id=None, other_params=None,
+                                                            scripts=None)
+        else:
+            policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
+                                                            owner=params['company_name'], ip=ip, local_ip=local_ip,
+                                                            anylog_server_port=params['anylog_server_port'],
+                                                            anylog_rest_port=params['anylog_rest_port'],
+                                                            anylog_broker_port=None, location=location,
+                                                            cluster_id=None, other_params=None, scripts=None)
 
-    status, cmd = blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=destination, view_help=view_help,
-                                                 return_cmd=return_cmd, exception=exception)
-    if status is True:
-        status, cmd = blockchain_cmds.post_policy(conn=conn, policy=policy, ledger_conn=params['ledger_conn'],
-                                                  destination=destination, view_help=view_help, return_cmd=return_cmd,
-                                                  exception=exception)
+        status, cmd = blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=destination, view_help=view_help,
+                                                     return_cmd=return_cmd, exception=exception)
+        if status is True:
+            status, cmd = blockchain_cmds.post_policy(conn=conn, policy=policy, ledger_conn=params['ledger_conn'],
+                                                      destination=destination, view_help=view_help, return_cmd=return_cmd,
+                                                      exception=exception)
         if status is False:
             print(f"Failed to declare policy for node type {params['node_type']}")
             exit(1)
+        else:
+            # blockchain sync
+            status, cmd = blockchain_cmds.blockchain_sync(conn=conn, ledger_conn=params['ledger_conn'],
+                                                          blockchain_source=params['blockchain_source'], )
 
-    # blockchain sync
-    status, cmd = blockchain_cmds.blockchain_sync(conn=conn, ledger_conn=params['ledger_conn'],
-                                                  blockchain_source=params['blockchain_source'], )
+        is_policy = blockchain_cmds.get_policy(conn=conn, policy_type=params['node_type'],
+                                               where_condition=where_conditions,
+                                               bring_case="first", destination=destination, view_help=view_help,
+                                               return_cmd=return_cmd, exception=exception)
+
+    if is_policy and params['node_type'] in is_policy[0] and 'id' in is_policy[0][params['node_type']]:
+        policy_id = is_policy[0][params['node_type']]['id']
+    return policy_id
 
 
 

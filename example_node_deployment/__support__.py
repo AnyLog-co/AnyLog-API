@@ -1,7 +1,9 @@
+from logging import error
+
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.generic.get as generic_get
 import anylog_api.generic.post as generic_post
-
+import __support_files__ as support_files
 
 def validate_configs(params:dict):
     # database params
@@ -21,7 +23,7 @@ def validate_configs(params:dict):
             exit(1)
 
     # ledger conn
-    if 'ledger_conn' not in param:
+    if 'ledger_conn' not in params:
         print(f'Missing ledger conn value, cannot continue...')
         exit(1)
 
@@ -105,7 +107,7 @@ def set_dictionary(conn:anylog_connector.AnyLogConnector, config_files:str, exce
 
     # get configs from file
     if config_files is not None:
-        file_configs = support.read_configs(config_file=config_files, exception=exception)
+        file_configs = support_files.read_configs(config_file=config_files, exception=exception)
     # merge configs
     if file_configs:
         for config in file_configs:
@@ -113,13 +115,14 @@ def set_dictionary(conn:anylog_connector.AnyLogConnector, config_files:str, exce
                 generic_params[config.lower()] = file_configs[config]
 
     err_msg = ""
-    for config in ['node_type', 'node_name', 'company_name', 'ledger_conn']:
+    for config in ['node_type', 'node_name', 'company_name', 'ledger_conn', 'db_type']:
         if config not in generic_params or generic_params[config] == "":
             if err_msg == "":
                 err_msg = f"Missing key config param(s). Param List: {config}"
             else:
                 err_msg += f", {config}"
-
+    if err_msg != "":
+        raise err_msg
     generic_post.set_params(conn=conn, params=generic_params, destination=None, view_help=False,
                             exception=exception)
     return generic_params
