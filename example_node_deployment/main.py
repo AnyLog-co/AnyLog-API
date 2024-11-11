@@ -9,9 +9,21 @@ import anylog_api.generic.scheduler as scheduler
 
 import example_node_deployment.__support__ as support
 import example_node_deployment.__support_files__ as support_file
+from anylog_api.blockchain.cmds import blockchain_sync
 from example_node_deployment.database import connect_dbms
 import example_node_deployment.create_policy as create_policy
 from examples.__support__ import  check_conn
+
+def __blockchain_sync(conn:anylog_connector, params:dict):
+    local_params = {
+        "ledger_conn":None,
+        "blockchain_source": "master",
+        ""
+
+    }
+
+    blockchain_cmds.blockchain_sync(conn=conn, ledger_conn=local_params['ledger_conn'],
+                                    blockchain_source=local_params['blockchain_source'], sync_time=)
 
 
 def main():
@@ -99,13 +111,16 @@ def main():
                                                   view_help=False, return_cmd=False, exception=args.exception)
     policy_id = create_policy.generate_policy(conn=anylog_conn, params=node_params, destination=None, view_help=False,
                                               return_cmd=False, exception=False)
-    print(policy_id)
+
     if params['node_type'] == 'operator':
         pass
 
+
+
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))
-
+    blockchain_cmds.blockchain_sync(conn=anylog_conn, destination=None, view_help=False,
+                                              return_cmd=False, exception=False)
 
 if __name__ == '__main__':
     main()

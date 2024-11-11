@@ -92,8 +92,8 @@ def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:s
 
 
 def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', db_ip:str=None,
-                 db_port:int=None, db_user:str=None, db_password:str=None, destination:str="", view_help:bool=False,
-                 return_cmd:bool=False, exception:bool=False):
+                 db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, destination:str="",
+                 view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Connect to database
     :command:
@@ -135,6 +135,8 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
         headers['command'] += f" and user={db_user}"
     if db_password:
         headers['command'] += f" and password={db_password}"
+    if db_type == 'sqlite' and memory == 'true':
+        headers['command'] += " and memory=true"
     if destination:
         headers['destination'] = destination
 
