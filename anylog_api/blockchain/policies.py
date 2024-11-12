@@ -84,15 +84,15 @@ def create_node_policy(node_type:str, node_name:str, owner:str, ip:str, anylog_s
             "name": node_name,
             "company": owner,
             "ip": ip,
-            "port": anylog_server_port,
-            "rest": anylog_rest_port
+            "port": int(anylog_server_port),
+            "rest_port": int(anylog_rest_port)
         }
     }
 
     if local_ip:
         node_policy[node_type]['local_ip'] = local_ip
     if anylog_broker_port:
-        node_policy[node_type]['broker'] = anylog_broker_port
+        node_policy[node_type]['broker_port'] = int(anylog_broker_port)
     if node_type == 'operator':
         node_policy[node_type]['main'] = is_main
         if cluster_id:

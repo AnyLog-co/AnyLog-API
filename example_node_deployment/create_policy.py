@@ -50,7 +50,7 @@ def create_cluster(conn:anylog_connector.AnyLogConnector, cluster_name:str, owne
             blockchain_cmds.post_policy(conn=conn, policy=cluster_policy, ledger_conn=ledger_conn,
                                         destination=destination, view_help=view_help, return_cmd=return_cmd,
                                         exception=exception)
-            counter += 1
+        counter += 1
 
     if not cluster_id:
         print(f"Failed to declare cluster policy against {ledger_conn}, cannot continue...")
@@ -86,35 +86,32 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
                                                bring_condition="[*][id]", destination=destination, view_help=view_help,
                                                return_cmd=return_cmd, exception=exception)
 
-    if not policy_id and counter == 0:
-        location = get_location(conn=conn, params=params, destination=destination, view_help=view_help,
-                                return_cmd=return_cmd, exception=exception)
-        if 'anylog_broker' in params:
-            policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
-                                                            owner=params['company_name'], ip=ip, local_ip=local_ip,
-                                                            anylog_server_port=params['anylog_server_port'],
-                                                            anylog_rest_port=params['anylog_rest_port'],
-                                                            anylog_broker_port=params['anylog_broker_port'],
-                                                            location=location, cluster_id=cluster_id, other_params=None,
-                                                            scripts=None)
-        else:
-            policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
-                                                            owner=params['company_name'], ip=ip, local_ip=local_ip,
-                                                            anylog_server_port=params['anylog_server_port'],
-                                                            anylog_rest_port=params['anylog_rest_port'],
-                                                            anylog_broker_port=None, location=location,
-                                                            cluster_id=cluster_id, other_params=None, scripts=None)
+        if not policy_id and counter == 0:
+            location = get_location(conn=conn, params=params, destination=destination, view_help=view_help,
+                                    return_cmd=return_cmd, exception=exception)
+            if 'anylog_broker' in params:
+                policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
+                                                                owner=params['company_name'], ip=ip, local_ip=local_ip,
+                                                                anylog_server_port=params['anylog_server_port'],
+                                                                anylog_rest_port=params['anylog_rest_port'],
+                                                                anylog_broker_port=params['anylog_broker_port'],
+                                                                location=location, cluster_id=cluster_id, other_params=None,
+                                                                scripts=None)
+            else:
+                policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
+                                                                owner=params['company_name'], ip=ip, local_ip=local_ip,
+                                                                anylog_server_port=params['anylog_server_port'],
+                                                                anylog_rest_port=params['anylog_rest_port'],
+                                                                anylog_broker_port=None, location=location,
+                                                                cluster_id=cluster_id, other_params=None, scripts=None)
 
-        blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=destination, view_help=view_help,
-                                       return_cmd=return_cmd, exception=exception)
-        blockchain_cmds.post_policy(conn=conn, policy=policy, ledger_conn=params['ledger_conn'],
-                                    destination=destination, view_help=view_help, return_cmd=return_cmd,
-                                    exception=exception)
-        counter += 1
+            blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=destination, view_help=view_help,
+                                           return_cmd=return_cmd, exception=exception)
+            blockchain_cmds.post_policy(conn=conn, policy=policy, ledger_conn=params['ledger_conn'],
+                                        destination=destination, view_help=view_help, return_cmd=return_cmd,
+                                        exception=exception)
+            counter += 1
 
     if not policy_id:
         print(f"Failed to declare cluster policy against {params['ledger_conn']}, cannot continue...")
     return policy_id
-
-
-
