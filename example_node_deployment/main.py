@@ -102,8 +102,8 @@ def main():
                                                   owner=params['company_name'], ledger_conn=params['ledger_conn'],
                                                   db_name=None, table=None, parent=None, destination="",
                                                   view_help=False, return_cmd=False, exception=args.exception)
-    policy_id = create_policy.generate_policy(conn=anylog_conn, params=node_params, destination=None, view_help=False,
-                                              return_cmd=False, exception=False)
+    policy_id = create_policy.generate_policy(conn=anylog_conn, params=node_params, cluster_id=cluster_id,
+                                              destination=None, view_help=False, return_cmd=False, exception=False)
 
     if params['node_type'] == 'operator':
         pass
@@ -135,8 +135,9 @@ def main():
 
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))
-    print(scheduler.get_scheduler(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
-                                  exception=args.exception))
+    if 'monitor_nodes' in params and params['monitor_nodes'] == 'true':
+        print(scheduler.get_scheduler(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
+                                      exception=args.exception))
 
 if __name__ == '__main__':
     main()

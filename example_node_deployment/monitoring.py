@@ -122,7 +122,7 @@ def monitoring_policy(conn:anylog_connector.AnyLogConnector, ledger_conn:str, de
                                         exception=exception)
             counter += 1
         elif not policy_id:
-            print(f"Failed to declare cluster policy against {ledger_conn}, cannot continue...")
+            print(f"Failed to declare monitoring policy against {ledger_conn}, cannot continue...")
             exit(1)
 
     if policy_id:

@@ -33,31 +33,28 @@ def create_cluster(conn:anylog_connector.AnyLogConnector, cluster_name:str, owne
     """
     cluster_id = None
     counter = 0
-    where_condition = f"name={cluster_name} and company={owner}"
+    where_condition = f'name="{cluster_name}" and company="{owner}"'
     cluster_policy = blockchain_policies.create_cluster_policy(name=cluster_name, owner=owner, db_name=db_name,
                                                                table=table, parent=parent)
+    if parent is None and (db_name or table) and cluster_id:
+        cluster_policy = blockchain_policies.create_cluster_policy(name=cluster_name, owner=owner, db_name=db_name,
+                                                                   table=table, parent=cluster_id)
 
-
-    while cluster_id is None:
+    while not cluster_id and counter < 2:
         cluster_id = blockchain_cmds.get_policy(conn=conn, policy_type='cluster', where_condition=where_condition,
                                                bring_case="first", bring_condition="[*][id]", destination=destination,
                                                view_help=view_help, return_cmd=return_cmd, exception=exception)
-        if parent is None and (db_name or table) and cluster_id:
-            cluster_policy = blockchain_policies.create_cluster_policy(name=cluster_name, owner=owner, db_name=db_name,
-                                                                       table=table, parent=cluster_id)
-        if counter == 0 and cluster_id is None:
-            if blockchain_cmds.prepare_policy(conn=conn, policy=cluster_policy, destination=destination,
-                                              view_help=view_help, return_cmd=return_cmd, exception=exception) is not True:
-
-                print(f'Issue with blockchain policy, cannot declare policy on blockchain...')
-            else:
-                blockchain_cmds.post_policy(conn=conn, policy=cluster_policy, ledger_conn=ledger_conn,
-                                            destination=destination, view_help=view_help,return_cmd=return_cmd,
-                                            exception=exception)
+        if not cluster_id and counter == 0:
+            blockchain_cmds.prepare_policy(conn=conn, policy=cluster_policy, destination=destination, view_help=view_help,
+                                           return_cmd=return_cmd, exception=exception)
+            blockchain_cmds.post_policy(conn=conn, policy=cluster_policy, ledger_conn=ledger_conn,
+                                        destination=destination, view_help=view_help, return_cmd=return_cmd,
+                                        exception=exception)
             counter += 1
-        if not cluster_id:
-            print(f"Failed to declare cluster policy against {ledger_conn}, cannot continue...")
-            exit(1)
+
+    if not cluster_id:
+        print(f"Failed to declare cluster policy against {ledger_conn}, cannot continue...")
+        exit(1)
 
     return cluster_id
 
@@ -72,18 +69,24 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
         3. scheduler 1
     """
     policy_id = None
+    is_policy = None
     # validate params
     support.validate_configs(params=params)
-    i = 0
+    counter = 0
     ip, local_ip = support.extract_ips(params=params)
 
     # check policy exists
-    where_conditions = f"name={params['node_name']} and ip={ip} and port={params['anylog_server_port']}"
-    is_policy = blockchain_cmds.get_policy(conn=conn, policy_type=params['node_type'], where_condition=where_conditions,
-                                           bring_case="first", destination=destination, view_help=view_help,
-                                           return_cmd=return_cmd, exception=exception)
+    node_name = params['node_name']
+    anylog_server_port = int(params['anylog_server_port'])
+    where_conditions = f'name="{node_name}" and ip={ip} and port={anylog_server_port}'
 
-    if not is_policy:
+    while not policy_id and counter < 2:
+        policy_id = blockchain_cmds.get_policy(conn=conn, policy_type=params['node_type'],
+                                               where_condition=where_conditions, bring_case="first",
+                                               bring_condition="[*][id]", destination=destination, view_help=view_help,
+                                               return_cmd=return_cmd, exception=exception)
+
+    if not policy_id and counter == 0:
         location = get_location(conn=conn, params=params, destination=destination, view_help=view_help,
                                 return_cmd=return_cmd, exception=exception)
         if 'anylog_broker' in params:
@@ -92,7 +95,7 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
                                                             anylog_server_port=params['anylog_server_port'],
                                                             anylog_rest_port=params['anylog_rest_port'],
                                                             anylog_broker_port=params['anylog_broker_port'],
-                                                            location=location, cluster_id=None, other_params=None,
+                                                            location=location, cluster_id=cluster_id, other_params=None,
                                                             scripts=None)
         else:
             policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],
@@ -100,29 +103,17 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
                                                             anylog_server_port=params['anylog_server_port'],
                                                             anylog_rest_port=params['anylog_rest_port'],
                                                             anylog_broker_port=None, location=location,
-                                                            cluster_id=None, other_params=None, scripts=None)
+                                                            cluster_id=cluster_id, other_params=None, scripts=None)
 
-        status, cmd = blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=destination, view_help=view_help,
-                                                     return_cmd=return_cmd, exception=exception)
-        if status is True:
-            status, cmd = blockchain_cmds.post_policy(conn=conn, policy=policy, ledger_conn=params['ledger_conn'],
-                                                      destination=destination, view_help=view_help, return_cmd=return_cmd,
-                                                      exception=exception)
-        if status is False:
-            print(f"Failed to declare policy for node type {params['node_type']}")
-            exit(1)
-        else:
-            # blockchain sync
-            status, cmd = blockchain_cmds.blockchain_sync(conn=conn, ledger_conn=params['ledger_conn'],
-                                                          blockchain_source=params['blockchain_source'], )
+        blockchain_cmds.prepare_policy(conn=conn, policy=policy, destination=destination, view_help=view_help,
+                                       return_cmd=return_cmd, exception=exception)
+        blockchain_cmds.post_policy(conn=conn, policy=policy, ledger_conn=params['ledger_conn'],
+                                    destination=destination, view_help=view_help, return_cmd=return_cmd,
+                                    exception=exception)
+        counter += 1
 
-        is_policy = blockchain_cmds.get_policy(conn=conn, policy_type=params['node_type'],
-                                               where_condition=where_conditions,
-                                               bring_case="first", destination=destination, view_help=view_help,
-                                               return_cmd=return_cmd, exception=exception)
-
-    if is_policy and params['node_type'] in is_policy[0] and 'id' in is_policy[0][params['node_type']]:
-        policy_id = is_policy[0][params['node_type']]['id']
+    if not policy_id:
+        print(f"Failed to declare cluster policy against {params['ledger_conn']}, cannot continue...")
     return policy_id
 
 
