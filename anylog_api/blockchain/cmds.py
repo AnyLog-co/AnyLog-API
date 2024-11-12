@@ -216,3 +216,22 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     return status, cmd
 
 
+def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str="", view_help:bool=False,
+                       return_cmd:bool=False, exception:bool=False):
+    status = None
+    cmd = None
+    headers = {
+        "command": f"config from policy where id={policy_id}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        cmd = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+
+    return status, cmd

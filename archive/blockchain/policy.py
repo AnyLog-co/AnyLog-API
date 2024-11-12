@@ -2,7 +2,7 @@ import ast
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.__support__ import json_dumps
-from anylog_api.generic.geolocation import get_geolocation
+from anylog_api.generic.geolocation import get_location
 from anylog_api.blockchain.cmds import get_policy
 from anylog_api.generic.scheduler import run_schedule_task
 import anylog_api.generic.monitoring as monitoring

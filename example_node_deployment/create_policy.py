@@ -1,7 +1,7 @@
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.blockchain.cmds as blockchain_cmds
 import anylog_api.blockchain.policies as blockchain_policies
-from anylog_api.generic.get_location import get_location
+from anylog_api.generic.geolocation import get_location
 import example_node_deployment.__support__ as support
 
 
