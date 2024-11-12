@@ -1,8 +1,6 @@
 import argparse
 import os
 
-from urllib3.http2.probe import acquire_and_get
-
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.blockchain.cmds as blockchain_cmds
 import anylog_api.generic.get as generic_get
@@ -11,12 +9,12 @@ import anylog_api.generic.scheduler as scheduler
 
 import example_node_deployment.__support__ as support
 import example_node_deployment.__support_files__ as support_file
-from example_node_deployment.monitoring import execute_monitering, monitoring_policy
+from example_node_deployment.monitoring import monitoring_policy
 from example_node_deployment.database import connect_dbms
 import example_node_deployment.create_policy as create_policy
-from example_node_deployment.monitoring import execute_monitering
+import example_node_deployment.publisher_operator_main as publisher_operator_main
 from examples.__support__ import  check_conn
-
+from examples.copy_policy import operator
 
 
 def main():
@@ -103,10 +101,11 @@ def main():
                                                   db_name=None, table=None, parent=None, destination="",
                                                   view_help=False, return_cmd=False, exception=args.exception)
     policy_id = create_policy.generate_policy(conn=anylog_conn, params=node_params, cluster_id=cluster_id,
-                                              destination=None, view_help=False, return_cmd=False, exception=False)
+                                              destination=None, view_help=False, return_cmd=False, exception=args.exception)
 
     if params['node_type'] == 'operator':
-        pass
+        publisher_operator_main.operator_main(conn=anylog_conn, params=params, operator_id=policy_id, destination=None,
+                                              view_help=False, return_cmd=False, exception=args.exception)
 
 
     local_params = {
