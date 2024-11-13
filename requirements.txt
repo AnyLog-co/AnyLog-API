@@ -1,4 +1,4 @@
-setuptools>=0.0
+# setuptools>=0.0
 Cython>=0.0
 
 # ast>=0.0
