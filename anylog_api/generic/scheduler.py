@@ -78,7 +78,7 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
     if return_cmd is True:
         status = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, headers=headers, payload=None, exception=exception)
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return status
 

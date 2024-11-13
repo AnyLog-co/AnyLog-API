@@ -1,3 +1,5 @@
+from Cython.Compiler.Nodes import PassStatNode
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.__support__ import add_conditions
 from anylog_api.__support__ import json_dumps
@@ -131,48 +133,49 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
     """
     status = None
     headers = {
-        "command": '<run msg client',
+        "command": f'run msg client where broker={broker}',
         "User-Agent": 'AnyLog/1.23'
     }
 
-    topic_info = f"(name={topic} "
-    if policy_id:
-        topic_info += f"and policy={policy_id})>"
+    if port:
+        headers["command"] += f" and port={port}"
+    if is_rest_broker is True:
+        headers["command"] += " and user-agent=anylog"
+    if username:
+        headers["command"] += f" and user={username}"
+    if password:
+        headers["command"] += f" and password={password}"
+    if log is True:
+        headers["command"] += " and log=true"
     else:
-        if db_name:
-            topic_info += f"and\n\tdbms={db_name} and"
-            if "bring" in db_name:
-                topic_info = topic_info.replace(db_name, f'"{db_name}"')
-        if table_name:
-            topic_info += f"\n\ttable={table_name}"
-            if "bring" in table_name:
-                topic_info = topic_info.replace(table_name, f'"{table_name}"')
+        headers["command"] += " and log=false"
+    headers["command"] += f" and topic={topic}"
 
+    if db_name or table_name or values:
+        headers["command"] = headers["command"].replace(f"topic={topic}", f"topic=(name={topic}")
+        if db_name:
+            headers['command'] += f" and dbms={db_name}"
+        if table_name:
+            headers['command'] += f" and table={table_name}"
         if values:
             for key, values_dict in values.items():
-                topic_info += " and\n\t"
+                headers['command'] += " and "
                 if 'value' in values_dict and 'bring' in values_dict['value']:
                     values_dict['value'] = '"' + values_dict['value'] + "'"
-
                 if 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
                     if 'value' not in values_dict:
-                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp=now()"
+                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp=now()"
                     else:
-                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp={values_dict['value']}"
+                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp={values_dict['value']}"
                 elif 'value' in values_dict:
-                    if 'type' not in values_dict or values_dict['type'].lower() not in ['string', 'int', 'float', 'bool', 'timestamp']:
-                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
+                    if 'type' not in values_dict or values_dict['type'].lower() not in ['string', 'int', 'float',
+                                                                                        'bool', 'timestamp']:
+                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
                     else:
-                        topic_info += f"column.{key.replace(' ', '_').replace('-', '_')}=(type={values_dict['type'].lower()} and value={values_dict['value']})"
+                        key = key.replace(' ', '_').replace('-', '_')
+                        headers['command'] += f'column.{key}=(type={values_dict["type"].lower()} and value="{values_dict["value"]}")'
+        headers['command'] += ")"
 
-        topic_info += "\n)>"
-
-    if broker == "rest" or is_rest_broker is True:
-        add_conditions(headers, broker=broker, port=port, username=username, password=password, user_agent="anylog",
-                       log=log, topic=topic_info)
-        headers['command'] = headers['command'].replace("user_agent", "user-agent")
-    else:
-        add_conditions(headers, broker=broker, port=port, username=username, password=password, log=log, topic=topic_info)
     if destination:
         headers['destination'] = destination
 

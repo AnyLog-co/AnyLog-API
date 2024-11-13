@@ -130,7 +130,7 @@ def main():
         execute_monitering(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
                            exception=args.exception)
     if 'enable_mqtt' in params and params['enable_mqtt'] == 'true':
-        publisher_operator_main.mqtt_client(conn=conn, params=params, destination=None, view_help=False,
+        publisher_operator_main.mqtt_client(conn=anylog_conn, params=params, destination=None, view_help=False,
                                             return_cmd=False, exception=args.exception)
 
 

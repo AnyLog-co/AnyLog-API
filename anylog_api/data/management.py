@@ -2,7 +2,7 @@ import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
-
+from anylog_api.__support__ import add_conditions
 
 def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:str='false', blobs_folder:str='true',
                    compress:str='true', reuse_blobs:str='true', destination:str="", view_help:bool=False,

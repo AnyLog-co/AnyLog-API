@@ -88,7 +88,7 @@ def operator_main(conn:anylog_connector.AnyLogConnector, params:dict, operator_i
                       destination=destination, view_help=view_help, return_cmd=return_cmd, exception=exception)
 
     clean_archive_cmd = data_mgmt.clean_archive_files(conn=conn, archive_delete=archive_delete, destination=destination,
-                                                      view_help=view_help, return_cmd=return_cmd, exception=exception)
+                                                      view_help=view_help, return_cmd=True, exception=exception)
 
 
     data_mgmt.buffer_threshold(conn=conn, th_time=threshold_time, th_volume=threshold_volume,
