@@ -46,3 +46,25 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, params:dict, destination
                                    db_user=db_user, db_password=db_passwd, db_ip=db_ip, db_port=db_port,
                                    return_cmd=return_cmd, destination=destination, view_help=view_help,
                                    exception=exception)
+
+def nosql_database(conn:anylog_connector.AnyLogConnector, db_name:str, params:dict, destination:str=None, view_help:bool=False,
+                   return_cmd:bool=False, exception:bool=False):
+    db_type = params['db_type']
+    db_user = None
+    db_passwd = None
+    db_ip = '127.0.0.1'
+    db_port = 27017
+    if 'nosql_type' in params:
+        db_type = params['nosql_type']
+    if 'nosql_user' in params:
+        db_user = params['nosql_user']
+    if 'nosql_passwd' in params:
+        db_passwd = params['nosql_passwd']
+    if 'nosql_ip' in params:
+        db_ip = params['nosql_ip']
+    if 'nosql_port' in params:
+        db_port = params['nosql_port']
+
+    database_cmds.connect_dbms(conn=conn, db_name=params['default_dbms'], db_type=db_type, db_user=db_user,
+                               db_password=db_passwd, db_ip=db_ip, db_port=db_port, return_cmd=return_cmd,
+                               destination=destination, view_help=view_help, exception=exception)

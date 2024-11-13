@@ -3,18 +3,18 @@ import os
 
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.blockchain.cmds as blockchain_cmds
+import anylog_api.data.publish_data as publish_data
 import anylog_api.generic.get as generic_get
 import anylog_api.generic.post as generic_post
 import anylog_api.generic.scheduler as scheduler
 
 import example_node_deployment.__support__ as support
 import example_node_deployment.__support_files__ as support_file
-from example_node_deployment.monitoring import monitoring_policy
+from example_node_deployment.monitoring import execute_monitering
 from example_node_deployment.database import connect_dbms
 import example_node_deployment.create_policy as create_policy
 import example_node_deployment.publisher_operator_main as publisher_operator_main
 from examples.__support__ import  check_conn
-from examples.copy_policy import operator
 
 
 def main():
@@ -127,16 +127,21 @@ def main():
                                     view_help=False, return_cmd=False, exception=args.exception)
 
     if 'monitor_nodes' in params and params['monitor_nodes'] == 'true':
-        # execute_monitering(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
-        #                    exception=args.exception)
-        monitoring_policy(conn=anylog_conn, ledger_conn=params['ledger_conn'], destination=None, view_help=False,
-                          return_cmd=False, exception=args.exception)
+        execute_monitering(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
+                           exception=args.exception)
+    if 'enable_mqtt' in params and params['enable_mqtt'] == 'true':
+        publisher_operator_main.mqtt_client(conn=conn, params=params, destination=None, view_help=False,
+                                            return_cmd=False, exception=args.exception)
+
 
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))
     if 'monitor_nodes' in params and params['monitor_nodes'] == 'true':
         print(scheduler.get_scheduler(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
                                       exception=args.exception))
+    if 'enable_mqtt' in params and params['enable_mqtt'] == 'true':
+        print(publish_data.get_msg_client(conn=anylog_conn, client_id=None, destination=None, view_help=False,
+                                          return_cmd=False, exception=args.exception))
 
 if __name__ == '__main__':
     main()

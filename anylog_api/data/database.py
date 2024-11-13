@@ -137,10 +137,9 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
         headers['command'] += f" and password={db_password}"
     if db_type == 'sqlite' and memory == 'true':
         headers['command'] += " and memory=true"
+
     if destination:
         headers['destination'] = destination
-
-
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
@@ -195,3 +194,49 @@ def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:
         execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return output
+
+
+
+def set_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*',
+                       partition_column:str='insert_timestamp', partition_interval:str='14 days', destination:str="",
+                       view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+    output = None
+    headers = {
+        "command": f"partition {db_name} {table_name} using {partition_column} by {partition_interval}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def drop_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*', partition_keep:int=3,
+                        destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+    output = None
+    headers = {
+        "command": f"drop partition where dbms={db_name} and table={table_name} and keep={partition_keep}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+
+
