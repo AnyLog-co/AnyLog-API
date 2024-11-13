@@ -122,6 +122,10 @@ def operator_main(conn:anylog_connector.AnyLogConnector, params:dict, operator_i
                            threads=operator_threads, destination=destination, view_help=view_help,
                            return_cmd=return_cmd, exception=exception)
 
+    if 'enable_mqtt' in params and params['enable_mqtt'] == 'true':
+        mqtt_client(conn=conn, params=params, destination=destination, view_help=view_help, return_cmd=return_cmd,
+                    exception=exception)
+
 
 def mqtt_client(conn:anylog_connector.AnyLogConnector, params:dict, is_rest_broker:bool=False,  destination:str=None,
                 view_help:bool=False, return_cmd:bool=False, exception:bool=False):
@@ -152,8 +156,9 @@ def mqtt_client(conn:anylog_connector.AnyLogConnector, params:dict, is_rest_brok
 
     values = {
         "timestamp": {"type": "timestamp", "value": msg_timestamp_column},
-        "value": {"tyype": msg_value_column_type, "value": msg_value_column}
+        "value": {"type": msg_value_column_type, "value": msg_value_column.replace("'",'"')}
     }
+
 
     run_msg_client(conn=conn, broker=mqtt_broker, port=mqtt_port, username=mqtt_user, password=mqtt_passwd,
                    topic=msg_topic, db_name=msg_dbms, table_name=msg_table, is_rest_broker=is_rest_broker,

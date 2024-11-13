@@ -129,10 +129,6 @@ def main():
     if 'monitor_nodes' in params and params['monitor_nodes'] == 'true':
         execute_monitering(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
                            exception=args.exception)
-    if 'enable_mqtt' in params and params['enable_mqtt'] == 'true':
-        publisher_operator_main.mqtt_client(conn=anylog_conn, params=params, destination=None, view_help=False,
-                                            return_cmd=False, exception=args.exception)
-
 
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))

@@ -173,7 +173,8 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
                         headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
                     else:
                         key = key.replace(' ', '_').replace('-', '_')
-                        headers['command'] += f'column.{key}=(type={values_dict["type"].lower()} and value="{values_dict["value"]}")'
+                        value = values_dict["value"].replace('"', '').replace("'","")
+                        headers['command'] += f'column.{key}=(type={values_dict["type"].lower()} and value="{value}")'
         headers['command'] += ")"
 
     if destination:
