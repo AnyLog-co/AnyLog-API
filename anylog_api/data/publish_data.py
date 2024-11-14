@@ -145,11 +145,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         headers["command"] += f" and user={username}"
     if password:
         headers["command"] += f" and password={password}"
-    if log is True:
-        headers["command"] += " and log=true"
-    else:
-        headers["command"] += " and log=false"
-    headers["command"] += f" and topic={topic}"
+    headers["command"] += f" and log={str(log).lower()} and topic={topic}"
 
     if db_name or table_name or values:
         headers["command"] = headers["command"].replace(f"topic={topic}", f"topic=(name={topic}")
