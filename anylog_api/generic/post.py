@@ -106,9 +106,9 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
 
     # Define a function to handle the command execution for each key-value pair
     def execute_command(key, value):
-        if isinstance(value, bool):
-            command = f'set {key.strip()} = {str(value).lower()}'
-        elif value:
+        if value in ['false', 'False', 'True', 'true', 'file']:
+            command = f'set {key.strip()} = {value.strip()}'
+        elif value != "":
             command = f'{key.strip()} = {value.strip()}'
         else:
             return  # Skip empty values
@@ -334,31 +334,4 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
     return status
 
 
-def network_connection(conn:anylog_connector.AnyLogConnector, service_type:str, external_ip:str, internal_ip:str,
-                       port:int, bind:bool=False, threads:int=3, timeout:int=30, destination:str=None,
-                       return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
-    output = None
-    headers = {
-        "command": f"run %s where external_ip={external_ip} and external_port={port} and internal_ip={internal_ip} and internal_port={port} and bind={str(bind).lower()} and threads={threads}",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if service_type == 'tcp':
-        headers['command'] = headers['command'] % 'tcp server'
-    elif service_type == 'rest':
-        headers['command'] = headers['command'] % 'rest server'
-        headers['command'] += f" and timeout={timeout}"
-    elif service_type == 'broker':
-        headers['command'] = headers['command'] % 'message broker'
-    else:
-        raise f"Invalid network service type {service_type} (Supported types: tcp, rest and broker)"
 
-    if destination is not None:
-        headers['destination'] = destination
-    if view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
-    if return_cmd is True:
-        output = headers['command']
-    elif view_help is False:
-        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
-    return output

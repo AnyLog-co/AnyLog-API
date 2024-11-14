@@ -4,11 +4,14 @@ from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.__support__ import add_conditions
 
-def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:bool=False, blobs_folder:bool=True,
-                   compress:bool=True, reuse_blobs:bool=True, destination:str=None, view_help:bool=False,
+def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:str='false', blobs_folder:str='true',
+                   compress:str='true', reuse_blobs:str='true', destination:str="", view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
+    """
+
+    """
     headers = {
-        "command": f"run blobs archiver where dbms={str(blobs_dbms).lower()} and folder={str(blobs_folder).lower()} and compress={str(compress).lower()} and reuse_blobs={str(reuse_blobs).lower()}",
+        "command": f"run blobs archiver where dbms={blobs_dbms} and folder={blobs_folder} and compress={compress} and reuse_blobs={reuse_blobs}",
         "User-Agent": "AnyLog/1.32"
     }
     if destination:
@@ -23,7 +26,7 @@ def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:bool=False,
     return output
 
 
-def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False,
+def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str="", view_help:bool=False, return_cmd:bool=False,
                  exception:bool=False):
     headers = {
         "command": "run streamer",
@@ -42,7 +45,7 @@ def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
 
 
 def buffer_threshold(conn:anylog_connector.AnyLogConnector, db_name:str=None, table_name:str=None,
-                     th_time:str='60 seconds', th_volume:str='10KB', write_immediate:str='false', destination:str=None,
+                     th_time:str='60 seconds', th_volume:str='10KB', write_immediate:str='false', destination:str="",
                      view_help:bool=False, return_cmd:bool=False, exception:bool=False):
 
     headers = {
@@ -67,7 +70,7 @@ def buffer_threshold(conn:anylog_connector.AnyLogConnector, db_name:str=None, ta
     return output
 
 
-def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:int=30, destination:str=None,
+def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:int=30, destination:str="",
                         view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     headers={
         "command": f"delete archive where days = {archive_delete}",
@@ -86,7 +89,7 @@ def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:in
     return output
 
 
-def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str="", view_help:bool=False,
                      return_cmd:bool=False, exception:bool=False):
     headers = {
         "command": "run data distributor",
@@ -104,7 +107,7 @@ def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str=None
     return output
 
 
-def data_consumer(conn:anylog_connector.AnyLogConnector, start_data:str, destination:str=None, view_help:bool=False,
+def data_consumer(conn:anylog_connector.AnyLogConnector, start_data:str, destination:str="", view_help:bool=False,
                      return_cmd:bool=False, exception:bool=False):
     headers = {
         "command": f"run data consumer where start_date={start_data}",

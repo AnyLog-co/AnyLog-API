@@ -1,4 +1,3 @@
-import ast
 import json
 import os.path
 import re
@@ -7,24 +6,6 @@ import dotenv
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_dictionary
-
-
-def format_configs(value):
-    try:
-        updated_value = ast.literal_eval(value)
-    except:
-        try:
-            updated_value = int(value)
-        except:
-            if value == 'true':
-                updated_value = True
-            elif value == 'false':
-                updated_value = False
-            elif not value:
-                updated_value = None
-            else:
-                updated_value = value
-    return updated_value
 
 def json_loads(content, exception:bool=False):
     """
@@ -168,7 +149,7 @@ def get_generic_params(conn:anylog_connector.AnyLogConnector, exception:bool=Fal
     if env_values is not None:
         for env_value in env_values:
             if env_value.lower() not in default_configs:
-                default_configs[env_value.lower()] = format_configs(env_values[env_value])
+                default_configs[env_value.lower()] = env_values[env_value]
 
     return default_configs
 

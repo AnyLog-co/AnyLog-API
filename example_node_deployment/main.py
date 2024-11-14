@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 
 import anylog_api.anylog_connector as anylog_connector
@@ -8,9 +7,7 @@ import anylog_api.data.publish_data as publish_data
 import anylog_api.generic.get as generic_get
 import anylog_api.generic.post as generic_post
 import anylog_api.generic.scheduler as scheduler
-from anylog_api.__support__ import format_configs
 
-from example_node_deployment.networking import network_connect
 import example_node_deployment.__support__ as support
 import example_node_deployment.__support_files__ as support_file
 from example_node_deployment.monitoring import execute_monitering
@@ -20,36 +17,22 @@ import example_node_deployment.publisher_operator_main as publisher_operator_mai
 from examples.__support__ import  check_conn
 
 
-
 def main():
     parse = argparse.ArgumentParser()
     parse.add_argument("conn", type=check_conn, default='127.0.0.1:32549', help='REST connection information')
     parse.add_argument('--configs', type=support_file.check_configs, default=None, help='dotenv configuration file(s)')
-    # parse.add_argument('--destination', type=str, default=None, help='Remote destination to send requests to')
     parse.add_argument('--timeout', type=float, default=30, help='REST timeout')
     parse.add_argument('--edgelake',  type=bool, const=True, nargs='?', default=False, help='Connect to EdgeLake instance')
     parse.add_argument('--exception', type=bool, const=True, nargs='?', default=False, help='Print exception')
     parse.add_argument('--license-key', type=str, default=None, help='License key fo AnyLog if not part of configs')
     args = parse.parse_args()
     args.configs = os.path.expanduser(os.path.expandvars(args.configs[0]))
-    declare_msg_broker = False
+
     conn, auth = next(iter(args.conn.items()))
     anylog_conn = anylog_connector.AnyLogConnector(conn, auth=auth, timeout=args.timeout)
 
     # set params from config file
-    dictionary_params = generic_get.get_dictionary(conn=anylog_conn, json_format=True, destination=None,
-                                                   view_help=False, return_cmd=False, exception=args.exception)
     params = support_file.read_configs(config_file=args.configs, exception=args.exception)
-    for key in dictionary_params:
-        if key not in params or (params[key] != dictionary_params[key] and key in ["anylog_server_port",
-                                                                                   "anylog_rest_port", "tcp_bind",
-                                                                                   "rest_bind"]):
-            params[key] =  format_configs(value=dictionary_params[key])
-
-        if ('anylog_broker_port' in params and 'anylog_broker_port' in dictionary_params and
-                params['anylog_broker_port'] and not dictionary_params['anylog_broker_port']):
-            network_connect(conn=anylog_conn, params=params, tcp_conn=False, rest_conn=False, broker_conn=True,
-                            destination=None, view_help=False, return_cmd=False, exception=args.exception)
 
     # set license if using AnyLog
     status = True
@@ -143,13 +126,13 @@ def main():
                                     blockchain_destination=local_params['blockchain_destination'], destination=None,
                                     view_help=False, return_cmd=False, exception=args.exception)
 
-    if 'monitor_nodes' in params and params['monitor_nodes'] is True:
+    if 'monitor_nodes' in params and params['monitor_nodes'] == 'true':
         execute_monitering(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
                            exception=args.exception)
 
     # view processes
     print(generic_get.get_processes(conn=anylog_conn, json_format=False, exception=args.exception))
-    if 'monitor_nodes' in params and params['monitor_nodes'] is True:
+    if 'monitor_nodes' in params and params['monitor_nodes'] == 'true':
         print(scheduler.get_scheduler(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
                                       exception=args.exception))
     if 'enable_mqtt' in params and params['enable_mqtt'] == 'true':

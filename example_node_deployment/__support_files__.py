@@ -1,7 +1,6 @@
 import argparse
 import dotenv
 import os.path
-from anylog_api.__support__ import format_configs
 
 def check_configs(config_files:str):
     """
@@ -52,8 +51,7 @@ def read_configs(config_file:str, exception:bool=False)->dict:
         except Exception as error:
             if exception is True:
                 print(f"Failed to read config file {config_file} (Error: {error})")
-    if len(configs) > 0: # conv ert to lower case keys
-        configs = {key.lower(): format_configs(value=value) for key, value in configs.items()}
-
+    if len(configs) > 0: # convert to lower case keys
+        return {key.lower(): value for key, value in configs.items()}
     return configs
 

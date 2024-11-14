@@ -46,6 +46,39 @@ def validate_configs(params:dict):
         exit (1)
 
 
+def extract_ips(params:dict):
+    """
+    Extract IP values based on configurations
+    :args:
+        params:dict - configurations
+    :params:
+        local_ip:str - local ip address
+        ip:str - ip
+    :return:
+        ip, local_ip
+    """
+    # set ips
+    local_ip = None
+    if 'tcp_bind' in params and params['tcp_bind'] is True:
+        if 'overlay_ip' in params:
+            ip = params['overlay_ip']
+        elif 'ip' in params:
+            ip = params['ip']
+        elif 'external_ip' in params:
+            ip = params['external_ip']
+    else:
+        if all(param in params for param in ['external_ip', 'overlay_ip']):
+            ip = params['external_ip']
+            local_ip = params['overlay_ip']
+        elif all(param in params for param in ['external_ip', 'ip']):
+            ip = params['external_ip']
+            local_ip = params['ip']
+        elif all(param in params for param in ['ip', 'overlay_ip']):
+            ip = params['ip']
+            local_ip = params['overlay_ip']
+
+    return ip, local_ip
+
 
 def validate_connection(conn:anylog_connector.AnyLogConnector, exception:bool=False):
     """

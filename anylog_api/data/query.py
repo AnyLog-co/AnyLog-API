@@ -206,7 +206,7 @@ def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str
 #                output_table_name:str=None, file_path:str=None, sql_cmd:str=None, increment_function:bool=False,
 #                period_function:bool=False, table_name:str=None, time_interval:str=None, units:int=None,
 #                time_column:str=None, value_columns=None, start_ts='NOW()', calc_min:bool=True, calc_avg:bool=True,
-#                calc_max:bool=True, row_count:bool=True, where_condition:str=None, group_by:str=None, order_by:str=None,
+#                calc_max:bool=True, row_count:bool=True, where_condition:str="", group_by:str="", order_by:str="",
 #                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
 #     """
 #     Generate and execute query

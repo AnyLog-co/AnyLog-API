@@ -73,11 +73,7 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
     # validate params
     support.validate_configs(params=params)
     counter = 0
-
-    ip = params['external_ip']
-    local_ip = params['ip']
-    if 'overlay_ip' in params and params['overlay_ip']:
-        local_ip = params['overlay_ip']
+    ip, local_ip = support.extract_ips(params=params)
 
     # check policy exists
     node_name = params['node_name']
