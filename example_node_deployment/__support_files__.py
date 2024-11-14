@@ -1,6 +1,27 @@
 import argparse
+import ast
+
 import dotenv
 import os.path
+
+def __format_configs(value):
+    try:
+        updated_value = ast.literal_eval(value)
+    except:
+        try:
+            updated_value = int(value)
+        except:
+            if value == 'true':
+                updated_value = True
+            elif value == 'false':
+                updated_value = False
+            elif not value:
+                updated_value = None
+            else:
+                updated_value = value
+    return updated_value
+
+
 
 def check_configs(config_files:str):
     """
@@ -52,6 +73,7 @@ def read_configs(config_file:str, exception:bool=False)->dict:
             if exception is True:
                 print(f"Failed to read config file {config_file} (Error: {error})")
     if len(configs) > 0: # convert to lower case keys
-        return {key.lower(): value for key, value in configs.items()}
+        configs = {key.lower(): __format_configs(value=value) for key, value in configs.items()}
+
     return configs
 
