@@ -1,4 +1,9 @@
-from Cython.Compiler.Nodes import PassStatNode
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
+
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.__support__ import add_conditions

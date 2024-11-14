@@ -1,3 +1,9 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
+
 # URL https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
 
 import anylog_api.anylog_connector as anylog_connector
