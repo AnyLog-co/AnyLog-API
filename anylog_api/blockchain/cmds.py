@@ -6,7 +6,7 @@ from anylog_api.__support__ import json_dumps
 
 
 def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where_condition:str=None,
-               bring_case:str=None, bring_condition:str=None, seperator:str=None, destination:str="",
+               bring_case:str=None, bring_condition:str=None, seperator:str=None, destination:str=None,
                view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Generate & execute `blockchain get` command
@@ -60,7 +60,7 @@ def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where
 
 
 def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, blockchain_source:str='master',
-                    sync_time:str='30 seconds', blockchain_destination:str='file', destination:str="",
+                    sync_time:str='30 seconds', blockchain_destination:str='file', destination:str=None,
                     view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Scheduled process for blockchain sync
@@ -93,7 +93,7 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
 
     return status, cmd
 
-def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destination:str="", view_help:bool=False,
+def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destination:str=None, view_help:bool=False,
                  return_cmd:bool=False, exception:bool=False):
     """
     Pull the metadata from a source node
@@ -130,7 +130,7 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
     return status, cmd
 
 
-def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destination:str="", view_help:bool=False,
+def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destination:str=None, view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
     """
     Prepare JSON policy - this also validates that the JSON policy is "OK"
@@ -171,7 +171,7 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
     return status, cmd
 
 def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:str=None, blockchain_platform:str=None,
-                destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     publish JSON policy
     :args:
@@ -216,7 +216,7 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     return status, cmd
 
 
-def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str="", view_help:bool=False,
+def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str=None, view_help:bool=False,
                        return_cmd:bool=False, exception:bool=False):
     status = None
     cmd = None

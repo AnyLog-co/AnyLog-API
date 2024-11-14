@@ -48,6 +48,7 @@ def get_disk_space(conn:anylog_connector.AnyLogConnector, param:str, path:str='.
 
 def get_node_info(conn:anylog_connector.AnyLogConnector, param:list=[], json_format:bool=True, destination:str=None,
                   view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+    output = None
     options = {
         "cpu_percent": None,
         "cpu_times": ['user', 'nice', 'system', 'idle', 'iowait', 'irq', 'softirq', 'steal', 'guest', 'guest_nice'],

@@ -79,6 +79,11 @@ def create_node_policy(node_type:str, node_name:str, owner:str, ip:str, anylog_s
     :return:
         node_policy
     """
+    if not isinstance(anylog_server_port):
+        raise f"AnyLog server port ({anylog_server_port}) must be type int"
+    if not isinstance(anylog_rest_port):
+        raise f"AnyLog REST port ({anylog_rest_port}) must be type int"
+
     node_policy = {
         node_type: {
             "name": node_name,
@@ -92,9 +97,12 @@ def create_node_policy(node_type:str, node_name:str, owner:str, ip:str, anylog_s
     if local_ip:
         node_policy[node_type]['local_ip'] = local_ip
     if anylog_broker_port:
-        node_policy[node_type]['broker_port'] = int(anylog_broker_port)
+        try:
+            node_policy[node_type]['broker_port'] = int(anylog_broker_port)
+        except:
+            raise f"AnyLog msesage broker port ({anylog_broker_port}) must be type int"
     if node_type == 'operator':
-        node_policy[node_type]['main'] = is_main
+        node_policy[node_type]['main'] = str(is_main).lower()
         if cluster_id:
             node_policy[node_type]['cluster'] = cluster_id
         elif not cluster_id:
