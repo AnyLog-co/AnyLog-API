@@ -59,7 +59,7 @@ def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -93,7 +93,7 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -128,7 +128,7 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -168,7 +168,7 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
 
     return output
@@ -212,7 +212,7 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
 
     return output
@@ -232,7 +232,7 @@ def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, des
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output

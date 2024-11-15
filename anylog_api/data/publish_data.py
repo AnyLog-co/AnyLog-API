@@ -189,7 +189,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
@@ -229,7 +229,7 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -269,7 +269,7 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

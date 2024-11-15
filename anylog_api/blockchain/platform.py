@@ -27,7 +27,7 @@ def connect_platform(conn:anylog_connector.AnyLogConnector, platform:str, provid
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -47,7 +47,7 @@ def create_account(conn:anylog_connector.AnyLogConnector, platform:str, destinat
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -67,7 +67,7 @@ def set_account(conn:anylog_connector.AnyLogConnector, platform:str, private_key
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -87,7 +87,7 @@ def deploy_contract(conn:anylog_connector.AnyLogConnector, platform:str, public_
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -107,7 +107,7 @@ def set_account_info(conn:anylog_connector.AnyLogConnector, platform:str, contra
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -127,7 +127,7 @@ def blockchain_checkout(conn:anylog_connector.AnyLogConnector, platform:str, des
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -145,7 +145,7 @@ def view_platform(conn:anylog_connector.AnyLogConnector, destination:str="", vie
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output

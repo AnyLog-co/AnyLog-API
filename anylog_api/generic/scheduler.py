@@ -42,7 +42,7 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
     return status
 
@@ -82,7 +82,7 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return status
@@ -120,7 +120,7 @@ def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, d
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output

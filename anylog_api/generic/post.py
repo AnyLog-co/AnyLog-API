@@ -50,7 +50,7 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -140,7 +140,7 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -177,7 +177,7 @@ def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     elif returnn_cmd is True:
         return headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -212,7 +212,7 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  re
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -264,7 +264,7 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -302,7 +302,7 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

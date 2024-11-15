@@ -26,7 +26,7 @@ def get_node_stats(conn:anylog_connector.AnyLogConnector, json_format:bool=True,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -47,7 +47,7 @@ def get_disk_space(conn:anylog_connector.AnyLogConnector, param:str, path:str='.
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -87,7 +87,7 @@ def get_node_info(conn:anylog_connector.AnyLogConnector, param:list=[], json_for
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    elif return_cmd is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
