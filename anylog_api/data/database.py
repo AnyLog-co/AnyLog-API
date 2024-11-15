@@ -98,12 +98,12 @@ def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:s
 
 
 def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', db_ip:str=None,
-                 db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, destination:str="",
-                 view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                 db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, autocommit:bool=False,
+                 destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Connect to database
     :command:
-        connect dbms {db_name} where type={db_type} and ..
+        connect dbms {db_name} where type={db_type} and ...
     :args:
         conn:anylog_connector.AnyLogConnector - Connection to AnyLog
         db_name:str - logical database name
@@ -141,9 +141,12 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
         headers['command'] += f" and user={db_user}"
     if db_password:
         headers['command'] += f" and password={db_password}"
-    if db_type == 'sqlite' and memory == 'true':
+    if db_type == 'sqlite' and memory is True:
         headers['command'] += " and memory=true"
-
+    elif db_type == 'psql' and memory is True:
+        headers['command'] += " and unlog=true"
+    if db_type == 'psql':
+        headers['command'] += f" and autocommit={str(autocommit).lower()}"
     if destination:
         headers['destination'] = destination
     if view_help is True:

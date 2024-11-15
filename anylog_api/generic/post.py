@@ -56,38 +56,6 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
     return status
 
 
-# def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
-#                exception:bool=False):
-#     """
-#     add dictionary param
-#     :args:
-#         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-#         params:dict - dictionary of key / value pairs to set node with
-#         destination:str - Remote node to query against
-#         view_help:bool - get information about command
-#         return_cmd:bool - return command rather than executing it
-#         exception:bool - whether to print exception
-#     :params:
-#         headers:dict - REST head information
-#     """
-#     headers = {
-#         "command": None,
-#         "User-Agent": "AnyLog/1.23"
-#     }
-#     if destination is not None:
-#         headers['destination'] = destination
-#
-#     for key in params:
-#         if params[key] in ['false', 'False', 'True', 'true', 'file']:
-#             headers['command'] = f'set {key.strip()} = {params[key].strip()}'
-#         elif params[key] != "":
-#             headers['command'] = f'{key.strip()} = {params[key].strip()}'
-#         if view_help is True:
-#             get_help(conn=conn, cmd=headers['command'], exception=exception)
-#             break
-#         else:
-#             execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
 
 def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
                exception:bool=False):
@@ -178,7 +146,7 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
     return status
 
 
-def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  returnn_cmd:bool=False,
+def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  returnn_cmd:bool=False,
              view_help:bool=False, exception:bool=False):
     """
     Set root path

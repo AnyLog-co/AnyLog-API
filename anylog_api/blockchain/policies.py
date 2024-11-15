@@ -4,17 +4,14 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 
-import anylog_api.anylog_connector as anylog_connector
-import anylog_api.blockchain.cmds as blockchain_cmds
-
-
 def create_cluster_policy(name:str, owner:str, db_name:str=None, table:str=None, parent:str=None):
     """
     Declare cluster policy
     :args:
         name:str - cluster name
         owner:str - company name / cluster owner
-    :optional-args:  if specified, then the cluster will only work against given database and/or tabale OR associated with a parent cluster
+    :optional-args:
+    if specified, then the cluster will only work against given database and/or table OR associated with a parent cluster
         db_name:str - specific database name
         table:str - specific table name
         parent:str - cluster parent ID

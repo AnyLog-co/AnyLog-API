@@ -57,27 +57,6 @@ def json_dumps(content, indent:int=0, exception:bool=False):
     return output
 
 
-def add_conditions(headers:dict, **conditions):
-    """
-    Adds conditions to the 'command' key in the header dictionary
-    :args:
-        headers (dict): The headers dictionary containing the 'command' key.
-        **conditions: Arbitrary keyword arguments representing conditions to be added.
-    :returns:
-        None: The function modifies the headers dictionary in place.
-    """
-    condition_list = []
-    for key, value in conditions.items():
-        if isinstance(value, bool) and value is True:
-            condition_list.append(f"{key}=true")
-        elif isinstance(value, bool) and value is False:
-            condition_list.append(f"{key}=false")
-        elif value is not None:
-            condition_list.append(f"{key}={value}")
-            
-    if condition_list:
-        headers['command'] += " where " + " and ".join(condition_list)
-
 
 def check_interval(time_interval:str, exception:bool=False)->bool:
     """

@@ -80,8 +80,7 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
         return_cmd:bool - return command to be executed
         exception:bool - print exception
     """
-    status = None
-    cmd = None
+    output = None
     headers = {
         "command": f"run blockchain sync where source={blockchain_source} and time={sync_time} and dest={blockchain_destination} and connection={ledger_conn}",
         "User-Agent": "AnyLog/1.23"
@@ -93,11 +92,11 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        cmd = headers['command']
+        output = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
-    return status, cmd
+    return output
 
 def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destination:str="", view_help:bool=False,
                  return_cmd:bool=False, exception:bool=False):
@@ -116,8 +115,6 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
     :return:
         output
     """
-    status = None
-    cmd = None
     headers = {
         "command": f"blockchain seed from {ledger_conn}",
         "User-Agent": "AnyLog/1.23"
@@ -129,11 +126,11 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        cmd = headers['command']
+        output = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
-    return status, cmd
+    return output
 
 
 def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destination:str="", view_help:bool=False,
@@ -153,8 +150,6 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
     :return:
         output
     """
-    status = None
-    cmd = None
     headers = {
         "command": "blockchain prepare policy !new_policy",
         "User-Agent": "AnyLog/1.23"
@@ -170,11 +165,11 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        cmd = headers['command']
+        output = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
 
-    return status, cmd
+    return output
 
 def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:str=None, blockchain_platform:str=None,
                 destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
@@ -183,7 +178,7 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         policy:dict - policy to publish on blockchain
-        ledger_conn:str / blockchain_platfrom - which network the policy is stored on
+        ledger_conn:str / blockchain_platform - which network the policy is stored on
         destination:str - remote connection information
         view_help:bool - print help information
         return_cmd:bool - return command to be executed
@@ -194,8 +189,6 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     :return:
         output
     """
-    status = None
-    cmd = None
     headers = {
         "command": f"blockchain insert where policy=!new_policy and local=true ",
         "User-Agent": "AnyLog/1.23"
@@ -215,17 +208,15 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        cmd = headers['command']
+        output = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
 
-    return status, cmd
+    return output
 
 
 def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str="", view_help:bool=False,
                        return_cmd:bool=False, exception:bool=False):
-    status = None
-    cmd = None
     headers = {
         "command": f"config from policy where id={policy_id}",
         "User-Agent": "AnyLog/1.23"
@@ -236,8 +227,9 @@ def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, des
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        cmd = headers['command']
+        output = headers['command']
     elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
-    return status, cmd
+    return output
+
