@@ -6,7 +6,6 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/
 
 
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.__support__ import add_conditions
 from anylog_api.__support__ import json_dumps
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
@@ -221,11 +220,11 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         "User-Agent": "AnyLog/1.23"
     }
 
-    add_conditions(headers, id=client_id)
+    if client_id:
+        headers['command'] += f" where id={client_id}"
 
     if destination is not None:
         headers['destination'] = destination
-
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
@@ -274,5 +273,3 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
-
-

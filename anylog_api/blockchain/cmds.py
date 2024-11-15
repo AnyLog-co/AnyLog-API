@@ -115,6 +115,7 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
     :return:
         output
     """
+    output = None
     headers = {
         "command": f"blockchain seed from {ledger_conn}",
         "User-Agent": "AnyLog/1.23"
@@ -150,6 +151,7 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
     :return:
         output
     """
+    output = None
     headers = {
         "command": "blockchain prepare policy !new_policy",
         "User-Agent": "AnyLog/1.23"
@@ -189,6 +191,7 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     :return:
         output
     """
+    output = None
     headers = {
         "command": f"blockchain insert where policy=!new_policy and local=true ",
         "User-Agent": "AnyLog/1.23"
@@ -217,6 +220,7 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
 
 def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str="", view_help:bool=False,
                        return_cmd:bool=False, exception:bool=False):
+    output = None
     headers = {
         "command": f"config from policy where id={policy_id}",
         "User-Agent": "AnyLog/1.23"
@@ -232,4 +236,8 @@ def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, des
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
+
+
+
+
 
