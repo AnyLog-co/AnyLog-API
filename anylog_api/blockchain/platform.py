@@ -1,3 +1,8 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd, extract_get_results
@@ -6,6 +11,28 @@ from anylog_api.anylog_connector_support import execute_publish_cmd, extract_get
 def connect_platform(conn:anylog_connector.AnyLogConnector, platform:str, provider:str, contract:str=None,
                      private_key:str=None, public_key:str=None, gas_read:float=None, gas_write:float=0,
                      destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+    """
+    Connect to the blockchain platform using the connection params
+    :URL:
+        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        platform:str - blockchain platform (ex. optimism, Etherium)
+        provider:str - blockchain platform provider (ex. sepolia)
+        private_key:str - platform private key
+        public_key:str - platform public key
+        gas_read:float - funds for read
+        gas_write:float - funds for write
+        destination:str - remote connection information
+        view_help:bool - print help information
+        return_cmd:bool - return command to be executed
+        exception:bool - print exception
+    :params:
+        output:str - POST request
+        heeaers:dict - REST header information
+    :return:
+        output
+    """
     output = None
     headers = {
         "command": f"blockchain connect to {platform} where provider={provider}",
@@ -35,6 +62,23 @@ def connect_platform(conn:anylog_connector.AnyLogConnector, platform:str, provid
 
 def create_account(conn:anylog_connector.AnyLogConnector, platform:str, destination:str="", view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
+    """
+    create a blockchain accoun
+    :URL:
+        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        platform:str - blockchain platform (ex. optimism, Etherium)
+        destination:str - remote connection information
+        view_help:bool - print help information
+        return_cmd:bool - return command to be executed
+        exception:bool - print exception
+    :params:
+        output:str - POST request
+        heeaers:dict - REST header information
+    :return:
+        output
+    """
     output = None
     headers = {
         "command": f"blockchain create account {platform}",
@@ -55,6 +99,28 @@ def create_account(conn:anylog_connector.AnyLogConnector, platform:str, destinat
 
 def set_account(conn:anylog_connector.AnyLogConnector, platform:str, private_key:str, public_key:str,
                 chain_id:str, destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+    """
+    Create a blockchain account
+    :URL:
+        https://github.com/AnyLog-co/documentation/blob/master/blockchain%20commands.md
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog
+        platform:str - blockchain platform (ex. optimism, Etherium)
+        provider:str - blockchain platform provider (ex. sepolia)
+        private_key:str - platform private key
+        public_key:str - platform public key
+        gas_read:float - funds for read
+        gas_write:float - funds for write
+        destination:str - remote connection information
+        view_help:bool - print help information
+        return_cmd:bool - return command to be executed
+        exception:bool - print exception
+    :params:
+        output:str - POST request
+        heeaers:dict - REST header information
+    :return:
+        account ID
+    """
     output = None
     headers = {
         "command": f"blockchain set account info where platform={platform} and private_key={private_key} and public_key={public_key} and chain_id={chain_id}",
