@@ -9,11 +9,12 @@ import os.path
 import re
 
 import dotenv
+from Cython.Compiler.Errors import warning
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_dictionary
 
-def json_loads(content, exception:bool=False):
+def json_loads(content, exception:bool=False)->dict:
     """
     Convert serialized JSON into dictionary form
     :args:
@@ -29,11 +30,12 @@ def json_loads(content, exception:bool=False):
         return json.loads(content)
     except Exception as error:
         if exception is True:
-            print(f"Failed to convert content into dictionary format (Error: {error})")
+            raise json.JSONDecodeError(f"Failed to convert content into dictionary format (Error: {error})")
+
     return output
 
 
-def json_dumps(content, indent:int=0, exception:bool=False):
+def json_dumps(content, indent:int=0, exception:bool=False)->str:
     """
     Convert dictionary into serialized JSON
     :args:
@@ -53,7 +55,7 @@ def json_dumps(content, indent:int=0, exception:bool=False):
             output = json.dumps(content)
     except Exception as error:
         if exception is True:
-            print(f"Failed to convert content into serialized JSON format (Error: {error})")
+            raise json.JSONDecodeError(f"Failed to convert content into serialized JSON format (Error: {error})")
     return output
 
 
@@ -76,7 +78,7 @@ def check_interval(time_interval:str, exception:bool=False)->bool:
 
     if not bool(re.match(time_interval_pattern, time_interval.strip())):
         if exception is True:
-            print(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
+            raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
         status = False
 
     return status
@@ -101,7 +103,7 @@ def check_email(email:str, exception:bool=False)->bool:
     if not bool(re.match(email_pattern, email.strip())):
         status = False
         if exception is True:
-            print(f"Invalid email format")
+            raise re.PatternError(f"Invalid email format")
 
     return status
 
@@ -127,7 +129,7 @@ def get_generic_params(conn:anylog_connector.AnyLogConnector, exception:bool=Fal
         env_values = dotenv.dotenv_values(config_file)
     except Exception as error:
         if exception is True:
-            print(f"Failed to extract content from default config file (Error: {error})")
+            raise Exception(f"Failed to extract content from default config file (Error: {error})")
     else:
         env_values = dict(env_values)
 

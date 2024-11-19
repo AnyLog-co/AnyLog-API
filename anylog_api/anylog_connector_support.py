@@ -3,8 +3,9 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
-
 import requests
+from Cython.Compiler.Errors import warning
+
 import anylog_api.anylog_connector as anylog_connector
 
 # Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
@@ -76,7 +77,7 @@ NETWORK_ERRORS = {
 }
 
 
-def __print_rest_error(call_type:str, cmd:str, error:str):
+def __print_rest_error(call_type:str, cmd:str, error:str)->str:
     """
     Print Error message
     :args:
@@ -103,7 +104,7 @@ def __print_rest_error(call_type:str, cmd:str, error:str):
     else:
         error_msg += f'(Error: {error})'
 
-    print(error_msg)
+    return error_msg
 
 
 def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
@@ -121,12 +122,12 @@ def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
     output = None
     try:
         output = r.json()
-    except Exception as err:
+    except Exception:
         try:
             output = r.text
         except Exception as error:
             if exception is True:
-                print(f'Failed to extract results for "{cmd}" (Error: {error})')
+                output = f'Failed to extract results for "{cmd}" (Error: {error})'
 
     return output
 
@@ -146,14 +147,18 @@ def extract_get_results(conn:anylog_connector.AnyLogConnector, headers:dict, exc
     output = None
     r, error = conn.get(headers=headers)
     if r is False and exception is True:
-        __print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+        err_msg = __print_rest_error(call_type='GET', cmd=headers['command'], error=error)
+        raise requests.RequestException(err_msg)
     elif not isinstance(r, bool):
         output = __extract_results(cmd=headers['command'], r=r, exception=exception)
+        if 'Failed to extract results' in output:
+            raise ValueError(output)
 
     return output
 
 
-def execute_publish_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:dict, payload:str=None, exception:bool=False):
+def execute_publish_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:dict, payload:str=None,
+                        exception:bool=False)->bool:
     """
     Execute command (both POST and PUT)
     :args:
@@ -178,6 +183,7 @@ def execute_publish_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:
     if isinstance(r, bool) and r is False:
         status = False
         if exception is True:
-            __print_rest_error(call_type=cmd.upper(), cmd=headers['command'], error=error)
+            err_msg = __print_rest_error(call_type=cmd.upper(), cmd=headers['command'], error=error)
+            raise requests.RequestException(err_msg)
 
     return status
