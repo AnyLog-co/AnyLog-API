@@ -10,7 +10,7 @@ This README provides setup instructions and sample usage for initializing a node
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade anylog-api>=0.0
 ```
-* A running (generic) AnyLog or EdgeLake node - directions can be found in [AnyLog's docker-compose](https://github.com/AnyLog-co/docker-compose) | [EdgeLake's docker-compse](https://github.com/EdgeLake/docker-compose)
+* A running (generic) AnyLog or EdgeLake node
 ```shell
 docker run -it -d --network host \
   -e INIT_TYPE=prod \
