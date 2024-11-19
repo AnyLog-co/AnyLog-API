@@ -3,12 +3,14 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
+from Cython.Compiler.Options import warning_errors
+from dotenv.main import with_warn_for_invalid_lines
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.__support__ import check_interval
-
+import warnings
 
 def build_increments_query(table_name:str, time_interval:str, units:int, time_column:str, value_columns,
                            calc_min:bool=True, calc_avg:bool=True, calc_max:bool=True, row_count:bool=True,
@@ -168,41 +170,87 @@ def build_period_query(table_name:str, time_interval:str, units:int, time_column
     return sql_cmd
 
 
-def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, destination:str='network',
-               output_format:str='json', stat:bool=True, timezone:str=None, include:list=[], extend:list=[],
+def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, output_format:str='json',
+               stat:bool=True, timezone:str=None, include:list=[], extend:list=[], nodes:str='main', drop:bool=False,
+               table:str=None, file_name:str=None, title:str=None, dest:str=None,  destination:str='network',
                view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+    """
+    Generate and execute SQL request
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to
+        db_name:str - logical database name
+        sql_query:str - SQL: statement to execute
+        output_format:str - result output format
+            * json - a json structure whereas the output data is assigned to the key "Query" and if statistics is enabled, it is assigned to the key "Statistics".
+            * json:output - The output is organized in rows whereas each row is a JSON structure - this format is identical to the data load structure.
+            * json:list - The output is organized in a list, every entry in the list represents a row (use this format with PowerBI).
+            * table -  The output is organized as a table.
+        stat:bool - whether to return query results statistics
+        timezone:str - result timestamp
+        include:str - list of tables to include in query
+        extend:str - list of extensions to include in query
+        nodes:str - With HA enabled - main: executes the query against the operators designated as main, all: operattors are selected using round robin
+        table:str - A table name for the output data.
+        dest:str - Destination of the query result set (i.e. stdout, rest, file)
+            - stdout
+            - rest
+            - dbms
+            - file
+        destination:str - remote connection information
+        view_help:bool - print help information
+        return_cmd:bool - return command to be executed
+        exception:bool - print exception
+    :params:
+        output
+        headers:dict - REST header
+    :return:
+        either command or query result
+    """
+    output = None
     headers = {
         "command": f'sql {db_name}',
-        "User-Agent": "AnyLog/1.23",
-        "destination": destination
+        "User-Agent": "AnyLog/1.23"
     }
 
-    if extend:
-        if isinstance(extend, list) or isinstance(extend, tuple):
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({','.join(extend)}) and")
-        else:
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({extend}) and")
-    if include:
-        if isinstance(include, list) or isinstance(include, tuple):
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({','.join(include)}) and")
-        else:
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} include=({include}) and")
-    if timezone:
-        headers['command'] = headers['command'].replace(db_name, f"{db_name} timezone={timezone} and")
-    if stat is False:
-        headers['command'] = headers['command'].replace(db_name, f"{db_name} stat=false and")
-    if output_format in ['json', 'table', 'json:list']:
-        headers['command'] = headers['command'].replace(db_name, f"{db_name} format={output_format} and")
-    headers['command'] = headers['command'].rsplit('and', 1)[0] + " " + sql_query
-
-    output = {"command": None, "results": None}
-    if view_help is True:
-        if return_cmd is True:
-            print(headers['command'], "\n")
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if output_format in ['json', 'json:output', 'json:list', 'table']:
+        headers['command'] += f" format={output_format} and"
     else:
-        output['results'] = extract_get_results(conn=conn, headers=headers, exception=exception)
-        if return_cmd is True:
-            output['command'] = headers['command']
+        if exception is True:
+            warnings.warning(f"Invalid Value for `output_format` - using 'json'")
+    if isinstance(stat, bool):
+        headers['command'] += f" stat={str(stat).lower()} and"
+    if timezone:
+        headers['command'] += f" timezone={timezone}"
+    if include:
+        headers['command'] += f" include=({','.join(include)}) and"
+    if extend:
+        headers['command'] += f" extend=({','.join(extend)}) and"
+    if nodes in ['all', 'main']:
+        headers['command'] += f" main={nodes} and"
+    else:
+        warnings.warn(f"Invalid Value for `nodes` - using 'main'")
+    if dest in ['stdout', 'rest', 'dbms', 'file']:
+        headers['command'] += f" dest={dest} and"
+    else:
+        warnings.warn(f"Invalid Value for `dest` - using 'stdout'")
+    if isinstance(drop, bool):
+        headers['command'] += f" drop={str(drop).lower()} and"
+    if table:
+        headers['command'] += f" table={table} and"
+    if file_name:
+        headers['command'] += f" file={file_name} and"
+    if title:
+        headers['command'] += f" title={title} and"
+    headers['command'] = headers.rsplit('and', 1)[0] + sql_query
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help:
+        get_help(conn=conn, cmd=headers['command'])
+    if return_cmd:
+        output = headers['command']
+    else:
+        output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
