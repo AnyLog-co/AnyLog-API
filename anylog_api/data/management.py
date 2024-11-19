@@ -262,7 +262,7 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
     }
     if json_format is True:
         headers['command'] += " where format=json"
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:
@@ -300,7 +300,7 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     }
     if json_format is True:
         headers['command'] += " where format=json"
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:
@@ -337,7 +337,7 @@ def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, v
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:
@@ -374,7 +374,7 @@ def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, 
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:

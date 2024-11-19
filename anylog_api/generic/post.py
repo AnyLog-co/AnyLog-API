@@ -39,7 +39,7 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
         "command": f"set debug {state}",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if state not in ['on','off','interactive']:
@@ -75,7 +75,7 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         "command": None,
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     # Define a function to handle the command execution for each key-value pair
@@ -133,7 +133,7 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
         "command": f"set node name {node_name}",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:
@@ -170,7 +170,7 @@ def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination
         "command": f"set anylog home {path}",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:
@@ -205,7 +205,7 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  re
         "command": "set cli off",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:
@@ -257,7 +257,7 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
         "command": "create work directories",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:

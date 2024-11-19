@@ -63,7 +63,7 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination is not None:
+    if destination:
         headers["destination"] = destination
 
     if view_help is True:
@@ -107,7 +107,7 @@ def get_license_key(conn:anylog_connector.AnyLogConnector, destination:str=None,
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination is not None:
+    if destination:
         headers["destination"] = destination
 
     if view_help is True:
@@ -184,7 +184,7 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination is not None:
+    if destination:
         headers["destination"] = destination
 
     if view_help is True:
@@ -219,7 +219,7 @@ def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination is not None:
+    if destination:
         headers["destination"] = destination
 
     if view_help is True:
@@ -254,7 +254,7 @@ def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, vie
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination is not None:
+    if destination:
         headers["destination"] = destination
 
     if view_help is True:

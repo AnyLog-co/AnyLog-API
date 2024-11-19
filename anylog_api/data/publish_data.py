@@ -223,7 +223,7 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
     if client_id:
         headers['command'] += f" where id={client_id}"
 
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
@@ -262,7 +262,7 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
 
     if client_id is not None:
         headers['command'] += f" {client_id}"
-    if destination is not None:
+    if destination:
         headers['destination'] = destination
 
     if view_help is True:
