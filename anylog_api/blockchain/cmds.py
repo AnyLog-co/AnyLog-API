@@ -34,7 +34,8 @@ def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where
         output - content returned
         headers:dict - REST header information
     :return:
-        output
+        if return_cmd - command to be executed
+        else - results for query (list of dict)
     """
     output = None
     headers = {
@@ -70,6 +71,8 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
                     view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Scheduled process for blockchain sync
+    :command:
+        run blockchain sync where source=master and dest=file and connection=10.10.1.15:32048
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         ledger_conn:str - ledger connection information for master node use TCP IP:PORT
@@ -79,6 +82,12 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
         view_help:bool - print help information
         return_cmd:bool - return command to be executed
         exception:bool - print exception
+    :params:
+        output - content returned
+        headers:dict - REST header information
+    :return:
+        if return_cmd - command to be executed
+        else - True if success / False if Fails
     """
     output = None
     headers = {
@@ -98,10 +107,13 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
 
     return output
 
+
 def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destination:str=None, view_help:bool=False,
                  return_cmd:bool=False, exception:bool=False):
     """
     Pull the metadata from a source node
+    :command:
+        blockchain seed from 10.10.1.15:32048
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         ledger_conn:str - ledger connection information for master node use TCP IP:PORT
@@ -113,7 +125,8 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
         output - content returned
         headers:dict - REST header information
     :return:
-        output
+        if return_cmd - command to be executed
+        else - True if success / False if fails
     """
     output = None
     headers = {
@@ -138,6 +151,8 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
                    return_cmd:bool=False, exception:bool=False):
     """
     Prepare JSON policy - this also validates that the JSON policy is "OK"
+    :command:
+        blockchain prepare policy !new_policy
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         policy:dict - policy to publish on blockchain
@@ -145,11 +160,12 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
         view_help:bool - print help information
         return_cmd:bool - return command to be executed
         exception:bool - print exception
-    :params:
+        :params:
         output - content returned
         headers:dict - REST header information
     :return:
-        output
+        if return_cmd - command to be executed
+        else - results for query (list of dict)
     """
     output = None
     headers = {
@@ -173,10 +189,13 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
 
     return output
 
+
 def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:str=None, blockchain_platform:str=None,
                 destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     publish JSON policy
+    :command:
+        blockchain insert where policy=!new_policy and !local=true and master=!ledger_conn
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         policy:dict - policy to publish on blockchain
@@ -189,7 +208,8 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
         output - content returned
         headers:dict - REST header information
     :return:
-        output
+        if return_cmd - command to be executed
+        else - results for query (list of dict)
     """
     output = None
     headers = {
@@ -220,6 +240,22 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
 
 def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str=None, view_help:bool=False,
                        return_cmd:bool=False, exception:bool=False):
+    """
+    Execute config fromm policy
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to
+        policy_id:str - (config) policy to execute
+        destination:str - remote connection information
+        view_help:bool - print help information
+        return_cmd:bool - return command to be executed
+        exception:bool - print exception
+    :params:
+        output - content returned
+        headers:dict - REST header information
+    :return:
+        if return_cmd - command to be executed
+        else - results for query (list of dict)
+    """
     output = None
     headers = {
         "command": f"config from policy where id={policy_id}",
