@@ -45,7 +45,7 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
     if mode not in ['streaming', 'file']:
         headers['mode'] = 'streaming'
         if exception is True:
-            print(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
+            raise KeyError(f"Warning: Invalid mode format {mode}. Options: streaming (default), file")
 
     serialize_data = json_dumps(payload)
 

@@ -45,7 +45,7 @@ def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destinatio
     if state not in ['on','off','interactive']:
         status = False
         if exception is True:
-            print(f"Invalid value for state {state} (Options; on, off, interactive]")
+            raise ValueError(f"Invalid value for state {state} (Options; on, off, interactive]")
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
@@ -105,7 +105,7 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
                 future.result()  # We could check results or exceptions here if needed
             except Exception as e:
                 if exception:
-                    print(f"Exception during command execution: {e}")
+                    raise Exception(f"Exception during command execution:{e}")
 
 
 
@@ -146,7 +146,7 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
     return status
 
 
-def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  returnn_cmd:bool=False,
+def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  return_cmd:bool=False,
              view_help:bool=False, exception:bool=False):
     """
     Set root path
@@ -175,7 +175,7 @@ def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif returnn_cmd is True:
+    elif return_cmd is True:
         return headers['command']
     elif return_cmd is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)

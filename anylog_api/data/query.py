@@ -54,7 +54,7 @@ def build_increments_query(table_name:str, time_interval:str, units:int, time_co
         return ""
     if not time_column:
         if exception is True:
-            print(f"Missing timestamp column name")
+            raise KeyError(f"Missing timestamp column name")
         return ""
 
     sql_cmd = f"SELECT increments({time_interval}, {units}, {time_column}), "
@@ -142,7 +142,7 @@ def build_period_query(table_name:str, time_interval:str, units:int, time_column
         return ""
     if not time_column:
         if exception is True:
-            print(f"Missing timestamp column name")
+            raise KeyError(f"Missing timestamp column name")
         return ""
 
     period_cmd = f"period({time_interval}, {units}, {start_ts},{time_column})"
