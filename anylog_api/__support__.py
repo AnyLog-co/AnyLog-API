@@ -3,13 +3,10 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
-
+import dotenv
 import json
 import os.path
 import re
-
-import dotenv
-from Cython.Compiler.Errors import warning
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_dictionary
@@ -27,7 +24,7 @@ def json_loads(content, exception:bool=False)->dict:
     """
     output = None
     try:
-        return json.loads(content)
+        output=json.loads(content)
     except Exception as error:
         if exception is True:
             raise json.JSONDecodeError(f"Failed to convert content into dictionary format (Error: {error})")
@@ -56,6 +53,7 @@ def json_dumps(content, indent:int=0, exception:bool=False)->str:
     except Exception as error:
         if exception is True:
             raise json.JSONDecodeError(f"Failed to convert content into serialized JSON format (Error: {error})")
+
     return output
 
 

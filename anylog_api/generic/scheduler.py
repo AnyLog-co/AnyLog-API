@@ -17,19 +17,19 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
     :url:
         https://github.com/AnyLog-co/documentation/blob/master/alerts%20and%20monitoring.md#adding-tasks-to-the-scheduler
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connecton information
+        conn:anylog_connector.AnyLogConnector - REST connection information
         schedule_id:int - Schedule ID
-        destination:str - Resmote destination ID
+        destination:str - remote destination connection information
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print excptions
+        exception:bool - print exception
     :params:
-        status:bool
+        output
         headers:dict - REST headers
     :return:
-        status
+        if return_cmd is True, returns command | else return result
     """
-    status = None
+    output = None
     headers = {
         "command": f"run scheduler {schedule_id}",
         "User-Agent": "AnyLog/1.23"
@@ -41,10 +41,11 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        status = headers['command']
+        output = headers['command']
     elif return_cmd is False:
-        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-    return status
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
 
 
 def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_interval:str, task:str, destination:str=None,
@@ -52,19 +53,18 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
     """
     run schedule tasks
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connecton information
+        conn:anylog_connector.AnyLogConnector - REST connection information
         name:str - task name
         time_interval:str - Interval for scheduled task(s)
-        task:str - actuaal task to execute
-        destination:str - Resmote destination ID
+        task:str - actual task to execute information
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print excptions
+        exception:bool - print exception
     :params:
-        status:bool
+         output
         headers:dict - REST headers
     :return:
-        status
+        if return_cmd is True, returns command | else return result
     """
     status = None
     headers = {
@@ -93,17 +93,17 @@ def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, d
     """
     get running scheduler tasks
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connecton information
+        conn:anylog_connector.AnyLogConnector - REST connection information
         schedule_id:int - Schedule ID
-        destination:str - remote destination ID
+        destination:str - remote destination information
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print excptions
+        exception:bool - print exception
     :params:
-        status:bool
+        output
         headers:dict - REST headers
     :return:
-        status
+        if return_cmd is True, returns command | else return result
     """
     output = None
     headers = {
