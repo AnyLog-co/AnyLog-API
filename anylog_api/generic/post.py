@@ -10,52 +10,6 @@ from anylog_api.anylog_connector_support import execute_publish_cmd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destination:str=None, view_help:bool=False,
-              return_cmd:bool=False, exception:bool=False):
-    """
-    set debug (used mainly in scripts)
-        - on
-        - off
-        - interactive
-    :url:
-       https://github.com/AnyLog-co/documentation/blob/master/cli.md#the-set-debug-command
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        state:str - debug state
-        destination:str - Remote node to query against
-        view_help:bool - get information about command
-        return_cmd:bool - return command rather than executing it
-        exception:bool - whether to print exception
-    :params:
-        status;bool - command status
-        headers:dict - REST headers
-    :return:
-        None - if not executed
-        True - if success
-        False - if fails / not ran
-    """
-    status = None
-    headers = {
-        "command": f"set debug {state}",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if destination:
-        headers['destination'] = destination
-
-    if state not in ['on','off','interactive']:
-        status = False
-        if exception is True:
-            raise ValueError(f"Invalid value for state {state} (Options; on, off, interactive]")
-    if view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
-    if return_cmd is True:
-        return headers['command']
-    elif return_cmd is False:
-        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
-    return status
-
-
 
 def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
                exception:bool=False):
