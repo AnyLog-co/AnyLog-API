@@ -1,5 +1,3 @@
-from anylog_api.blockchain.policies import table_policyfrom anylog_api.blockchain.cmds import config_from_policy
-
 # AnyLog API 
 
 The AnyLog API enables seamless interaction with _AnyLog_ or _EdgeLake_ nodes to manage distributed data seamlessly. 
