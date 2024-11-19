@@ -10,7 +10,7 @@ from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
 
 
-def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_format:bool=True, destination:str="",
+def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_format:bool=True, destination:str=None,
                    view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Check whether a database exists
@@ -54,7 +54,7 @@ def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_form
 
 
 def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, json_format:bool=True,
-                destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Check whether a table exists in a given database
     :cmd:
@@ -99,7 +99,7 @@ def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:s
 
 def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', db_ip:str=None,
                  db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, autocommit:bool=False,
-                 destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                 destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Connect to database
     :command:
@@ -159,7 +159,7 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
     return output
 
 
-def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str="",
+def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str=None,
                  view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Create pre-defined table
@@ -207,7 +207,7 @@ def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:
 
 
 def set_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*',
-                       partition_column:str='insert_timestamp', partition_interval:str='14 days', destination:str="",
+                       partition_column:str='insert_timestamp', partition_interval:str='14 days', destination:str=None,
                        view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     output = None
     headers = {
@@ -228,7 +228,7 @@ def set_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table
 
 
 def drop_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*', partition_keep:int=3,
-                        destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                        destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     output = None
     headers = {
         "command": f"drop partition where dbms={db_name} and table={table_name} and keep={partition_keep}",

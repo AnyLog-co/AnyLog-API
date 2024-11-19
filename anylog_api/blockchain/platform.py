@@ -10,7 +10,7 @@ from anylog_api.anylog_connector_support import execute_publish_cmd, extract_get
 
 def connect_platform(conn:anylog_connector.AnyLogConnector, platform:str, provider:str, contract:str=None,
                      private_key:str=None, public_key:str=None, gas_read:float=None, gas_write:float=0,
-                     destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                     destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Connect to the blockchain platform using the connection params
     :URL:
@@ -60,7 +60,7 @@ def connect_platform(conn:anylog_connector.AnyLogConnector, platform:str, provid
     return output
 
 
-def create_account(conn:anylog_connector.AnyLogConnector, platform:str, destination:str="", view_help:bool=False,
+def create_account(conn:anylog_connector.AnyLogConnector, platform:str, destination:str=None, view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
     """
     create a blockchain accoun
@@ -98,7 +98,7 @@ def create_account(conn:anylog_connector.AnyLogConnector, platform:str, destinat
 
 
 def set_account(conn:anylog_connector.AnyLogConnector, platform:str, private_key:str, public_key:str,
-                chain_id:str, destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                chain_id:str, destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Create a blockchain account
     :URL:
@@ -139,7 +139,7 @@ def set_account(conn:anylog_connector.AnyLogConnector, platform:str, private_key
     return output
 
 
-def deploy_contract(conn:anylog_connector.AnyLogConnector, platform:str, public_key:str, destination:str="",
+def deploy_contract(conn:anylog_connector.AnyLogConnector, platform:str, public_key:str, destination:str=None,
                     view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     output = None
     headers = {
@@ -159,7 +159,7 @@ def deploy_contract(conn:anylog_connector.AnyLogConnector, platform:str, public_
     return output
 
 
-def set_account_info(conn:anylog_connector.AnyLogConnector, platform:str, contract:str, destination:str="",
+def set_account_info(conn:anylog_connector.AnyLogConnector, platform:str, contract:str, destination:str=None,
                     view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     output = None
     headers = {
@@ -179,7 +179,7 @@ def set_account_info(conn:anylog_connector.AnyLogConnector, platform:str, contra
     return output
 
 
-def blockchain_checkout(conn:anylog_connector.AnyLogConnector, platform:str, destination:str="", view_help:bool=False,
+def blockchain_checkout(conn:anylog_connector.AnyLogConnector, platform:str, destination:str=None, view_help:bool=False,
                         return_cmd:bool=False, exception:bool=False):
     output = None
     headers = {
@@ -198,7 +198,7 @@ def blockchain_checkout(conn:anylog_connector.AnyLogConnector, platform:str, des
 
     return output
 
-def view_platform(conn:anylog_connector.AnyLogConnector, destination:str="", view_help:bool=False, return_cmd:bool=False,
+def view_platform(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False,
                   exception:bool=False):
     output = None
     headers = {
