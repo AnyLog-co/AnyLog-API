@@ -1,4 +1,10 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
 import requests
+import anylog_api.__support__ as support
 
 class AnyLogConnector:
     def __init__(self, conn:str, auth:tuple=None, timeout:int=30):
@@ -14,11 +20,20 @@ class AnyLogConnector:
             auth:tuple - Authentication information
             timeout:int - REST timeout
         """
-        self.conn = conn
-        self.auth = auth
-        if self.auth is None:
+        if support.check_conn_info(conn=conn) is True:
+            self.conn = conn
+        if auth is None:
             self.auth = ()
-        self.timeout = timeout
+        elif isinstance(auth, list):
+            self.auth = tuple(auth)
+        elif not isinstance(auth, tuple):
+            raise ValueError('authentication must be of type tuple - example (username, password)')
+        else:
+            self.auth = auth
+        try:
+            self.timeout = int(timeout)
+        except:
+            raise ValueError(f'Timeout value must be of type int. Current format is {type(type)}')
 
     def get(self, headers:dict)->(str, str):
         """
@@ -34,7 +49,7 @@ class AnyLogConnector:
         error = None
 
         try:
-            r = requests.get('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
+            r = requests.get(f'http://{self.conn}', headers=headers, auth=self.auth, timeout=self.timeout)
         except Exception as e:
             error = str(e)
             r = False
@@ -58,7 +73,7 @@ class AnyLogConnector:
         """
         error = None
         try:
-            r = requests.put('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers,
+            r = requests.put(f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
                              data=payload)
         except Exception as e:
             error = str(e)
@@ -89,7 +104,7 @@ class AnyLogConnector:
         """
         error = None
         try:
-            r = requests.post('http://%s' % self.conn, headers=headers, data=payload, auth=self.auth,
+            r = requests.post(f'http://{self.conn}', headers=headers, data=payload, auth=self.auth,
                               timeout=self.timeout)
         except Exception as e:
             error = str(e)

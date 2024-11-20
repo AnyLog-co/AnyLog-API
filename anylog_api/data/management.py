@@ -1,11 +1,17 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
+import warnings
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
-from anylog_api.__support__ import add_conditions
+
 
 def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:str='false', blobs_folder:str='true',
-                   compress:str='true', reuse_blobs:str='true', destination:str="", view_help:bool=False,
+                   compress:str='true', reuse_blobs:str='true', destination:str=None, view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
     """
 
@@ -26,7 +32,7 @@ def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:str='false'
     return output
 
 
-def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str="", view_help:bool=False, return_cmd:bool=False,
+def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False,
                  exception:bool=False):
     headers = {
         "command": "run streamer",
@@ -45,7 +51,7 @@ def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str="", view
 
 
 def buffer_threshold(conn:anylog_connector.AnyLogConnector, db_name:str=None, table_name:str=None,
-                     th_time:str='60 seconds', th_volume:str='10KB', write_immediate:str='false', destination:str="",
+                     th_time:str='60 seconds', th_volume:str='10KB', write_immediate:str='false', destination:str=None,
                      view_help:bool=False, return_cmd:bool=False, exception:bool=False):
 
     headers = {
@@ -70,7 +76,7 @@ def buffer_threshold(conn:anylog_connector.AnyLogConnector, db_name:str=None, ta
     return output
 
 
-def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:int=30, destination:str="",
+def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:int=30, destination:str=None,
                         view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     headers={
         "command": f"delete archive where days = {archive_delete}",
@@ -89,7 +95,7 @@ def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:in
     return output
 
 
-def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str="", view_help:bool=False,
+def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
                      return_cmd:bool=False, exception:bool=False):
     headers = {
         "command": "run data distributor",
@@ -107,7 +113,7 @@ def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str="", 
     return output
 
 
-def data_consumer(conn:anylog_connector.AnyLogConnector, start_data:str, destination:str="", view_help:bool=False,
+def data_consumer(conn:anylog_connector.AnyLogConnector, start_data:str, destination:str=None, view_help:bool=False,
                      return_cmd:bool=False, exception:bool=False):
     headers = {
         "command": f"run data consumer where start_date={start_data}",
@@ -153,39 +159,97 @@ def run_operator(conn:anylog_connector.AnyLogConnector, operator_id:str, create_
         True -->  data sent
         False --> Fails to send data
     """
-    status = None
+    output = None
     headers = {
-        'command': f"run operator",
+        'command': f"run operator where",
         'User-Agent': 'AnyLog/1.23'
     }
 
-    add_conditions(headers, create_table=create_table, update_tsd_info=update_tsd_info, compress_json=compress_json,
-                   compress_sql=compress_sql, archive_json=archive_json, archive_sql=archive_sql, master_node=ledger_conn,
-                   policy=operator_id, threads=threads)
+    if isinstance(create_table, bool) or str(create_table).lower() in ['true', 'false']:
+        headers['command'] += f" create_table={str(create_table).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for create table. Using `true` as default value')
+        headers['command'] += f" create_table=true and"
+
+    if isinstance(update_tsd_info, bool) or str(update_tsd_info).lower() in ['true', 'false']:
+        headers['command'] += f" update_tsd_info={str(update_tsd_info).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for update_tsd_info table. Using `true` as default value')
+        headers['command'] += f" update_tsd_info=true and"
+    if isinstance(compress_json, bool) or str(compress_json).lower() in ['true', 'false']:
+        headers['command'] += f" compress_json={str(compress_json).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for compress_json table. Using `true` as default value')
+        headers['command'] += f" compress_json=true and"
+    if isinstance(compress_sql, bool) or str(compress_sql).lower() in ['true', 'false']:
+        headers['command'] += f" compress_sql={str(compress_sql).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for compress_sql table. Using `true` as default value')
+        headers['command'] += f" compress_sql=true and"
+    if isinstance(archive_json, bool) or str(archive_json).lower() in ['true', 'false']:
+        headers['command'] += f" archive_json={str(archive_json).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for archive_json table. Using `true` as default value')
+        headers['command'] += f" archive_json=true and"
+    if isinstance(archive_sql, bool) or str(archive_sql).lower() in ['true', 'false']:
+        headers['command'] += f" archive_sql={str(archive_sql).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for archive_sql table. Using `true` as default value')
+        headers['command'] += f" archive_sql=true and"
+    if ledger_conn:
+        headers['command'] += f" master_node={ledger_conn} and"
+    if operator_id:
+        headers['command'] += f" policy={operator_id} and"
+    else:
+        if exception is True:
+            raise ValueError('Missing operator ID, cannot start `run operator` service...')
+
+    if isinstance(threads, int):
+        headers['command'] += f" threads={threads} and"
+    elif threads:
+        try:
+            headers['command'] += f" threads={int(threads)} and"
+        except Exception as error:
+            if exception is True:
+                raise ValueError(f'Invalid data type for threads (type: {type(threads)} | Error: {error})')
+            headers['command'] += f" threads=3 and"
+    else:
+        if exception is True:
+            warnings.warn(f'Invalid data type for threads (type: {type(threads)} | Error: {error})')
+        headers['command'] += f" threads=3 and"
+
+
+    if headers['command'].rsplit(' ', 1)[-1] == 'and':
+        headers['command'] = headers['command'].rsplit(' ', 'and')[0]
 
     if destination:
         headers['destination'] = destination
-
     if view_help is True:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n","").replace("\t", " ")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        status = headers['command']
-    elif view_help is False:
-        headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
-        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
+        output = headers['command']
+    else:
+        output = None execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
-    return status
+    return output
 
 
-def run_publisher(conn:anylog_connector.AnyLogConnector, compress_file:bool=True, ledger_conn='!ledger_conn',
-                  dbms_file_location:str='file_name[0]', table_file_location='file_name[1]', destination:str=None,
-                  view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+def run_publisher(conn:anylog_connector.AnyLogConnector, compress_json:bool=True, compress_sql:bool=True,
+                  ledger_conn='!ledger_conn', dbms_file_location:str='file_name[0]', table_file_location='file_name[1]',
+                  destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Enable publisher process
     :args:
         conn:AnyLogConnector - connection to AnyLog
-        compress_file:bool - True/False to enable/disable compression of the JSON/SQL file.
+        compress_json:bool - True/False to enable/disable compression of the JSON file.
+        compress_sql:bool - True/False to enable/disable compression of the SQL file.
         ledger_conn - The IP and Port of a Master Node (if a master node is used)
         dbms_file_location:str - where to set db name in file path
         table_file_location:str - where to set table name in file path
@@ -207,8 +271,26 @@ def run_publisher(conn:anylog_connector.AnyLogConnector, compress_file:bool=True
         'User-Agent': 'AnyLog/1.23'
     }
 
-    add_conditions(headers, compress_json=compress_file, compress_sql=compress_file, master_node=ledger_conn,
-                   dbms_name=dbms_file_location, table_name=table_file_location)
+    if isinstance(compress_json, bool) or str(compress_json).lower() in ['true', 'false']:
+        headers['command'] += f" compress_json={str(compress_json).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for compress JSON . Using `true` as default value')
+        headers['command'] += f" compress_json=true and"
+    if isinstance(compress_sql, bool) or str(compress_sql).lower() in ['true', 'false']:
+        headers['command'] += f" compress_sql={str(compress_sql).lower()} and"
+    else:
+        if exception is True:
+            warnings.warn('Invalid value for compress SQL . Using `true` as default value')
+        headers['command'] += f" compress_sql=true and"
+    if ledger_conn:
+        headers['command'] += f" master_node={str(ledger_conn).lower()} and"
+    if dbms_file_location:
+        headers['command'] += f" dbms_name={str(dbms_file_location).lower()} and"
+    if table_file_location:
+        headers['command'] += f" table_name={str(table_file_location).lower()} and"
+    if headers['command'].rsplit(' ', 1)[-1] == 'and':
+        headers['command'] = headers['command'].rsplit(' ', 1)[0]
 
     if destination:
         headers['destination'] = destination

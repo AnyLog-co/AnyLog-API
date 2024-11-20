@@ -1,3 +1,8 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
 import requests
 import anylog_api.anylog_connector as anylog_connector
 
@@ -97,7 +102,7 @@ def __print_rest_error(call_type:str, cmd:str, error:str):
     else:
         error_msg += f'(Error: {error})'
 
-    print(error_msg)
+    raise requests.RequestException(error_msg)
 
 
 def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
@@ -120,7 +125,7 @@ def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
             output = r.text
         except Exception as error:
             if exception is True:
-                print(f'Failed to extract results for "{cmd}" (Error: {error})')
+                raise requests.JSONDecodeError(f'Failed to extract results for "{cmd}" (Error: {error})')
 
     return output
 

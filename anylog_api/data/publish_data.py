@@ -1,7 +1,14 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
+import warnings
+
 from Cython.Compiler.Nodes import PassStatNode
 
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.__support__ import add_conditions
+# from anylog_api.__support__ import add_conditions
 from anylog_api.__support__ import json_dumps
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
@@ -216,7 +223,13 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         "User-Agent": "AnyLog/1.23"
     }
 
-    add_conditions(headers, id=client_id)
+
+    if client_id:
+        try:
+            headers['command'] += f" where id={int(client_id)}"
+        except Exception as error:
+            if exception is True:
+                warnings.warn('Invalid value type for client ID. Value must be integer')
 
     if destination is not None:
         headers['destination'] = destination
