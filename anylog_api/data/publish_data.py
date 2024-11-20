@@ -1,11 +1,7 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-
+from Cython.Compiler.Nodes import PassStatNode
 
 import anylog_api.anylog_connector as anylog_connector
+from anylog_api.__support__ import add_conditions
 from anylog_api.__support__ import json_dumps
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
@@ -45,7 +41,7 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
     if mode not in ['streaming', 'file']:
         headers['mode'] = 'streaming'
         if exception is True:
-            raise KeyError(f"Warning: Invalid mode format {mode}. Options: streaming (default), file")
+            print(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
 
     serialize_data = json_dumps(payload)
 
@@ -189,7 +185,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
@@ -220,16 +216,16 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         "User-Agent": "AnyLog/1.23"
     }
 
-    if client_id:
-        headers['command'] += f" where id={client_id}"
+    add_conditions(headers, id=client_id)
 
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
+
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -262,14 +258,16 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
 
     if client_id is not None:
         headers['command'] += f" {client_id}"
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
+
+

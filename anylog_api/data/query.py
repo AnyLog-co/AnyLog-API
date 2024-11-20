@@ -1,16 +1,8 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-from Cython.Compiler.Options import warning_errors
-from dotenv.main import with_warn_for_invalid_lines
-
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.__support__ import check_interval
-import warnings
+
 
 def build_increments_query(table_name:str, time_interval:str, units:int, time_column:str, value_columns,
                            calc_min:bool=True, calc_avg:bool=True, calc_max:bool=True, row_count:bool=True,
@@ -56,7 +48,7 @@ def build_increments_query(table_name:str, time_interval:str, units:int, time_co
         return ""
     if not time_column:
         if exception is True:
-            raise KeyError(f"Missing timestamp column name")
+            print(f"Missing timestamp column name")
         return ""
 
     sql_cmd = f"SELECT increments({time_interval}, {units}, {time_column}), "
@@ -144,7 +136,7 @@ def build_period_query(table_name:str, time_interval:str, units:int, time_column
         return ""
     if not time_column:
         if exception is True:
-            raise KeyError(f"Missing timestamp column name")
+            print(f"Missing timestamp column name")
         return ""
 
     period_cmd = f"period({time_interval}, {units}, {start_ts},{time_column})"
@@ -170,87 +162,194 @@ def build_period_query(table_name:str, time_interval:str, units:int, time_column
     return sql_cmd
 
 
-def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, output_format:str='json',
-               stat:bool=True, timezone:str=None, include:list=[], extend:list=[], nodes:str='main', drop:bool=False,
-               table:str=None, file_name:str=None, title:str=None, dest:str=None,  destination:str='network',
+def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, destination:str='network',
+               output_format:str='json', stat:bool=True, timezone:str=None, include:list=[], extend:list=[],
                view_help:bool=False, return_cmd:bool=False, exception:bool=False):
-    """
-    Generate and execute SQL request
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to
-        db_name:str - logical database name
-        sql_query:str - SQL: statement to execute
-        output_format:str - result output format
-            * json - a json structure whereas the output data is assigned to the key "Query" and if statistics is enabled, it is assigned to the key "Statistics".
-            * json:output - The output is organized in rows whereas each row is a JSON structure - this format is identical to the data load structure.
-            * json:list - The output is organized in a list, every entry in the list represents a row (use this format with PowerBI).
-            * table -  The output is organized as a table.
-        stat:bool - whether to return query results statistics
-        timezone:str - result timestamp
-        include:str - list of tables to include in query
-        extend:str - list of extensions to include in query
-        nodes:str - With HA enabled - main: executes the query against the operators designated as main, all: operattors are selected using round robin
-        table:str - A table name for the output data.
-        dest:str - Destination of the query result set (i.e. stdout, rest, file)
-            - stdout
-            - rest
-            - dbms
-            - file
-        destination:str - remote connection information
-        view_help:bool - print help information
-        return_cmd:bool - return command to be executed
-        exception:bool - print exception
-    :params:
-        output
-        headers:dict - REST header
-    :return:
-        either command or query result
-    """
-    output = None
     headers = {
         "command": f'sql {db_name}',
-        "User-Agent": "AnyLog/1.23"
+        "User-Agent": "AnyLog/1.23",
+        "destination": destination
     }
 
-    if output_format in ['json', 'json:output', 'json:list', 'table']:
-        headers['command'] += f" format={output_format} and"
-    else:
-        if exception is True:
-            warnings.warning(f"Invalid Value for `output_format` - using 'json'")
-    if isinstance(stat, bool):
-        headers['command'] += f" stat={str(stat).lower()} and"
-    if timezone:
-        headers['command'] += f" timezone={timezone}"
-    if include:
-        headers['command'] += f" include=({','.join(include)}) and"
     if extend:
-        headers['command'] += f" extend=({','.join(extend)}) and"
-    if nodes in ['all', 'main']:
-        headers['command'] += f" main={nodes} and"
-    else:
-        warnings.warn(f"Invalid Value for `nodes` - using 'main'")
-    if dest in ['stdout', 'rest', 'dbms', 'file']:
-        headers['command'] += f" dest={dest} and"
-    else:
-        warnings.warn(f"Invalid Value for `dest` - using 'stdout'")
-    if isinstance(drop, bool):
-        headers['command'] += f" drop={str(drop).lower()} and"
-    if table:
-        headers['command'] += f" table={table} and"
-    if file_name:
-        headers['command'] += f" file={file_name} and"
-    if title:
-        headers['command'] += f" title={title} and"
-    headers['command'] = headers.rsplit('and', 1)[0] + sql_query
+        if isinstance(extend, list) or isinstance(extend, tuple):
+            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({','.join(extend)}) and")
+        else:
+            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({extend}) and")
+    if include:
+        if isinstance(include, list) or isinstance(include, tuple):
+            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({','.join(include)}) and")
+        else:
+            headers['command'] = headers['command'].replace(db_name, f"{db_name} include=({include}) and")
+    if timezone:
+        headers['command'] = headers['command'].replace(db_name, f"{db_name} timezone={timezone} and")
+    if stat is False:
+        headers['command'] = headers['command'].replace(db_name, f"{db_name} stat=false and")
+    if output_format in ['json', 'table', 'json:list']:
+        headers['command'] = headers['command'].replace(db_name, f"{db_name} format={output_format} and")
+    headers['command'] = headers['command'].rsplit('and', 1)[0] + " " + sql_query
 
-    if destination:
-        headers['destination'] = destination
-
-    if view_help:
-        get_help(conn=conn, cmd=headers['command'])
-    if return_cmd:
-        output = headers['command']
+    output = {"command": None, "results": None}
+    if view_help is True:
+        if return_cmd is True:
+            print(headers['command'], "\n")
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
     else:
-        output = extract_get_results(conn=conn, headers=headers, exception=exception)
+        output['results'] = extract_get_results(conn=conn, headers=headers, exception=exception)
+        if return_cmd is True:
+            output['command'] = headers['command']
 
     return output
+
+# def query_data_archive(conn:anylog_connector.AnyLogConnector, db_name:str, output_format:str='json', stat:bool=True,
+#                timezone:str=None, include:str=None, extend:list=[], query_title:str=None, dest:str=None, drop:bool=True,
+#                output_table_name:str=None, file_path:str=None, sql_cmd:str=None, increment_function:bool=False,
+#                period_function:bool=False, table_name:str=None, time_interval:str=None, units:int=None,
+#                time_column:str=None, value_columns=None, start_ts='NOW()', calc_min:bool=True, calc_avg:bool=True,
+#                calc_max:bool=True, row_count:bool=True, where_condition:str="", group_by:str="", order_by:str="",
+#                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+#     """
+#     Generate and execute query
+#     :url:
+#         https://github.com/AnyLog-co/documentation/blob/master/queries.md
+#     :supported query types:
+#         1. fully defined by user (sql_cmd)
+#         2. increments
+#         3. period
+#         4. generic (aggregate) query based on user defined params
+#     :args:
+#         conn:anylog_connector.AnyLogConnector - conneection to AnyLog / EdgeLake
+#         db_name;str - logical database name
+#         output_format:str - result output format
+#             -> json
+#             -> table
+#             -> json:list
+#         stat:bool - whether to return statistics
+#         timezone:str - timezone
+#         include:list - list of tables to query against
+#         extend:list - blockchain info to include in results
+#         query_title:str - query title
+#         dest:str - whether to store results to file or local database
+#         drop:bool - if dest is dbms then whether remove table
+#         output_table_name:str -
+#         table_name:str - logical table name
+#         file_path:str - path to store query in
+#         sql_cmd:str -user defined SQL command
+#         increment_function:bool - based on user param, generate increments function SQL request
+#         period_function:bool -  based on user param, generate period function SQL request
+#     :user-query-args:
+#         time_interval:str - time interval (second, minute, hour, day, week, month, year)
+#         unit:int - value for time interval
+#         time_column:str - timestamp column name
+#         start_ts:str - start timestamp
+#         value_columns - list or string of non-timestamp value column name
+#         calc_min:bool - calculate min value
+#         calc_avg:bool - calculate avg value
+#         calc_max:bool - calculate max value
+#         row_count:bool - calculate row count
+#         where_condition:str - user defined where condition
+#         group_by:str - user defined group by
+#         ordr_by:str - user defined group by
+#         destination:str -  remote request param
+#         view_help:str - get help on command
+#         return_cmd:str - return generated command
+#         exception:bool - print exception
+#     :params:
+#         output - result output
+#         headers:dict - REST headers
+#     :return:
+#         output
+#     """
+#     output = None
+#     headers = {
+#         "command": f"sql {db_name}",
+#         "User-Agent": "AnyLog/1.23"
+#     }
+#     if destination:
+#         headers['destination'] = destination
+#
+#     # prepare SQL
+#     if sql_cmd not in [None, ""]:
+#         pass
+#     if increment_function is True and period_function is True:
+#         if exception is True:
+#             print("Query cannot support both increment and period functions in the same query request")
+#         return status
+#     elif increment_function is True:
+#         sql_cmd = build_increments_query(table_name=table_name, time_interval=time_interval, units=units,
+#                                          time_column=time_column, value_columns=value_columns, calc_min=calc_min,
+#                                          calc_avg=calc_avg, calc_max=calc_max, row_count=row_count,
+#                                          where_condition=where_condition, exception=exception)
+#     elif period_function:
+#         sql_cmd = build_period_query(table_name=table_name, time_interval=time_interval, units=units, start_ts=start_ts,
+#                                      time_column=time_column, value_columns=value_columns, calc_min=calc_min,
+#                                      calc_avg=calc_avg, calc_max=calc_max, row_count=row_count, exception=exception)
+#     else:
+#         sql_cmd = "SELECT"
+#         if time_column:
+#             if all(False is x for x in [calc_min, calc_avg, calc_max, row_count]):
+#                 sql_cmd += f" {time_column},"
+#             if calc_min is True:
+#                 sql_cmd += f" MIN({time_column}) AS min_{time_column},"
+#             if calc_max is True:
+#                 sql_cmd += f" MAX({time_column}) AS max_{time_column},"
+#             if not value_columns and row_count is True:
+#                 sql_cmd += f" COUNT({time_column}) AS count_{time_column},"
+#         if not isinstance(value_columns, list):
+#             value_columns = value_columns.split(",")
+#         for value_column in value_columns:
+#             if all(False is x for x in [calc_min, calc_avg, calc_max, row_count]):
+#                 sql_cmd += f" {value_column},"
+#             if calc_min is True:
+#                 sql_cmd += f" MIN({time_column}) AS min_{time_column},"
+#             if calc_avg is True:
+#                 sql_cmd += f" AVG({time_column}) AS avg_{time_column},"
+#             if calc_max is True:
+#                 sql_cmd += f" MAX({time_column}) AS max_{time_column},"
+#             if row_count is True:
+#                 sql_cmd += f" COUNT({time_column}) AS count_{time_column},"
+#
+#         sql_cmd = sql_cmd.rsplit(",", 1)[0] + f" FROM {table_name}"
+#         if where_condition:
+#             sql_cmd += f" WHERE {where_condition}"
+#         if group_by:
+#             sql_cmd += f" GROUP BY {group_by}"
+#         if order_by:
+#             sql_cmd += f" ORDER BY {order_by}"
+#
+#     # Prepare request configs
+#     if output_format in ['json', 'table', 'json:list']:
+#         headers['command'] += f" format={output_format} and"
+#     if stat is True:
+#         headers['command'] += f" stat=true and"
+#     if timezone:
+#         headers['command'] += f" timezone={timezone} and"
+#     if include:
+#         headers['command'] += f" include=({','.join(include)}) and"
+#     if extend:
+#         headers['command'] += f" extend=({','.join(extend)}) and"
+#     if query_title:
+#         headers['command'] += f" title={query_title} and"
+#     elif output_table_name:
+#         headers['command'] += f" title={output_table_name.replace('_', ' ')} and"
+#     if dest in ['dbms', 'file']:
+#         headers['command'] += f" dest={dest} and"
+#         if dest == 'dbms' and drop is True:
+#             headers['command'] += f" drop=true and"
+#         if dest == 'dbms' and output_table_name:
+#             headers['command'] += f" table={output_table_name} and"
+#         elif dest == 'dbms' and query_title:
+#             headers['command'] += f" table={query_title.replace(' ', '_')} and"
+#         if dest == 'file' and file_path:
+#             headers['command'] += f" file={file_path} and"
+#
+#     headers['command'] = f'{headers["command"].rsplit("and", 1)[0]} "{sql_cmd}"'
+#
+#     if view_help is True:
+#         get_help(conn=conn, cmd=headers['command'], exception=exception)
+#     if return_cmd is True:
+#         output = headers['command']
+#     elif view_help is False:
+#         output = extract_get_results(conn=conn, headers=headers, exception=exception)
+#
+#     return output

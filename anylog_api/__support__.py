@@ -1,17 +1,13 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-import dotenv
 import json
 import os.path
 import re
 
+import dotenv
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_dictionary
 
-def json_loads(content, exception:bool=False)->dict:
+def json_loads(content, exception:bool=False):
     """
     Convert serialized JSON into dictionary form
     :args:
@@ -24,15 +20,14 @@ def json_loads(content, exception:bool=False)->dict:
     """
     output = None
     try:
-        output=json.loads(content)
+        return json.loads(content)
     except Exception as error:
         if exception is True:
-            raise json.JSONDecodeError(f"Failed to convert content into dictionary format (Error: {error})")
-
+            print(f"Failed to convert content into dictionary format (Error: {error})")
     return output
 
 
-def json_dumps(content, indent:int=0, exception:bool=False)->str:
+def json_dumps(content, indent:int=0, exception:bool=False):
     """
     Convert dictionary into serialized JSON
     :args:
@@ -52,10 +47,30 @@ def json_dumps(content, indent:int=0, exception:bool=False)->str:
             output = json.dumps(content)
     except Exception as error:
         if exception is True:
-            raise json.JSONDecodeError(f"Failed to convert content into serialized JSON format (Error: {error})")
-
+            print(f"Failed to convert content into serialized JSON format (Error: {error})")
     return output
 
+
+def add_conditions(headers:dict, **conditions):
+    """
+    Adds conditions to the 'command' key in the header dictionary
+    :args:
+        headers (dict): The headers dictionary containing the 'command' key.
+        **conditions: Arbitrary keyword arguments representing conditions to be added.
+    :returns:
+        None: The function modifies the headers dictionary in place.
+    """
+    condition_list = []
+    for key, value in conditions.items():
+        if isinstance(value, bool) and value is True:
+            condition_list.append(f"{key}=true")
+        elif isinstance(value, bool) and value is False:
+            condition_list.append(f"{key}=false")
+        elif value is not None:
+            condition_list.append(f"{key}={value}")
+            
+    if condition_list:
+        headers['command'] += " where " + " and ".join(condition_list)
 
 
 def check_interval(time_interval:str, exception:bool=False)->bool:
@@ -76,7 +91,7 @@ def check_interval(time_interval:str, exception:bool=False)->bool:
 
     if not bool(re.match(time_interval_pattern, time_interval.strip())):
         if exception is True:
-            raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
+            print(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
         status = False
 
     return status
@@ -101,7 +116,7 @@ def check_email(email:str, exception:bool=False)->bool:
     if not bool(re.match(email_pattern, email.strip())):
         status = False
         if exception is True:
-            raise re.PatternError(f"Invalid email format")
+            print(f"Invalid email format")
 
     return status
 
@@ -127,7 +142,7 @@ def get_generic_params(conn:anylog_connector.AnyLogConnector, exception:bool=Fal
         env_values = dotenv.dotenv_values(config_file)
     except Exception as error:
         if exception is True:
-            raise Exception(f"Failed to extract content from default config file (Error: {error})")
+            print(f"Failed to extract content from default config file (Error: {error})")
     else:
         env_values = dict(env_values)
 

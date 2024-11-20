@@ -1,22 +1,17 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.__support__ import add_conditions
 
-def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:bool=False, blobs_folder:bool=True,
-                   compress:bool=True, reuse_blobs:bool=True, destination:str=None, view_help:bool=False,
+def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:str='false', blobs_folder:str='true',
+                   compress:str='true', reuse_blobs:str='true', destination:str="", view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
     """
 
     """
     headers = {
-        "command": f"run blobs archiver where dbms={str(blobs_dbms).lower()} and folder={str(blobs_folder).lower()} and compress={str(compress).lower()} and reuse_blobs={str(reuse_blobs).lower()}",
+        "command": f"run blobs archiver where dbms={blobs_dbms} and folder={blobs_folder} and compress={compress} and reuse_blobs={reuse_blobs}",
         "User-Agent": "AnyLog/1.32"
     }
     if destination:
@@ -31,13 +26,12 @@ def blobs_archiver(conn:anylog_connector.AnyLogConnector, blobs_dbms:bool=False,
     return output
 
 
-def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False, return_cmd:bool=False,
+def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str="", view_help:bool=False, return_cmd:bool=False,
                  exception:bool=False):
     headers = {
         "command": "run streamer",
         "User-Agent": "AnyLog/1.23"
     }
-
     if destination:
         headers['destination'] = destination
     if view_help is True:
@@ -51,11 +45,11 @@ def set_streamer(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
 
 
 def buffer_threshold(conn:anylog_connector.AnyLogConnector, db_name:str=None, table_name:str=None,
-                     th_time:str='60 seconds', th_volume:str='10KB', write_immediate:bool=False, destination:str=None,
+                     th_time:str='60 seconds', th_volume:str='10KB', write_immediate:str='false', destination:str="",
                      view_help:bool=False, return_cmd:bool=False, exception:bool=False):
 
     headers = {
-        "command": f"set buffer threshold where time={th_time} and volume={th_volume} and write={str(write_immediate).lower()}",
+        "command": f"set buffer threshold where time={th_time} and volume={th_volume} and write={write_immediate}",
         "User-Agent": "AnyLog/1.23",
     }
 
@@ -76,7 +70,7 @@ def buffer_threshold(conn:anylog_connector.AnyLogConnector, db_name:str=None, ta
     return output
 
 
-def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:int=30, destination:str=None,
+def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:int=30, destination:str="",
                         view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     headers={
         "command": f"delete archive where days = {archive_delete}",
@@ -95,7 +89,7 @@ def clean_archive_files(conn:anylog_connector.AnyLogConnector, archive_delete:in
     return output
 
 
-def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
+def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str="", view_help:bool=False,
                      return_cmd:bool=False, exception:bool=False):
     headers = {
         "command": "run data distributor",
@@ -113,7 +107,7 @@ def data_distributor(conn:anylog_connector.AnyLogConnector, destination:str=None
     return output
 
 
-def data_consumer(conn:anylog_connector.AnyLogConnector, start_data:str, destination:str=None, view_help:bool=False,
+def data_consumer(conn:anylog_connector.AnyLogConnector, start_data:str, destination:str="", view_help:bool=False,
                      return_cmd:bool=False, exception:bool=False):
     headers = {
         "command": f"run data consumer where start_date={start_data}",
@@ -177,15 +171,14 @@ def run_operator(conn:anylog_connector.AnyLogConnector, operator_id:str, create_
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return status
 
 
-def run_publisher(conn:anylog_connector.AnyLogConnector, delete_json:bool=False, delete_sql:bool=False,
-                  compress_json:bool=True, compress_sql:bool=True, ledger_conn='!ledger_conn',
+def run_publisher(conn:anylog_connector.AnyLogConnector, compress_file:bool=True, ledger_conn='!ledger_conn',
                   dbms_file_location:str='file_name[0]', table_file_location='file_name[1]', destination:str=None,
                   view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
@@ -208,34 +201,28 @@ def run_publisher(conn:anylog_connector.AnyLogConnector, delete_json:bool=False,
         True -->  data sent
         False --> Fails to send data
     """
+    status = None
     headers = {
         'command': f"run publisher",
         'User-Agent': 'AnyLog/1.23'
     }
 
-    """
-    delete_json - True/False for deletion of the JSON file if processing is successful.
-	delete_sql - True/False for deletion of the SQL file if processing is successful.
-	compress_json - True/False to enable/disable compression of the JSON file.
-	compress_sql - True/False to enable/disable compression of the SQL file.
-	dbms_name - the segment in the file name from which the database name is taken
-	table_name - the segment in the file name from which the table name is taken
-	master_node - The IP and Port of a Master Node (if a master node is used).
-    """
-
-    headers['command'] += f"where delete_json={str(delete_json).lower()} and delete_sql={delete_sql} and compress_json={str(compress_json).lower()} and compress_sql={str(compress_sql).lower()} and dbms_name={dbms_file_location} and table_name=table_file_location and master_node={ledger_conn}"
+    add_conditions(headers, compress_json=compress_file, compress_sql=compress_file, master_node=ledger_conn,
+                   dbms_name=dbms_file_location, table_name=table_file_location)
 
     if destination:
         headers['destination'] = destination
 
     if view_help is True:
+        headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = "<" + headers['command'].replace("where", "where\n\t").replace("and", "and\n\t") + ">"
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
+        status = headers['command']
+    elif view_help is False:
+        headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
+        status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
-    return output
+    return status
 
 def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, destination:str=None, view_help:bool=False,
                  return_cmd:bool=False, exception:bool=False):
@@ -262,14 +249,14 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
     }
     if json_format is True:
         headers['command'] += " where format=json"
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -300,14 +287,14 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
     }
     if json_format is True:
         headers['command'] += " where format=json"
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -337,14 +324,14 @@ def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, v
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -374,14 +361,14 @@ def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, 
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

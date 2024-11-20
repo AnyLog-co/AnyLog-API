@@ -1,19 +1,92 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
+def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destination:str=None, view_help:bool=False,
+              return_cmd:bool=False, exception:bool=False):
+    """
+    set debug (used mainly in scripts)
+        - on
+        - off
+        - interactive
+    :url:
+       https://github.com/AnyLog-co/documentation/blob/master/cli.md#the-set-debug-command
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        state:str - debug state
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails / not ran
+    """
+    status = None
+    headers = {
+        "command": f"set debug {state}",
+        "User-Agent": "AnyLog/1.23"
+    }
+    if destination is not None:
+        headers['destination'] = destination
+
+    if state not in ['on','off','interactive']:
+        status = False
+        if exception is True:
+            print(f"Invalid value for state {state} (Options; on, off, interactive]")
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        return headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return status
+
+
+# def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
+#                exception:bool=False):
+#     """
+#     add dictionary param
+#     :args:
+#         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+#         params:dict - dictionary of key / value pairs to set node with
+#         destination:str - Remote node to query against
+#         view_help:bool - get information about command
+#         return_cmd:bool - return command rather than executing it
+#         exception:bool - whether to print exception
+#     :params:
+#         headers:dict - REST head information
+#     """
+#     headers = {
+#         "command": None,
+#         "User-Agent": "AnyLog/1.23"
+#     }
+#     if destination is not None:
+#         headers['destination'] = destination
+#
+#     for key in params:
+#         if params[key] in ['false', 'False', 'True', 'true', 'file']:
+#             headers['command'] = f'set {key.strip()} = {params[key].strip()}'
+#         elif params[key] != "":
+#             headers['command'] = f'{key.strip()} = {params[key].strip()}'
+#         if view_help is True:
+#             get_help(conn=conn, cmd=headers['command'], exception=exception)
+#             break
+#         else:
+#             execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+
 def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
                exception:bool=False):
     """
-    add key / value pair to the dictionary
+    add dictionary param
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         params:dict - dictionary of key / value pairs to set node with
@@ -28,19 +101,17 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         "command": None,
         "User-Agent": "AnyLog/1.23"
     }
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     # Define a function to handle the command execution for each key-value pair
     def execute_command(key, value):
-        key_words = ["", "test", "run"]
-        if isinstance(value, bool) or all(k in value for k in key_words):
-            command = f'set {key.strip()} = {str(value).lower().strip()}'
+        if value in ['false', 'False', 'True', 'true', 'file']:
+            command = f'set {key.strip()} = {value.strip()}'
         elif value != "":
             command = f'{key.strip()} = {value.strip()}'
         else:
             return  # Skip empty values
-
         headers['command'] = command
 
         if view_help:
@@ -60,7 +131,7 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
                 future.result()  # We could check results or exceptions here if needed
             except Exception as e:
                 if exception:
-                    raise Exception(f"Exception during command execution:{e}")
+                    print(f"Exception during command execution: {e}")
 
 
 
@@ -76,33 +147,32 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output
+        status;bool - command status
         headers:dict - REST headers
     :return:
-        if return_cmd is True -> return command
-        else ->
-            True - if success
-            False - if fails
+        None - if not executed
+        True - if success
+        False - if fails
     """
-    output = None
+    status = None
     headers = {
         "command": f"set node name {node_name}",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        return headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return output
+    return status
 
 
-def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  return_cmd:bool=False,
+def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  returnn_cmd:bool=False,
              view_help:bool=False, exception:bool=False):
     """
     Set root path
@@ -114,30 +184,29 @@ def set_anylog_home(conn:anylog_connector.AnyLogConnector, path:str, destination
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output
+        status;bool - command status
         headers:dict - REST headers
     :return:
-        if return_cmd is True -> return command
-        else ->
-            True - if success
-            False - if fails
+        None - if not executed
+        True - if success
+        False - if fails
     """
-    output = None
+    status = None
     headers = {
         "command": f"set anylog home {path}",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+    elif returnn_cmd is True:
+        return headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return output
+    return status
 
 
 def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
@@ -150,30 +219,29 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  re
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output
+        status;bool - command status
         headers:dict - REST headers
     :return:
-        if return_cmd is True -> return command
-        else ->
-            True - if success
-            False - if fails
+        None - if not executed
+        True - if success
+        False - if fails
     """
-    output = None
+    status = None
     headers = {
         "command": "set cli off",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        return headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return output
+    return status
 
 
 def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
@@ -203,30 +271,29 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        output
+        status;bool - command status
         headers:dict - REST headers
     :return:
-        if return_cmd is True -> return command
-        else ->
-            True - if success
-            False - if fails
+        None - if not executed
+        True - if success
+        False - if fails
     """
-    output = None
+    status = None
     headers = {
         "command": "create work directories",
         "User-Agent": "AnyLog/1.23"
     }
-    if destination:
+    if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        return headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return output
+    return status
 
 
 def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, destination:str=None, return_cmd:bool=False,
@@ -244,12 +311,11 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
         status;bool - command status
         headers:dict - REST headers
     :return:
-        if return_cmd is True -> return command
-        else ->
-            True - if success
-            False - if fails
+        None - if not executed
+        True - if success
+        False - if fails
     """
-    output = None
+    status = None
     headers = {
         "command": f"set license where activation_key={license_key}",
         "User-Agent": "AnyLog/1.23"
@@ -261,11 +327,11 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        return headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return output
+    return status
 
 
 

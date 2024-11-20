@@ -1,9 +1,3 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
@@ -12,7 +6,7 @@ from anylog_api.__support__ import json_dumps
 
 
 def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where_condition:str=None,
-               bring_case:str=None, bring_condition:str=None, seperator:str=None, destination:str=None,
+               bring_case:str=None, bring_condition:str=None, seperator:str=None, destination:str="",
                view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Generate & execute `blockchain get` command
@@ -34,8 +28,7 @@ def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where
         output - content returned
         headers:dict - REST header information
     :return:
-        if return_cmd - command to be executed
-        else - results for query (list of dict)
+        output
     """
     output = None
     headers = {
@@ -60,19 +53,17 @@ def get_policy(conn:anylog_connector.AnyLogConnector, policy_type:str='*', where
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
 
 
 def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, blockchain_source:str='master',
-                    sync_time:str='30 seconds', blockchain_destination:str='file', destination:str=None,
+                    sync_time:str='30 seconds', blockchain_destination:str='file', destination:str="",
                     view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Scheduled process for blockchain sync
-    :command:
-        run blockchain sync where source=master and dest=file and connection=10.10.1.15:32048
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         ledger_conn:str - ledger connection information for master node use TCP IP:PORT
@@ -82,14 +73,9 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
         view_help:bool - print help information
         return_cmd:bool - return command to be executed
         exception:bool - print exception
-    :params:
-        output - content returned
-        headers:dict - REST header information
-    :return:
-        if return_cmd - command to be executed
-        else - True if success / False if Fails
     """
-    output = None
+    status = None
+    cmd = None
     headers = {
         "command": f"run blockchain sync where source={blockchain_source} and time={sync_time} and dest={blockchain_destination} and connection={ledger_conn}",
         "User-Agent": "AnyLog/1.23"
@@ -101,19 +87,16 @@ def blockchain_sync(conn:anylog_connector.AnyLogConnector, ledger_conn:str, bloc
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        cmd = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
-    return output
+    return status, cmd
 
-
-def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destination:str=None, view_help:bool=False,
+def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destination:str="", view_help:bool=False,
                  return_cmd:bool=False, exception:bool=False):
     """
     Pull the metadata from a source node
-    :command:
-        blockchain seed from 10.10.1.15:32048
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         ledger_conn:str - ledger connection information for master node use TCP IP:PORT
@@ -125,10 +108,10 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
         output - content returned
         headers:dict - REST header information
     :return:
-        if return_cmd - command to be executed
-        else - True if success / False if fails
+        output
     """
-    output = None
+    status = None
+    cmd = None
     headers = {
         "command": f"blockchain seed from {ledger_conn}",
         "User-Agent": "AnyLog/1.23"
@@ -140,19 +123,17 @@ def execute_seed(conn:anylog_connector.AnyLogConnector, ledger_conn:str, destina
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        cmd = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
-    return output
+    return status, cmd
 
 
-def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destination:str=None, view_help:bool=False,
+def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destination:str="", view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
     """
     Prepare JSON policy - this also validates that the JSON policy is "OK"
-    :command:
-        blockchain prepare policy !new_policy
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         policy:dict - policy to publish on blockchain
@@ -160,14 +141,14 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
         view_help:bool - print help information
         return_cmd:bool - return command to be executed
         exception:bool - print exception
-        :params:
+    :params:
         output - content returned
         headers:dict - REST header information
     :return:
-        if return_cmd - command to be executed
-        else - results for query (list of dict)
+        output
     """
-    output = None
+    status = None
+    cmd = None
     headers = {
         "command": "blockchain prepare policy !new_policy",
         "User-Agent": "AnyLog/1.23"
@@ -183,23 +164,20 @@ def prepare_policy(conn:anylog_connector.AnyLogConnector, policy:dict, destinati
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
+        cmd = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
 
-    return output
-
+    return status, cmd
 
 def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:str=None, blockchain_platform:str=None,
-                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     publish JSON policy
-    :command:
-        blockchain insert where policy=!new_policy and !local=true and master=!ledger_conn
     :args:
         conn:anylog_connector.AnyLogConnector - connection to
         policy:dict - policy to publish on blockchain
-        ledger_conn:str / blockchain_platform - which network the policy is stored on
+        ledger_conn:str / blockchain_platfrom - which network the policy is stored on
         destination:str - remote connection information
         view_help:bool - print help information
         return_cmd:bool - return command to be executed
@@ -208,10 +186,10 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
         output - content returned
         headers:dict - REST header information
     :return:
-        if return_cmd - command to be executed
-        else - results for query (list of dict)
+        output
     """
-    output = None
+    status = None
+    cmd = None
     headers = {
         "command": f"blockchain insert where policy=!new_policy and local=true ",
         "User-Agent": "AnyLog/1.23"
@@ -231,32 +209,17 @@ def post_policy(conn:anylog_connector.AnyLogConnector, policy:dict, ledger_conn:
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
+        cmd = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=new_policy, exception=exception)
 
-    return output
+    return status, cmd
 
 
-def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str=None, view_help:bool=False,
+def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, destination:str="", view_help:bool=False,
                        return_cmd:bool=False, exception:bool=False):
-    """
-    Execute config fromm policy
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to
-        policy_id:str - (config) policy to execute
-        destination:str - remote connection information
-        view_help:bool - print help information
-        return_cmd:bool - return command to be executed
-        exception:bool - print exception
-    :params:
-        output - content returned
-        headers:dict - REST header information
-    :return:
-        if return_cmd - command to be executed
-        else - results for query (list of dict)
-    """
-    output = None
+    status = None
+    cmd = None
     headers = {
         "command": f"config from policy where id={policy_id}",
         "User-Agent": "AnyLog/1.23"
@@ -267,13 +230,8 @@ def config_from_policy(conn:anylog_connector.AnyLogConnector, policy_id:str, des
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        cmd = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
-    return output
-
-
-
-
-
+    return status, cmd

@@ -1,9 +1,3 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-
 # URL https://github.com/AnyLog-co/documentation/blob/master/anylog%20commands.md#get-command
 
 import anylog_api.anylog_connector as anylog_connector
@@ -63,14 +57,14 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination:
+    if destination is not None:
         headers["destination"] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         status = False
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
         if isinstance(output, dict) and 'Status' in output and ('not' not in output['Status'] and 'running' in output['Status']):
@@ -107,7 +101,7 @@ def get_license_key(conn:anylog_connector.AnyLogConnector, destination:str=None,
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination:
+    if destination is not None:
         headers["destination"] = destination
 
     if view_help is True:
@@ -154,7 +148,7 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=True,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -184,14 +178,14 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination:
+    if destination is not None:
         headers["destination"] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -219,14 +213,14 @@ def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination:
+    if destination is not None:
         headers["destination"] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -254,14 +248,14 @@ def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, vie
         "User-Agent": "AnyLog/1.23"
     }
 
-    if destination:
+    if destination is not None:
         headers["destination"] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -298,7 +292,7 @@ def get_processes(conn:anylog_connector.AnyLogConnector, json_format:bool=True, 
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output

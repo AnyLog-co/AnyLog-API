@@ -1,16 +1,10 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
 
 
-def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_format:bool=True, destination:str=None,
+def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_format:bool=True, destination:str="",
                    view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Check whether a database exists
@@ -54,7 +48,7 @@ def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_form
 
 
 def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, json_format:bool=True,
-                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Check whether a table exists in a given database
     :cmd:
@@ -98,12 +92,12 @@ def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:s
 
 
 def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', db_ip:str=None,
-                 db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, autocommit:bool=False,
-                 destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                 db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, destination:str="",
+                 view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Connect to database
     :command:
-        connect dbms {db_name} where type={db_type} and ...
+        connect dbms {db_name} where type={db_type} and ..
     :args:
         conn:anylog_connector.AnyLogConnector - Connection to AnyLog
         db_name:str - logical database name
@@ -141,12 +135,9 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
         headers['command'] += f" and user={db_user}"
     if db_password:
         headers['command'] += f" and password={db_password}"
-    if db_type == 'sqlite' and memory is True:
+    if db_type == 'sqlite' and memory == 'true':
         headers['command'] += " and memory=true"
-    elif db_type == 'psql' and memory is True:
-        headers['command'] += " and unlog=true"
-    if db_type == 'psql':
-        headers['command'] += f" and autocommit={str(autocommit).lower()}"
+
     if destination:
         headers['destination'] = destination
     if view_help is True:
@@ -159,7 +150,7 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
     return output
 
 
-def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str=None,
+def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str="",
                  view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Create pre-defined table
@@ -207,7 +198,7 @@ def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:
 
 
 def set_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*',
-                       partition_column:str='insert_timestamp', partition_interval:str='14 days', destination:str=None,
+                       partition_column:str='insert_timestamp', partition_interval:str='14 days', destination:str="",
                        view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     output = None
     headers = {
@@ -228,7 +219,7 @@ def set_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table
 
 
 def drop_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*', partition_keep:int=3,
-                        destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                        destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     output = None
     headers = {
         "command": f"drop partition where dbms={db_name} and table={table_name} and keep={partition_keep}",

@@ -1,9 +1,4 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-
+import re
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
@@ -17,19 +12,19 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
     :url:
         https://github.com/AnyLog-co/documentation/blob/master/alerts%20and%20monitoring.md#adding-tasks-to-the-scheduler
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connection information
+        conn:anylog_connector.AnyLogConnector - REST connecton information
         schedule_id:int - Schedule ID
-        destination:str - remote destination connection information
+        destination:str - Resmote destination ID
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print exception
+        exception:bool - print excptions
     :params:
-        output
+        status:bool
         headers:dict - REST headers
     :return:
-        if return_cmd is True, returns command | else return result
+        status
     """
-    output = None
+    status = None
     headers = {
         "command": f"run scheduler {schedule_id}",
         "User-Agent": "AnyLog/1.23"
@@ -41,11 +36,10 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        output = headers['command']
-    elif return_cmd is False:
-        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
-    return output
+        status = headers['command']
+    elif view_help is False:
+        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+    return status
 
 
 def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_interval:str, task:str, destination:str=None,
@@ -53,18 +47,19 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
     """
     run schedule tasks
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connection information
+        conn:anylog_connector.AnyLogConnector - REST connecton information
         name:str - task name
         time_interval:str - Interval for scheduled task(s)
-        task:str - actual task to execute information
+        task:str - actuaal task to execute
+        destination:str - Resmote destination ID
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print exception
+        exception:bool - print excptions
     :params:
-         output
+        status:bool
         headers:dict - REST headers
     :return:
-        if return_cmd is True, returns command | else return result
+        status
     """
     status = None
     headers = {
@@ -82,7 +77,7 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return status
@@ -93,17 +88,17 @@ def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, d
     """
     get running scheduler tasks
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connection information
+        conn:anylog_connector.AnyLogConnector - REST connecton information
         schedule_id:int - Schedule ID
-        destination:str - remote destination information
+        destination:str - remote destination ID
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print exception
+        exception:bool - print excptions
     :params:
-        output
+        status:bool
         headers:dict - REST headers
     :return:
-        if return_cmd is True, returns command | else return result
+        status
     """
     output = None
     headers = {
@@ -120,7 +115,7 @@ def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, d
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif return_cmd is False:
+    elif view_help is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
