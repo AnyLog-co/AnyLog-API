@@ -300,7 +300,7 @@ def run_publisher(conn:anylog_connector.AnyLogConnector, compress_json:bool=True
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    else:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
@@ -338,7 +338,7 @@ def get_operator(conn:anylog_connector.AnyLogConnector, json_format:bool=False, 
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -376,7 +376,7 @@ def get_publisher(conn:anylog_connector.AnyLogConnector, json_format:bool=False,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -413,7 +413,7 @@ def exit_operator(conn:anylog_connector.AnyLogConnector, destination:str=None, v
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
@@ -450,7 +450,7 @@ def exit_publisher(conn:anylog_connector.AnyLogConnector, destination:str=None, 
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

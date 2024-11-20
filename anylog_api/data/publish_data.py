@@ -4,11 +4,11 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import warnings
+from sunau import AUDIO_UNKNOWN_SIZE
 
-from Cython.Compiler.Nodes import PassStatNode
+from idna import valid_label_length
 
 import anylog_api.anylog_connector as anylog_connector
-# from anylog_api.__support__ import add_conditions
 from anylog_api.__support__ import json_dumps
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
@@ -48,9 +48,9 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
     if mode not in ['streaming', 'file']:
         headers['mode'] = 'streaming'
         if exception is True:
-            print(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
+            warnings.warn(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
 
-    serialize_data = json_dumps(payload)
+    serialize_data = json_dumps(content=payload, exception=exception)
 
     if return_cmd is True:
         status = headers
@@ -86,9 +86,9 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
     }
 
     if isinstance(payload, list):
-        serialize_data = [json_dumps(row) for row in payload]
+        serialize_data = [json_dumps(content=row, exception=exception) for row in payload]
     elif isinstance(payload, dict):
-        serialize_data = json_dumps(payload)
+        serialize_data = json_dumps(content=payload, exception=exception)
     else:
         serialize_data = payload
 
@@ -100,9 +100,9 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
     return status
 
 
-def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str, port:int=None, username:str=None,
-                   password:str=None, log:bool=False, policy_id:str=None, db_name:str=None, table_name:str=None,
-                   values:dict={}, is_rest_broker:bool=False, destination:str=None, view_help:bool=False,
+def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str, port:int=None, is_rest_broker:bool=False,
+                   username:str=None, password:str=None, log:bool=False, policy_id:str=None, db_name:str=None,
+                   table_name:str=None, values:dict={}, destination:str=None, view_help:bool=False,
                    return_cmd:bool=False, exception:bool=False):
     """
     Enable message client for POST, MQTT, Kafka
@@ -111,6 +111,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         broker:str - broker
         topic:str - topic name
         port:int - port associated with broker value
+        is_rest_broker:bool - whether REST (POST)s connection for messsage client
         username:str - user associated with broker
         password:str - password associated with user
         log:bool - whether to enable logging or not
@@ -140,49 +141,60 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
     """
     status = None
     headers = {
-        "command": f'run msg client where broker={broker}',
+        "command": f'run msg client where broker={broker} and ',
         "User-Agent": 'AnyLog/1.23'
     }
 
     if port:
-        headers["command"] += f" and port={port}"
+        headers['command'] += f" port={port} and"
     if is_rest_broker is True:
-        headers["command"] += " and user-agent=anylog"
+        headers['command'] += f" user-agent=anylog"
     if username:
-        headers["command"] += f" and user={username}"
+        headers['command'] += f" user={username} and"
     if password:
-        headers["command"] += f" and password={password}"
-    if log is True:
-        headers["command"] += " and log=true"
+        headers['command'] += f" password={password} and"
+    if isinstance(log, bool) or str(log).lower() in ['true', 'false']:
+        headers['command'] += f" log={str(log).lower()} and"
     else:
-        headers["command"] += " and log=false"
-    headers["command"] += f" and topic={topic}"
+        headers['command'] += f" log=false and"
+        if exception is True:
+            warnings.warn(f"Warning: Invalid message client log value, setting value to default - `false`")
 
-    if db_name or table_name or values:
-        headers["command"] = headers["command"].replace(f"topic={topic}", f"topic=(name={topic}")
-        if db_name:
-            headers['command'] += f" and dbms={db_name}"
-        if table_name:
-            headers['command'] += f" and table={table_name}"
-        if values:
-            for key, values_dict in values.items():
-                headers['command'] += " and "
-                if 'value' in values_dict and 'bring' in values_dict['value']:
-                    values_dict['value'] = '"' + values_dict['value'] + "'"
-                if 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
-                    if 'value' not in values_dict:
-                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp=now()"
-                    else:
-                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp={values_dict['value']}"
-                elif 'value' in values_dict:
-                    if 'type' not in values_dict or values_dict['type'].lower() not in ['string', 'int', 'float',
-                                                                                        'bool', 'timestamp']:
-                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
-                    else:
-                        key = key.replace(' ', '_').replace('-', '_')
-                        value = values_dict["value"].replace('"', '').replace("'","")
-                        headers['command'] += f'column.{key}=(type={values_dict["type"].lower()} and value="{value}")'
-        headers['command'] += ")"
+    complete_topic = f"topic=*"
+    if topic and policy_id:
+        complete_topic=f"topic=(name={topic} and policy={policy_id})"
+    elif topic:
+        complete_topic = f"topic=(name={topic} and"
+        if db_name or table_name or values:
+            if db_name:
+                complete_topic += f" db_name={db_name} and"
+            if table_name:
+                complete_topic += f" table={table_name} and"
+            if values:
+                for key in values:
+                    if 'type' in values[key] and values[key]['type'].lower().strip() == 'timestamp' and 'value' in values[key]:
+                        if 'bring' in values[key]['value'].lower():
+                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}.timestamp="{values[key]["value"].strip()}"'
+                        else:
+                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}.timestamp={values[key]["value"].strip()}'
+                    elif 'type' in values[key] and values[key]['type'].lower().strip() == 'timestamp' and 'value' not in values[key]:
+                        complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}.timestamp=now()'
+
+                    elif 'type' in values[key] and values[key]['type'].lower().strip() in ['int', 'float', 'bool', 'string'] and 'value' in values[key]:
+                        if 'bring' in values[key]['value'].lower():
+                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type={values[key]['type'].lower().strip()} value="{values[key]["value"].strip()}") and'
+                        else:
+                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type={values[key]['type'].lower().strip()} value={values[key]["value"].strip()}) and'
+                    elif 'value' in values[key]:
+                        if 'bring' in values[key]['value'].lower():
+                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type=string value="{values[key]["value"].strip()}") and'
+                        else:
+                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type=string value={values[key]["value"].strip()}) and'
+            complete_topic = complete_topic.rsplit(" and", 1)[0] + ")"
+        else:
+            complete_topic = f"topic={topic}"
+
+        headers['command'] += complete_topic
 
     if destination:
         headers['destination'] = destination
@@ -192,7 +204,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    else:
         headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
@@ -238,7 +250,7 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -278,7 +290,7 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status

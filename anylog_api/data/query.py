@@ -354,7 +354,7 @@ def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str
 #         get_help(conn=conn, cmd=headers['command'], exception=exception)
 #     if return_cmd is True:
 #         output = headers['command']
-#     elif view_help is False:
+#     else:
 #         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 #
 #     return output

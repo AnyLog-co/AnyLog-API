@@ -69,7 +69,7 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         return headers['command']
-    elif view_help is False:
+    else:
         status = False
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
         if isinstance(output, dict) and 'Status' in output and ('not' not in output['Status'] and 'running' in output['Status']):
@@ -153,7 +153,7 @@ def get_dictionary(conn:anylog_connector.AnyLogConnector, json_format:bool=True,
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -190,7 +190,7 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -225,7 +225,7 @@ def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -260,7 +260,7 @@ def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, vie
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
@@ -297,7 +297,7 @@ def get_processes(conn:anylog_connector.AnyLogConnector, json_format:bool=True, 
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
