@@ -1,5 +1,6 @@
 # setuptools>=0.0
 Cython>=0.0
+unittest>=0.0
 
 # ast>=0.0
 python-dotenv>=0.0
