@@ -1,108 +1,116 @@
-# AnnyLog-API 
+# AnyLog API 
 
-The AnyLog API examples section, contains a data generator that can be used as a test bed for inserting data into 
-AnyLog/EdgeLake.
+The AnyLog API enables seamless interaction with _AnyLog_ or _EdgeLake_ nodes to manage distributed data seamlessly. 
+This README provides setup instructions and sample usage for initializing a node, inserting data, and querying data.
 
-**Sample Data**: 
-```json
-{
-  "timestamp": "2024-03-12 10:32:54.238491",
-  "value": 3.141587
-}
-```
- ### Requirements
-* A running AnyLog / EdgeLake instance to accept data
-* A running AnyLog / EdgeLake instance with `system_query` to run queries (could be the same instance as above)
-* Install [requirements](requirements.txt)
+## Requirements
+* Python Installation: Python 3.7 or newer
+* Library Installation: Install the AnyLog API library via pip
 ```shell
-python3 -m pip install --upgrade -r requirements.txt
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade anylog-api>=0.0
 ```
-
-## Publishing Data
-
-* Insert data via [PUT](examples/insert_data_put.py)
+* A running (generic) AnyLog or EdgeLake node
 ```shell
-python3 examples/insert_data_put.py [Operator IP:PORT] \
-  --db-name [DB_NAME] \
-  --table-name [TABLE_NAME] \
-  --total-rows [TOTAL_ROWS]
+docker run -it -d --network host \
+  -e INIT_TYPE=prod \
+  -e NODE_TYPE=generic \
+  -e ANYLOG_SERVER_PORT=32048 \
+  -e ANYLOG_REST_PORT=32049 \
+--name anylog-node --rm anylogco/anylog-network:latest  
 ```
 
-* Insert Data via [POST](examples/insert_data_post.py)
-  * Generate MQTT client based on expected data to come in 
-  * Publish data via _POST_
+## Support Links
+* [AnyLog Documentation](https://github.com/AnyLog-co/documentation/)
+* [EdgeLake Documentation](https://edgelake.github.io/)
+* [AnyLog's docker-compose](https://github.com/AnyLog-co/docker-compose)
+* [EdgeLake's dockcer-compose](https://github.com/EdgeLake/docker-compose)
+
+## Usage Examples
+
+### Node Initiation  
+Code in [example_node_deployment](example_node_deployment), demonstrates deploying a node completely via REST based on
+`.env` [configuration file](configs/). 
+
+**Key Features**: 
+* Set up an AnyLog node or EdgeLake instance.
+* Apply configurations, set license keys, and validate the node’s connectivity. 
+* Schedule tasks, create databases, and establish blockchain synchronization.
+
 ```shell
-python3 examples/insert_data_put.py [Operator IP:PORT] \
-  --db-name [DB_NAME] \
-  --table-name [TABLE_NAME] \
-  --total-rows [TOTAL_ROWS] \
-  --topic [TOPIC_NAME] \
+python3 node.py <node_connection> --configs=<config_file> --license-key=<license_key> --edgelake
 ```
 
-## Query data 
-For querying purposes, the examples use an active AnyLog / EdgeLake setup, in order to demonstrate working use cases for
-both _increments_ and _period_ functions. Note, that while naming of user-input might be similar, the actual user-input 
-may be different.
+### Data Management
+* Insert Data via PUT: 
+```python
+import datetime
+import random 
+import anylog_api.anylog_connector as anylog_connector
+import anylog_api.data.publish_data as publish_data
 
-* [Increment Function](examples/sample_query_increments.py)
-```shell
-python3 examples/sample_query_increments.py 23.239.12.151:32349 edgex rand_data \
-  --output-format table \
-  --time-column timestamp \
-  --where-conditions "timestamp >= NOW() - 2 hours and timestamp <= NOW() - 1 hour" \
-  --limit 10 \
-  --return-cmd \
-  --order-by
+# Generate data
+SAMPLE_DATA = [] 
+for i in range(10):
+    SAMPLE_DATA.append({
+        "timestamp": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f'),
+        "value": random.random()
+    })
+
+# connect to AnyLog / EdgeLake
+conn = '10.10.1.15:32149'
+anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=(), timeout=30)
+
+# Publish data
+publish_data.put_data(conn=anylog_conn, payload=SAMPLE_DATA, db_name="test", table_name="rand_data",
+                             mode='streaming', return_cmd=False, exception=True)
 ```
-**Output**: 
-```output
-sql edgex format=table  SELECT increments(minute, 1, timestamp), MIN(timestamp) AS min_ts, MIN(timestamp) AS max_ts, MIN(value) AS min_value, MAX(value) AS max_value, AVG(value) AS avg_value,  COUNT(*) AS row_count  FROM rand_data WHERE timestamp >= NOW() - 2 hours and timestamp <= NOW() - 1 hour  ORDER BY min_ts limit 10 
+* Insert Data via POST: 
+```python
+import datetime
+import random 
+import anylog_api.anylog_connector as anylog_connector
+import anylog_api.data.publish_data as publish_data
 
-min_ts                     max_ts                     min_value max_value avg_value          row_count
--------------------------- -------------------------- --------- --------- ------------------ --------- 
-2024-08-24 22:55:18.637061 2024-08-24 22:55:18.637061     4.014   760.291 255.41164444444442        90 
-2024-08-24 22:56:04.670541 2024-08-24 22:56:04.670541      3.19   790.123 246.85996363636366       110 
-2024-08-24 22:57:00.952800 2024-08-24 22:57:00.952800     0.534    952.88           252.1716       120 
-2024-08-24 22:58:02.336577 2024-08-24 22:58:02.336577     0.075   750.192         228.443625       120 
-2024-08-24 22:59:03.722973 2024-08-24 22:59:03.722973     2.233   833.586 257.39289655172416       116 
-2024-08-24 23:00:00.000012 2024-08-24 23:00:00.000012     1.567   831.919 254.34968421052633       114 
-2024-08-24 23:01:01.393553 2024-08-24 23:01:01.393553     0.957   877.293  258.5495833333333       120 
-2024-08-24 23:02:02.778916 2024-08-24 23:02:02.778916     0.456   896.794  275.2477083333333       120 
-2024-08-24 23:03:04.170461 2024-08-24 23:03:04.170461     0.072   922.591  275.4125272727273       110 
-2024-08-24 23:04:00.559784 2024-08-24 23:04:00.559784     1.464   899.864 254.89586666666668       120 
+# Generate data
+SAMPLE_DATA = [] 
+for i in range(10):
+    SAMPLE_DATA.append({
+        "dbms": "test", 
+        "table": "rand_data",
+        "timestamp": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f'),
+        "value": random.random()
+    })
 
-{"Statistics":[{"Count": 10,
-                "Time":"00:00:00",
-                "Nodes": 2}]}
+
+conn = '10.10.1.15:32149'
+topic = 'my-data'
+
+# connect to AnyLog / EdgeLake
+anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=(), timeout=30) 
+
+# create message client
+publish_data.run_msg_client(conn=anylog_conn, broker='rest', topic=topic, db_name="bring [dbms]",
+                                table_name="bring [table]",
+                                values={
+                                    "timestamp": {"type": "timestamp", "value": "bring [timestamp]"},
+                                    "value": {"type": "float", "value": "bring [value]"}
+                                }, destination="", is_rest_broker=True, view_help=False, return_cmd=False, exception=True)
+
+# Publish data
+publish_data.post_data(conn=anylog_conn, payload=SAMPLE_DATA, return_cmd=False, exception=True)
 ```
+* Query Data
+```python
+import anylog_api.anylog_connector as anylog_connector
+import anylog_api.generic.get as generic_get
+import anylog_api.data.query as query_data
 
-* [Period Function](examples/sample_query_period.py)
-```shell
-python3 examples/sample_query_period.py 23.239.12.151:32349 litsanleandro ping_sensor \
-  --time-column insert_timestamp \
-  --interval day \
-  --time-units 1 \
-  --values device_name,min(timestamp),max(timestamp),count(*) \
-  --group-by device_name \
-  --output-format table \
-  --return-cmd
-```
+conn = '10.10.1.15:32349'
+anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=(), timeout=30)
 
-**Output**:
-```output
-sql litsanleandro format=table  select device_name,min(timestamp),max(timestamp),count(*) FROM ping_sensor WHERE period(day, 1, NOW(),insert_timestamp) GROUP BY device_name 
-
-
-device_name     min(timestamp)             max(timestamp)             count(*)
---------------- -------------------------- -------------------------- -------- 
-ADVA FSP3000R7  2024-08-24 01:05:55.025758 2024-08-25 01:05:44.853925     7731 
-Catalyst 3500XL 2024-08-24 01:05:55.526476 2024-08-25 01:05:43.351979     7841 
-GOOGLE_PING     2024-08-24 01:06:08.314810 2024-08-25 01:05:42.851271     7725 
-Ubiquiti OLT    2024-08-24 01:05:54.024306 2024-08-25 01:05:31.626811     7636 
-VM Lit SL NMS   2024-08-24 01:05:54.525032 2024-08-25 01:05:44.353399     7753 
-
-{"Statistics":[{"Count": 5,
-                "Time":"00:00:01",
-                "Nodes": 3}]}
+sql_cmd = "SELECT COUNT(*) FROM rand_data"
+output = query_data.query_data(conn=anylog_conn, db_name='test', sql_query=sql_cmd, output_format='table')
+print(output)
 ```
 
