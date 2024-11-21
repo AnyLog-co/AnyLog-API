@@ -4,10 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import warnings
-from sched import scheduler
 from typing import Union
-
-from pkg_resources import find_nothing
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
@@ -39,6 +36,7 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
             True -> success
             False -> fails
     """
+    status = None
     is_invalid = False
     if not schedule_id and schedule_id not in [0, '0']:
         is_invalid = True
@@ -56,9 +54,6 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
             if exception is True:
                 raise ValueError(f"Invalid schedule ID, must be an int greater than 0")
 
-    if is_invalid:
-        return None  # If invalid, return None (or raise error if exception=False)
-
     headers = {
         "command": f"run scheduler {schedule_id}",
         "User-Agent": "AnyLog/1.23"
@@ -71,8 +66,9 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    else:
+    elif is_invalid is False:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
     return status
 
 
@@ -99,10 +95,12 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
             - True: success
             - False: fails
     """
+    output = None
+    is_invalid = False
     if not check_interval(time_interval=time_interval, exception=exception):
+        is_invalid = True
         if exception is True:
             raise ValueError('Invalid time interval for schedule process. Support time intervals: second(s), minute(s), hour(s), day(s), month(s)')
-        return None
 
     headers = {
         "command": f"schedule name={name} and time={time_interval} and task {task}",
@@ -120,7 +118,7 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif is_invalid is False:
         output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
     return output
@@ -143,6 +141,7 @@ def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, d
     :return:
         status
     """
+    output = None
     is_invalid = False
     try:
         if schedule_id and not int(schedule_id):
@@ -176,7 +175,7 @@ def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, d
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    else:
+    elif is_invalid is False:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output

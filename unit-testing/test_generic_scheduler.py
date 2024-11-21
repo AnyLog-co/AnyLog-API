@@ -70,7 +70,7 @@ class TestAnylogConnectorSupport(unittest.TestCase):
     def test_run_scheduler_return_cmd_with_invalid_schedule_id(self):
         # Test that the command is returned without execution if schedule_id is invalid
         command = run_scheduler(self.mock_conn, schedule_id=0, return_cmd=True)
-        self.assertIsNone(command, 'run scheduler 0')
+        self.assertEqual(command, 'run scheduler 0')
 
     def test_get_scheduler_success(self):
         # Simulate success of GET request
@@ -95,7 +95,7 @@ class TestAnylogConnectorSupport(unittest.TestCase):
         status = get_scheduler(self.mock_conn, schedule_id="invalid", exception=False)
 
         # Assert the function returns None due to invalid ID handling
-        self.assertEqual(status, {'message': 'Invalid ID ignored'})
+        self.assertIsNone(status)
 
     def test_get_scheduler_return_cmd(self):
         # Test returning the generated command
