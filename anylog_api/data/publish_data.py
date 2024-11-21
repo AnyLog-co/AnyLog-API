@@ -4,9 +4,6 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import warnings
-from sunau import AUDIO_UNKNOWN_SIZE
-
-from idna import valid_label_length
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.__support__ import json_dumps
@@ -100,10 +97,10 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
     return status
 
 
-def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str, port:int=None, is_rest_broker:bool=False,
-                   username:str=None, password:str=None, log:bool=False, policy_id:str=None, db_name:str=None,
-                   table_name:str=None, values:dict={}, destination:str=None, view_help:bool=False,
-                   return_cmd:bool=False, exception:bool=False):
+def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str, port:int=None,
+                   is_rest_broker:bool=False, username:str=None, password:str=None, log:bool=False,
+                   policy_id:str=None, db_name:str=None, table_name:str=None, values:dict=None, destination:str=None,
+                   view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Enable message client for POST, MQTT, Kafka
     :args:
@@ -111,7 +108,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         broker:str - broker
         topic:str - topic name
         port:int - port associated with broker value
-        is_rest_broker:bool - whether REST (POST)s connection for messsage client
+        is_rest_broker:bool - whether REST (POST)s connection for message client
         username:str - user associated with broker
         password:str - password associated with user
         log:bool - whether to enable logging or not
@@ -139,7 +136,6 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         True -->  data sent
         False --> Fails to send data
     """
-    status = None
     headers = {
         "command": f'run msg client where broker={broker} and ',
         "User-Agent": 'AnyLog/1.23'
@@ -172,40 +168,39 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
                 complete_topic += f" table={table_name} and"
             if values:
                 for key in values:
-                    if 'type' in values[key] and values[key]['type'].lower().strip() == 'timestamp' and 'value' in values[key]:
-                        if 'bring' in values[key]['value'].lower():
-                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}.timestamp="{values[key]["value"].strip()}"'
-                        else:
-                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}.timestamp={values[key]["value"].strip()}'
-                    elif 'type' in values[key] and values[key]['type'].lower().strip() == 'timestamp' and 'value' not in values[key]:
-                        complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}.timestamp=now()'
+                    column_name = key.lower().strip().replace(" ", "_")
+                    value = None
+                    value_type = 'string'
+                    if 'value' in values[key]:
+                        value = values[key]["value"].strip()
+                    if 'type' in values[key] and values[key].strip().lower() in ['int', 'float', 'bool', 'string']:
+                        value_type = values[key].strip().lower()
+                    elif exception is True:
+                        warnings.warn('Invalid column value type, using `string` value (Default values: int, float, bool, string)')
 
-                    elif 'type' in values[key] and values[key]['type'].lower().strip() in ['int', 'float', 'bool', 'string'] and 'value' in values[key]:
-                        if 'bring' in values[key]['value'].lower():
-                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type={values[key]['type'].lower().strip()} value="{values[key]["value"].strip()}") and'
-                        else:
-                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type={values[key]['type'].lower().strip()} value={values[key]["value"].strip()}) and'
-                    elif 'value' in values[key]:
-                        if 'bring' in values[key]['value'].lower():
-                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type=string value="{values[key]["value"].strip()}") and'
-                        else:
-                            complete_topic += f'column.{values[key]["value"].strip().replace(" ", "_")}=(type=string value={values[key]["value"].strip()}) and'
+                    if value_type == 'timestamp' and not value:
+                        complete_topic += f"column.{column_name}.timestamp=now() and"
+                    elif value_type == 'timestamp' and 'bring' in value.lower():
+                        complete_topic += f'column.{column_name}.timestamp="{value}" and'
+                    elif value_type == 'timestamp':
+                        complete_topic += f'column.{column_name}.timestamp={value} and'
+                    elif 'bring' in value.lower() or " " in value:
+                        column_name += f'column.{column_name}=(type={value_type} and value="{value}") and'
+                    elif value:
+                        column_name += f'column.{column_name}=(type={value_type} and value={value}) and'
             complete_topic = complete_topic.rsplit(" and", 1)[0] + ")"
         else:
             complete_topic = f"topic={topic}"
 
-        headers['command'] += complete_topic
+    headers['command'] += complete_topic
 
     if destination:
         headers['destination'] = destination
-
     if view_help is True:
-        headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n","").replace("\t", " ")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
     else:
-        headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return status
@@ -229,7 +224,6 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         if view_help == True - None
         results for query
     """
-    output = None
     headers = {
         "command": "get msg client",
         "User-Agent": "AnyLog/1.23"
@@ -238,10 +232,15 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
 
     if client_id:
         try:
-            headers['command'] += f" where id={int(client_id)}"
-        except Exception as error:
+            client_id = int(client_id)  # Raises ValueError if conversion fails
+        except ValueError:
             if exception is True:
-                warnings.warn('Invalid value type for client ID. Value must be integer')
+                warnings.warn('Invalid value type for client ID. Value must be an integer.')
+        except KeyError as e:
+            if exception is True:
+                warnings.warn(f"Missing required key in headers: {e}")
+        else:
+            headers['command'] += f" WHERE id={client_id}"
 
     if destination is not None:
         headers['destination'] = destination
@@ -275,7 +274,6 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
         if execution succeeds - True
         if execution fails - False
     """
-    status = None
     headers = {
         "command": "exit mqtt",
         "User-Agent": "AnyLog/1.23"
