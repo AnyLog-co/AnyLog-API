@@ -47,10 +47,10 @@ class TestAnylogConnectorSupport(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_scheduler(self.mock_conn, schedule_id=-1, exception=True)
 
-    # def test_run_scheduler_invalid_schedule_id_no_id_provided(self):
-    #     # Test missing schedule_id (None) without exception
-    #     status = run_scheduler(self.mock_conn, schedule_id=None, exception=False)
-    #     self.assertEqual(status, None)
+    def test_run_scheduler_invalid_schedule_id_no_id_provided(self):
+        # Test missing schedule_id (None) without exception
+        status = run_scheduler(self.mock_conn, schedule_id=None, exception=False)
+        self.assertEqual(status, None)
 
     def test_run_scheduler_exception_on_missing_schedule_id(self):
         # Test missing schedule_id (None) with exception
@@ -62,15 +62,15 @@ class TestAnylogConnectorSupport(unittest.TestCase):
         command = run_scheduler(self.mock_conn, schedule_id=1, return_cmd=True)
         self.assertEqual(command, 'run scheduler 1')
 
-    # def test_run_scheduler_invalid_schedule_id(self):
-    #     # Test invalid schedule_id (non-positive integer) with exception=True
-    #     with self.assertRaises(ValueError):
-    #         run_scheduler(self.mock_conn, schedule_id=0, exception=True)
+    def test_run_scheduler_invalid_schedule_id(self):
+        # Test invalid schedule_id (non-positive integer) with exception=True
+        with self.assertRaises(ValueError):
+            run_scheduler(self.mock_conn, schedule_id=0, exception=True)
 
-    # def test_run_scheduler_return_cmd_with_invalid_schedule_id(self):
-    #     # Test that the command is returned without execution if schedule_id is invalid
-    #     command = run_scheduler(self.mock_conn, schedule_id=0, return_cmd=True)
-    #     self.assertEqual(command, 'run scheduler 0')
+    def test_run_scheduler_return_cmd_with_invalid_schedule_id(self):
+        # Test that the command is returned without execution if schedule_id is invalid
+        command = run_scheduler(self.mock_conn, schedule_id=0, return_cmd=True)
+        self.assertIsNone(command, 'run scheduler 0')
 
     def test_get_scheduler_success(self):
         # Simulate success of GET request

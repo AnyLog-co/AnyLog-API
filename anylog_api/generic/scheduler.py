@@ -40,7 +40,7 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
             False -> fails
     """
     is_invalid = False
-    if not schedule_id:
+    if not schedule_id and schedule_id not in [0, '0']:
         is_invalid = True
         if exception is True:
             raise KeyError(f"Missing schedule ID, cannot start new scheduler process")
