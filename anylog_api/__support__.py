@@ -57,6 +57,22 @@ def json_dumps(content, indent:int=0, exception:bool=False)->str:
     return output
 
 
+def check_ip(conn:str)->bool:
+    """
+    Validate if IP address is correct
+    :args:
+        conn:str - IP to check against
+    :params:
+        pattern:str - IP address pattern
+    :return:
+        if success return True, Else reutnr exception
+    """
+    pattern = r'^(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}$'
+    if not re.match(pattern, conn):
+        raise ValueError('Connection information not in correct format - example [IP_Address]:[ANYLOG_REST_PORT]')
+    return True
+
+
 def check_conn_info(conn:str)->bool:
     """
     Check whether connection is correct format
