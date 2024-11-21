@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          # Use the default GITHUB_TOKEN instead of a custom PAT
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python 3.x
         uses: actions/setup-python@v3
@@ -30,10 +33,11 @@ jobs:
         run: |
           python -m unittest unit-testing/*.py -v --failfast
 
-      # If you don't want to upload any test results, remove the next section:
+      # Optional: Remove this step if you're not uploading test results
       - name: Upload test results (optional)
         if: failure()  # Only run this step if the tests fail
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: test-results/
+dd
