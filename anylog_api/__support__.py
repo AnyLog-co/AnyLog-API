@@ -6,6 +6,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/
 import json
 import re
 
+from Cython.Compiler.ModuleNode import refnanny_utility_code
+
 
 def json_loads(content, exception:bool=False)->dict:
     """
@@ -50,7 +52,7 @@ def json_dumps(content, indent:int=0, exception:bool=False)->str:
     except Exception as error:
         if exception is True:
             raise json.JSONDecodeError(msg=f"Failed to convert content into serialized JSON format (Error: {error})",
-                                       doc=content, pos=0)
+                                       doc=str(content), pos=0)
 
     return output
 
@@ -61,21 +63,38 @@ def check_conn_info(conn:str)->bool:
     :args:
         conn:str - REST connection IP:Port
     :params:
-        status:bool
         pattern:str - pattern to check connection is correct format
     :return:
         if fails then raise an error
         else - True
     """
-    status = True
-    pattern = r'^(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}$'
-    try:
-        if not re.match(pattern, conn):
-            raise ValueError('Connection information not in correct format - example [IP_Address]:[ANYLOG_REST_PORT]')
-    except Exception:
-        raise re.PatternError('Failed to validate connection information is correct - example [IP_Address]:[ANYLOG_REST_PORT]')
+    pattern1 = r'^(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}$'
+    pattern2 = f'^(?:[a-zA-Z0-9._%+-]+(?::[a-zA-Z0-9._%+-]+)?@)?{pattern1}'
 
-    return status
+    if not re.match(pattern1, conn) and not re.match(pattern2, conn):
+        raise ValueError('Connection information not in correct format - example [IP_Address]:[ANYLOG_REST_PORT]')
+
+    return True
+
+def separate_conn_info(conn:str)->(str, tuple):
+    """
+    Separate connection information provided
+    :args:
+        conn:str - REST connection information
+    :params:
+        pattern:str - pattern information
+        auth:tuple - authentication information
+    :return:
+        conn, auth
+    """
+    pattern1 = r'^(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}$'
+    pattern = f'^(?:[a-zA-Z0-9._%+-]+(?::[a-zA-Z0-9._%+-]+)?@)?{pattern1}'
+    auth = ()
+    if re.match(pattern, conn) is True or '@' in conn:
+        auth, conn = conn.split('@')
+        auth = tuple(auth.split(":"))
+
+    return conn, auth
 
 
 def check_interval(time_interval:str, exception:bool=False)->bool:

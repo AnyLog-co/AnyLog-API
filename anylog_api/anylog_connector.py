@@ -7,7 +7,7 @@ import requests
 import anylog_api.__support__ as support
 
 class AnyLogConnector:
-    def __init__(self, conn:str, auth:tuple=None, timeout:int=30):
+    def __init__(self, conn:str, timeout:int=30):
         """
         The following are the base support for AnyLog via REST
             - GET: extract information from AnyLog (information + queries)
@@ -20,16 +20,12 @@ class AnyLogConnector:
             auth:tuple - Authentication information
             timeout:int - REST timeout
         """
-        if support.check_conn_info(conn=conn) is True:
-            self.conn = conn
-        if auth is None:
-            self.auth = ()
-        elif isinstance(auth, list):
-            self.auth = tuple(auth)
-        elif not isinstance(auth, tuple):
-            raise ValueError('authentication must be of type tuple - example (username, password)')
-        else:
-            self.auth = auth
+        try:
+            if support.check_conn_info(conn=conn) is True:
+                self.conn, self.auth = support.separate_conn_info(conn=conn)
+        except ValueError as e:
+            raise ValueError(f"Invalid connection format: {conn}") from e
+
         try:
             self.timeout = int(timeout)
         except:

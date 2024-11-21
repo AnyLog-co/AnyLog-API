@@ -3,7 +3,8 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
-import re
+import warnings
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
@@ -17,19 +18,18 @@ def run_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=1, dest
     :url:
         https://github.com/AnyLog-co/documentation/blob/master/alerts%20and%20monitoring.md#adding-tasks-to-the-scheduler
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connecton information
+        conn:anylog_connector.AnyLogConnector - REST connection information
         schedule_id:int - Schedule ID
-        destination:str - Resmote destination ID
+        destination:str - remote destination ID
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print excptions
+        exception:bool - print exception
     :params:
         status:bool
         headers:dict - REST headers
     :return:
         status
     """
-    status = None
     headers = {
         "command": f"run scheduler {schedule_id}",
         "User-Agent": "AnyLog/1.23"
@@ -52,21 +52,23 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
     """
     run schedule tasks
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connecton information
+        conn:anylog_connector.AnyLogConnector - REST connection information
         name:str - task name
         time_interval:str - Interval for scheduled task(s)
-        task:str - actuaal task to execute
-        destination:str - Resmote destination ID
+        task:str - actual task to execute
+        destination:str - remote destination ID
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print excptions
+        exception:bool - print exception
     :params:
-        status:bool
+        output
         headers:dict - REST headers
     :return:
-        status
+        if return_cmd -> returns generated command,
+        else ->
+            - True: success
+            - False: fails
     """
-    status = None
     headers = {
         "command": f"schedule name={name} and time={time_interval} and task {task}",
         "User-Agent": "AnyLog/1.23"
@@ -76,16 +78,17 @@ def run_schedule_task(conn:anylog_connector.AnyLogConnector, name:str, time_inte
         headers['destination'] = destination
 
     if check_interval(time_interval=time_interval, exception=exception) is False:
-        return status
+        if exception is True:
+            raise ValueError(f'Time interval value is in valid. Support intervals: second, minute, hour, day, month, year')
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        status = headers['command']
+        output = headers['command']
     else:
-        status = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd="POST", headers=headers, payload=None, exception=exception)
 
-    return status
+    return output
 
 
 def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, destination:str=None, view_help:bool=False,
@@ -93,19 +96,18 @@ def get_scheduler(conn:anylog_connector.AnyLogConnector, schedule_id:int=None, d
     """
     get running scheduler tasks
     :args:
-        conn:anylog_connector.AnyLogConnector - REST connecton information
+        conn:anylog_connector.AnyLogConnector - REST connection information
         schedule_id:int - Schedule ID
         destination:str - remote destination ID
         view_help:bool - print information about command
         return_cmd:bool - return generated command
-        exception:bool - print excptions
+        exception:bool - print exception
     :params:
-        status:bool
+        output
         headers:dict - REST headers
     :return:
         status
     """
-    output = None
     headers = {
         "command": "get scheduler",
         "User-Agent": 'AnyLog/1.23'
