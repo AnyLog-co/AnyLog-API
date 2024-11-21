@@ -82,6 +82,9 @@ def __print_rest_error(call_type:str, cmd:str, error:str):
         error_type:str - Error Type
         cmd:str - command that failed
         error:str - error message
+    :global:
+        NETWORK_ERRORS:dict - based on initial error code value print error message
+        NETWORK_ERRORS_GENERIC:dict - based on initial error code value print error message
     :params:
         error_msg:str - generated error message
     :print:
@@ -90,8 +93,9 @@ def __print_rest_error(call_type:str, cmd:str, error:str):
     error_msg = f'Failed to execute {call_type} for "{cmd}" '
     try:
         error = int(error)
-    except Exception as err:
+    except KeyError or ValueError:
         pass
+
     if isinstance(error, int):
         if error in NETWORK_ERRORS:
             error_msg += f'(Network Error {error} - {NETWORK_ERRORS[error]})'
@@ -120,7 +124,7 @@ def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
     output = None
     try:
         output = r.json()
-    except Exception as err:
+    except requests.JSONDecodeError:
         try:
             output = r.text
         except Exception as error:
