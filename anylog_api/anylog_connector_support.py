@@ -4,6 +4,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import requests
+from typing import Union
+
 import anylog_api.anylog_connector as anylog_connector
 
 # Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
@@ -87,7 +89,7 @@ def __print_rest_error(call_type:str, cmd:str, error:str):
         NETWORK_ERRORS_GENERIC:dict - based on initial error code value print error message
     :params:
         error_msg:str - generated error message
-    :print:
+    :raise:
         error message
     """
     error_msg = f'Failed to execute {call_type} for "{cmd}" '
@@ -134,7 +136,7 @@ def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
     return output
 
 
-def extract_get_results(conn:anylog_connector.AnyLogConnector, headers:dict, exception:bool=False):
+def extract_get_results(conn:anylog_connector.AnyLogConnector, headers:dict, exception:bool=False)->Union[None, str]:
     """
     execute / extract results for GET request
     :args:
@@ -156,7 +158,8 @@ def extract_get_results(conn:anylog_connector.AnyLogConnector, headers:dict, exc
     return output
 
 
-def execute_publish_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:dict, payload:str=None, exception:bool=False):
+def execute_publish_cmd(conn:anylog_connector.AnyLogConnector, cmd:str, headers:dict, payload:str=None,
+                        exception:bool=False)->bool:
     """
     Execute command (both POST and PUT)
     :args:

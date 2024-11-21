@@ -6,8 +6,6 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/
 import json
 import re
 
-from Cython.Compiler.ModuleNode import refnanny_utility_code
-
 
 def json_loads(content, exception:bool=False)->dict:
     """
@@ -19,6 +17,7 @@ def json_loads(content, exception:bool=False)->dict:
         output - content as dictionary form
     :return:
         output
+        if fails - raise JSON error
     """
     output = None
     try:
@@ -42,7 +41,8 @@ def json_dumps(content, indent:int=0, exception:bool=False)->str:
         output - content as dictionary form
     :return:
         output
-        """
+        if fails - raise JSON error
+    """
     output = None
     try:
         if indent > 0:

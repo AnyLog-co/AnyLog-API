@@ -4,6 +4,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import requests
+from typing import Union
+
 import anylog_api.__support__ as support
 
 class AnyLogConnector:
@@ -31,7 +33,7 @@ class AnyLogConnector:
         except:
             raise ValueError(f'Timeout value must be of type int. Current format is {type(type)}')
 
-    def get(self, headers:dict)->(str, str):
+    def get(self, headers:dict)->Union[requests.Response, bool, str]:
         """
         requests GET command
         :args:
@@ -56,7 +58,7 @@ class AnyLogConnector:
 
         return r, error
 
-    def put(self, headers:dict, payload:str):
+    def put(self, headers:dict, payload:str)->Union[requests.Response, bool, str]:
         """
         Execute a PUT command against AnyLog - mainly used for Data
         :args:
@@ -81,7 +83,7 @@ class AnyLogConnector:
 
         return r, error
 
-    def post(self, headers:dict, payload:str=None):
+    def post(self, headers:dict, payload:str=None)->Union[requests.Response, bool, str]:
         """
         Execute POST command against AnyLog. payload is required under the following conditions:
             1. payload can be data that you want to add into AnyLog, in which case you should also have an
