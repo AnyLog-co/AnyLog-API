@@ -461,3 +461,6 @@ def get_echo_log(conn:anylog_connector.AnyLogConnector, json_format:bool=True, d
     else:
         output = extract_get_results(conn=conn, headers=headers, exception=exception)
     return output
+
+
+

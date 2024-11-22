@@ -244,7 +244,7 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
         return_cmd:bool - return command rather than executing it
         exception:bool - whether to print exception
     :params:
-        status;bool - command status
+        output:str
         headers:dict - REST headers
     :return:
         None - if not executed
@@ -264,11 +264,200 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        status = headers['command']
+        output = headers['command']
     else:
-        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return status
+    return output
 
 
+def reset_error_log(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
+                    view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    reset error log
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": "reset error log",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def reset_event_log(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
+                    view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    reset event log
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": "reset event log",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def set_echo_queue(conn:anylog_connector.AnyLogConnector, disable_queue:bool=False, destination:str=None,
+                   return_cmd:bool=False, view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    dis/enable echo queue
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        disable_queue:bool - whether to set echo queue off
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": "set echo queue on",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if disable_queue is True:
+        headers['command'] += headers['command'].replace('on', 'off')
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def reset_echo_queue(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
+                     view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    reset echo queue
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": "reset echo queue",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def set_trace(conn:anylog_connector.AnyLogConnector, trace_level:int, cmd:str=None, destination:str=None,
+              return_cmd:bool=False, view_help:bool=False, exception:bool=False)->Union[bool, str, None]:
+    """
+    Set trace level when commands comes into node
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        trace_level:int - level of trace
+            * 0 - disable
+            * 1 - 3 -- level of tracing
+        cmd:str - specific command to trace
+            Examples - rest, tcp, run client, etc...
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": f"trace level={int(trace_level)}",
+        "User-Agent": "AnyLog/1.23"
+    }
+    if cmd:
+        headers['command'] += f" {cmd}"
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
 
