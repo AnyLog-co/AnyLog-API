@@ -82,12 +82,8 @@ def get_location(conn:anylog_connector.AnyLogConnector, ip_addr:str=None, destin
 
     output = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
     if output is True:
-        anylog_params =  get_dictionary(conn=conn, json_format=True, destination=None, view_help=view_help,
+        location =  get_dictionary(conn=conn, variable='loc_info', json_format=True, destination=None, view_help=view_help,
                                         return_cmd=return_cmd, exception=exception)
-        if 'loc_info' in anylog_params and not isinstance(anylog_params['loc_info'], dict):
-            location = json_loads(anylog_params['loc_info'], exception=exception)
-        elif 'loc_info' in anylog_params:
-            location = anylog_params['loc_info']
 
     for param in ['region', 'ip', 'hostname', 'org', 'postal', 'timezone', 'readme']:
         if param == 'region' and param in location:
