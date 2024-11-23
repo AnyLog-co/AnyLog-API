@@ -42,7 +42,7 @@ def get_help(conn:anylog_connector.AnyLogConnector, cmd:str=None, get_index:bool
         headers['command'] += f" index"
     else:
         if get_index is True and cmd not in index_options and exception is True:
-            warnings.warn(f'Invalid option for indexing, providing regualr help.\nSupported cmds for indexing: {",".join(index_options)}')
+            warnings.warn(f'Invalid option for indexing, providing regular help.\nSupported cmds for indexing: {",".join(index_options)}')
         headers['command'] += f" {cmd}"
 
     if cmd is not None:
@@ -60,7 +60,7 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
         https://github.com/AnyLog-co/documentation/blob/master/monitoring%20nodes.md#the-get-status-command
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        json_formatL:bool - return contennt in JSON format
+        json_formatL:bool - return content in JSON format
         destination:str - Remote node to query against
         view_help:bool - get information about command
         return_cmd:bool - return command rather than executing it
@@ -75,7 +75,6 @@ def get_status(conn:anylog_connector.AnyLogConnector, destination:str=None, view
             True - node accessible
             False - node not accessible
     """
-    status = None
     headers = {
         "command": "get status where format=json",
         "User-Agent": "AnyLog/1.23"
@@ -203,7 +202,6 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
     :return:
         headers
     """
-    output = None
     headers = {
         "command": "get node name",
         "User-Agent": "AnyLog/1.23"
@@ -223,7 +221,7 @@ def get_node_name(conn:anylog_connector.AnyLogConnector, destination:str=None, v
 
 
 def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, view_help:bool=False,
-                 return_cmd:bool=False, exception:bool=False)->Umion[str, None]:
+                 return_cmd:bool=False, exception:bool=False)->Union[str, None]:
     """
     get hostname for local machine
     :args:
@@ -239,7 +237,6 @@ def get_hostname(conn:anylog_connector.AnyLogConnector, destination:str=None, vi
         if return_cmd is True -> command
         else -> hostname
     """
-    output = None
     headers = {
         "command": "get hostname",
         "User-Agent": "AnyLog/1.23"
@@ -275,7 +272,6 @@ def get_version(conn:anylog_connector.AnyLogConnector, destination:str=None, vie
         if return_cmd is True -> command
         else -> version
     """
-    output = None
     headers = {
         "command": "get version",
         "User-Agent": "AnyLog/1.23"

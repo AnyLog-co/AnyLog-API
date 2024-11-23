@@ -27,7 +27,7 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         headers:dict - REST head information
     """
     headers = {
-        "command": None,
+        "command": "",
         "User-Agent": "AnyLog/1.23"
     }
     if destination is not None:
@@ -83,7 +83,6 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
         True - if success
         False - if fails
     """
-    status = None
     headers = {
         "command": f"set node name {node_name}",
         "User-Agent": "AnyLog/1.23"
@@ -157,7 +156,6 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, enable_cli:bool=False, de
         True - if success
         False - if fails
     """
-    status = None
     headers = {
         "command": "set cli off",
         "User-Agent": "AnyLog/1.23"
@@ -214,7 +212,6 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
         True - if success
         False - if fails
     """
-    status = None
     headers = {
         "command": "create work directories",
         "User-Agent": "AnyLog/1.23"
@@ -251,8 +248,6 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
         True - if success
         False - if fails
     """
-    status = None
-
     headers = {
         "command": f"set license where activation_key={license_key}",
         "User-Agent": "AnyLog/1.23"

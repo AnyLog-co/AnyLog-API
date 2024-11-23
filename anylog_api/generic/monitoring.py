@@ -37,14 +37,13 @@ def get_node_stats(conn:anylog_connector.AnyLogConnector, service:str="operator"
         if return_cmd is True - return command
         else - return generated results for request
     """
-    output = None
     if service not in ['publisher', 'operator']:
         if exception is True:
-            warnings.warn(ValueError(f'Invalid value type {service} for service options. Using default `operator` instead. Supported Services: operator or publisher'))
+            warnings.warn(f'Invalid value type {service} for service options. Using default `operator` instead. Supported Services: operator or publisher')
         service = 'operator'
     if topic not in ['summary', 'inserts', 'files']:
         if exception is True:
-            warnings.warn(ValueError(f'Invalid value type {topic} for topic options. Using default `summary` instead. Supported Topics: summary, files or inserts'))
+            warnings.warn(f'Invalid value type {topic} for topic options. Using default `summary` instead. Supported Topics: summary, files or inserts')
         topic = 'summary'
 
     headers = {
@@ -87,7 +86,7 @@ def get_disk_space(conn:anylog_connector.AnyLogConnector, param:str, path:str='.
         headers:dict - REST header information
     :return:
         if return_cmd is True - return command
-        if invalid param  thenwe return a ValueError or None depending on exception
+        if invalid param  then return a ValueError or None depending on exception
         else - return generated results for request
     """
     headers = {
@@ -124,7 +123,7 @@ def get_node_info(conn:anylog_connector.AnyLogConnector, attribute_function:str,
             * swap_memory
             * disk_io_counter
             * net_io_counter
-        attribute:str - speicific attribute for function
+        attribute:str - specific attribute for function
             * cpu_percent
             * cpu_times - 'user', 'nice', 'system', 'idle', 'iowait', 'irq', 'softirq', 'steal', 'guest', 'guest_nice'
             * getloadavg - 'user', 'nice', 'system', 'idle', 'iowait', 'irq', 'softirq', 'steal', 'guest', 'guest_nice'
