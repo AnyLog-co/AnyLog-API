@@ -101,9 +101,9 @@ publish_data.run_msg_client(conn=anylog_conn, broker='rest', topic=topic, db_nam
 publish_data.post_data(conn=anylog_conn, payload=SAMPLE_DATA, return_cmd=False, exception=True)
 ```
 * Query Data
+
 ```python
 import anylog_api.anylog_connector as anylog_connector
-import anylog_api.generic.get as generic_get
 import anylog_api.data.query as query_data
 
 conn = '10.10.1.15:32349'
