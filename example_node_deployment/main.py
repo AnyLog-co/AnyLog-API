@@ -28,7 +28,8 @@ def main():
     args = parse.parse_args()
     args.configs = os.path.expanduser(os.path.expandvars(args.configs[0]))
 
-    anylog_conn = anylog_connector.AnyLogConnector(conn=args.conn, timeout=args.timeout)
+    conn = list(args.conn)[0]
+    anylog_conn = anylog_connector.AnyLogConnector(conn=conn, timeout=args.timeout)
 
     # set params from config file
     params = support_file.read_configs(config_file=args.configs, exception=args.exception)

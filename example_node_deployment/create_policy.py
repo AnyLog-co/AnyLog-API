@@ -87,7 +87,7 @@ def generate_policy(conn:anylog_connector.AnyLogConnector, params:dict, cluster_
                                                return_cmd=return_cmd, exception=exception)
 
         if not policy_id and counter == 0:
-            location = get_location(conn=conn, params=params, destination=destination, view_help=view_help,
+            location = get_location(conn=conn, ip_addr=None, destination=destination, view_help=view_help,
                                     return_cmd=return_cmd, exception=exception)
             if 'anylog_broker' in params:
                 policy = blockchain_policies.create_node_policy(node_type=params['node_type'], node_name=params['node_name'],

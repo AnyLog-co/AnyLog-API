@@ -4,6 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import warnings
+from email.quoprimime import header_decode
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.__support__ import json_dumps
@@ -141,58 +142,38 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         "User-Agent": 'AnyLog/1.23'
     }
 
-    if port:
-        headers['command'] += f" port={port} and"
-    if is_rest_broker is True:
-        headers['command'] += f" user-agent=anylog"
-    if username:
-        headers['command'] += f" user={username} and"
-    if password:
-        headers['command'] += f" password={password} and"
-    if isinstance(log, bool) or str(log).lower() in ['true', 'false']:
-        headers['command'] += f" log={str(log).lower()} and"
+    headers['command'] += f" port={port} and " if port else  ""
+    headers['command'] += f" user-agent=anylog and " if is_rest_broker is True else ""
+    headers['command'] += f" user={username} and " if username else ""
+    headers['command'] += f" password={password} and " if password else ""
+    headers['command'] += f" log={str(log).lower()} and " if isinstance(log, bool) else " log=false and "
+
+    complete_topic = ""
+    complete_topic += f" topic=(name={topic} and" if {topic} else f" topic=(name=# and"
+    complete_topic += f" policy={policy_id} and" if policy_id and policy_id else ""
+    complete_topic += f" dbms={db_name} and" if db_name else ""
+    complete_topic += f" table={table_name} and" if table_name else ""
+    if not values and complete_topic == f" topic=(name={topic} and" if topic else f" topic=(name=# and":
+        complete_topic = f" topic={topic}" if topic else "topic=#"
+    elif not values and not complete_topic == f" topic=(name={topic} and" if topic else f" topic=(name=# and":
+        complete_topic = complete_topic.strip().rsplit("and", 1)[0].strip() + ")"
     else:
-        headers['command'] += f" log=false and"
-        if exception is True:
-            warnings.warn(f"Warning: Invalid message client log value, setting value to default - `false`")
-
-    complete_topic = f"topic=*"
-    if topic and policy_id:
-        complete_topic=f"topic=(name={topic} and policy={policy_id})"
-    elif topic:
-        complete_topic = f"topic=(name={topic} and"
-        if db_name or table_name or values:
-            if db_name:
-                complete_topic += f" db_name={db_name} and"
-            if table_name:
-                complete_topic += f" table={table_name} and"
-            if values:
-                for key in values:
-                    column_name = key.lower().strip().replace(" ", "_")
-                    value = None
-                    value_type = 'string'
-                    if 'value' in values[key]:
-                        value = values[key]["value"].strip()
-                    if 'type' in values[key] and values[key].strip().lower() in ['int', 'float', 'bool', 'string']:
-                        value_type = values[key].strip().lower()
-                    elif exception is True:
-                        warnings.warn('Invalid column value type, using `string` value (Default values: int, float, bool, string)')
-
-                    if value_type == 'timestamp' and not value:
-                        complete_topic += f"column.{column_name}.timestamp=now() and"
-                    elif value_type == 'timestamp' and 'bring' in value.lower():
-                        complete_topic += f'column.{column_name}.timestamp="{value}" and'
-                    elif value_type == 'timestamp':
-                        complete_topic += f'column.{column_name}.timestamp={value} and'
-                    elif 'bring' in value.lower() or " " in value:
-                        column_name += f'column.{column_name}=(type={value_type} and value="{value}") and'
-                    elif value:
-                        column_name += f'column.{column_name}=(type={value_type} and value={value}) and'
-            complete_topic = complete_topic.rsplit(" and", 1)[0] + ")"
-        else:
-            complete_topic = f"topic={topic}"
-
-    headers['command'] += complete_topic
+        for key in values:
+            column_name = key.lower().strip().replace(" ", "_")
+            value = values[key]['value'].strip() if 'value' in values[key] else None
+            value_type = values[key]['type'] if 'type' in values[key] and values[key]['type'] in ['int', 'float', 'bool', 'string'] else "string"
+            if value_type == 'timestamp' and value and "bring" in value:
+                complete_topic += f' column.{column_name}.timestamp="{value}" and'
+            elif value_type == 'timestamp' and value:
+                complete_topic += f' column.{column_name}.timestamp={value} and'
+            elif value_type == 'timestamp' and not value:
+                complete_topic += f' column.{column_name}.timestamp=now() and'
+            elif value is not None and value and "bring" in value:
+                complete_topic += f' column.{column_name}=(type={value_type} and value="{value}") and'
+            elif value:
+                complete_topic += f' column.{column_name}=(type={value_type} and value={value}) and'
+        complete_topic = complete_topic.strip().rsplit("and", 1)[0].strip() + ")"
+    headers['command'] += " " + complete_topic
 
     if destination:
         headers['destination'] = destination

@@ -21,7 +21,7 @@ def json_loads(content, exception:bool=False)->dict:
     """
     output = None
     try:
-        output = json.loads(content)
+        output = json.loads(content.replace("'", "\""))
     except Exception as error:
         if exception is True:
             raise json.JSONDecodeError(msg=f"Failed to convert content into dictionary format (Error: {error})",
