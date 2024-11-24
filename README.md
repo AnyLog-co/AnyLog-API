@@ -113,4 +113,3 @@ sql_cmd = "SELECT COUNT(*) FROM rand_data"
 output = query_data.query_data(conn=anylog_conn, db_name='test', sql_query=sql_cmd, output_format='table')
 print(output)
 ```
-
