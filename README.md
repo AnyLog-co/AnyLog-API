@@ -24,13 +24,13 @@ docker run -it -d --network host \
 * [AnyLog Documentation](https://github.com/AnyLog-co/documentation/)
 * [EdgeLake Documentation](https://edgelake.github.io/)
 * [AnyLog's docker-compose](https://github.com/AnyLog-co/docker-compose)
-* [EdgeLake's dockcer-compose](https://github.com/EdgeLake/docker-compose)
+* [EdgeLake's docker-compose](https://github.com/EdgeLake/docker-compose)
 
 ## Usage Examples
 
 ### Node Initiation  
 Code in [example_node_deployment](example_node_deployment), demonstrates deploying a node completely via REST based on
-`.env` [configuration file](configs/). 
+`.env` [configuration file](configs). 
 
 **Key Features**: 
 * Set up an AnyLog node or EdgeLake instance.
@@ -59,7 +59,7 @@ for i in range(10):
 
 # connect to AnyLog / EdgeLake
 conn = '10.10.1.15:32149'
-anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=(), timeout=30)
+anylog_conn = anylog_connector.AnyLogConnector(conn=conn, timeout=30)
 
 # Publish data
 publish_data.put_data(conn=anylog_conn, payload=SAMPLE_DATA, db_name="test", table_name="rand_data",
@@ -87,7 +87,7 @@ conn = '10.10.1.15:32149'
 topic = 'my-data'
 
 # connect to AnyLog / EdgeLake
-anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=(), timeout=30) 
+anylog_conn = anylog_connector.AnyLogConnector(conn=conn, timeout=30) 
 
 # create message client
 publish_data.run_msg_client(conn=anylog_conn, broker='rest', topic=topic, db_name="bring [dbms]",
@@ -98,7 +98,7 @@ publish_data.run_msg_client(conn=anylog_conn, broker='rest', topic=topic, db_nam
                                 }, destination="", is_rest_broker=True, view_help=False, return_cmd=False, exception=True)
 
 # Publish data
-publish_data.post_data(conn=anylog_conn, payload=SAMPLE_DATA, return_cmd=False, exception=True)
+publish_data.post_data(conn=anylog_conn, payload=SAMPLE_DATA, topic=topic, return_cmd=False, exception=True)
 ```
 * Query Data
 
@@ -107,7 +107,7 @@ import anylog_api.anylog_connector as anylog_connector
 import anylog_api.data.query as query_data
 
 conn = '10.10.1.15:32349'
-anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=(), timeout=30)
+anylog_conn = anylog_connector.AnyLogConnector(conn=conn, timeout=30)
 
 sql_cmd = "SELECT COUNT(*) FROM rand_data"
 output = query_data.query_data(conn=anylog_conn, db_name='test', sql_query=sql_cmd, output_format='table')
