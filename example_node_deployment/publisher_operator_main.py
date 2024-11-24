@@ -97,8 +97,8 @@ def operator_main(conn:anylog_connector.AnyLogConnector, params:dict, operator_i
     run_schedule_task(conn=conn, name="Drop Archive Files", time_interval='1 day', task=clean_archive_cmd,
                       destination=destination, view_help=view_help, return_cmd=return_cmd, exception=exception)
 
-    data_mgmt.set_streamer(conn=conn, destination=destination, view_help=view_help, return_cmd=return_cmd,
-                           exception=exception)
+    data_mgmt.enable_streamer(conn=conn, destination=destination, view_help=view_help, return_cmd=return_cmd,
+                              exception=exception)
 
 
     if 'enable_ha' in params and params['enable_ha'] ==  'true':
@@ -161,7 +161,7 @@ def mqtt_client(conn:anylog_connector.AnyLogConnector, params:dict, is_rest_brok
 
 
     run_msg_client(conn=conn, broker=mqtt_broker, port=mqtt_port, username=mqtt_user, password=mqtt_passwd,
-                   topic=msg_topic, db_name=msg_dbms, table_name=msg_table, is_rest_broker=is_rest_broker,
+                   topic=msg_topic, db_name=msg_dbms, table_name=msg_table, log=mqtt_log, is_rest_broker=is_rest_broker,
                    values=values, destination=destination, view_help=view_help, return_cmd=return_cmd,
                    exception=exception)
 

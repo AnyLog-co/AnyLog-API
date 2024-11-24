@@ -4,6 +4,7 @@ import time
 import random
 import re
 
+from anylog_api.__support__ import check_conn_info
 
 def check_conn(conn:str)->dict:
     """
@@ -20,30 +21,11 @@ def check_conn(conn:str)->dict:
     :return:
         rest_conns
     """
+    conns = conn.split(',')
     rest_conns = {}
-    error_msg = ""
-    auth = None
-    pattern = re.compile(
-        r'^'  # Start of string
-        r'((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'  # Match the first three octets
-        r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'  # Match the fourth octet
-        r':'  # Match the colon
-        r'([0-9]{1,5})'  # Match the port number (1 to 5 digits)
-        r'$'  # End of string
-    )
-
-    if '@' in conn:
-        auth, conn = conn.split('@')
-    if not pattern.fullmatch(conn):
-        error_msg += f"\n\tInvalid connection IP:PORT value {conn}. Expected part: 127.0.0.1:32048"
-    else:
-        rest_conns[conn] = auth
-    if auth is not None and ":" not in auth:
-        error_msg += f"\n\tInvalid authentication information value {auth}. Expected part: user:password"
-    elif auth is not None:
-        rest_conns[conn] = tuple(auth.split(":"))
-    if error_msg:
-        raise argparse.ArgumentTypeError(f"Invalid Connection format. Expected format: user:password@IP:PORT {error_msg}")
+    for conn in conns:
+        if check_conn_info(conn=conn) is True:
+            rest_conns[conn] = None
 
     return rest_conns
 

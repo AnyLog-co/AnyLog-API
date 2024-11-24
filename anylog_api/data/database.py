@@ -1,11 +1,18 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
+from typing import Union
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
+from anylog_api.__support__ import check_interval
 
 
-def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_format:bool=True, destination:str="",
-                   view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_format:bool=True, destination:str=None,
+                   view_help:bool=False, return_cmd:bool=False, exception:bool=False)->Union[bool, str]:
     """
     Check whether a database exists
     :cmd:
@@ -48,7 +55,7 @@ def check_database(conn:anylog_connector.AnyLogConnector, db_name:str, json_form
 
 
 def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, json_format:bool=True,
-                destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False)->Union[bool, str]:
     """
     Check whether a table exists in a given database
     :cmd:
@@ -92,12 +99,12 @@ def check_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:s
 
 
 def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str='sqlite', db_ip:str=None,
-                 db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, destination:str="",
-                 view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                 db_port:int=None, db_user:str=None, db_password:str=None, memory:bool=False, destination:str=None,
+                 view_help:bool=False, return_cmd:bool=False, exception:bool=False)->Union[bool, str]:
     """
     Connect to database
     :command:
-        connect dbms {db_name} where type={db_type} and ..
+        connect dbms {db_name} where type={db_type} and ...
     :args:
         conn:anylog_connector.AnyLogConnector - Connection to AnyLog
         db_name:str - logical database name
@@ -150,8 +157,8 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, db_name:str, db_type:str
     return output
 
 
-def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str="",
-                 view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str, destination:str=None,
+                 view_help:bool=False, return_cmd:bool=False, exception:bool=False)->Union[bool, str]:
     """
     Create pre-defined table
         - blockchain.ledger
@@ -198,9 +205,32 @@ def create_table(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:
 
 
 def set_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*',
-                       partition_column:str='insert_timestamp', partition_interval:str='14 days', destination:str="",
-                       view_help:bool=False, return_cmd:bool=False, exception:bool=False):
-    output = None
+                       partition_column:str='insert_timestamp', partition_interval:str='14 days', destination:str=None,
+                       view_help:bool=False, return_cmd:bool=False, exception:bool=False)->Union[bool, str]:
+    """
+    Set partitioning of the data being stored
+    :args:
+        conn:anylog_connector.AnyLogConnector - Connection to AnyLog
+        db_name:str - logical database name
+        table_name:str - table name ("* means all tables in given database)
+        partition_column:str - column to partition by
+        partition_interval:str - time interval to break data by
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        output
+        headers:dict - REST header information
+    :return:
+        if return_cmd -> return generated command
+        else ->
+            True - success
+            False - fails
+    """
+    if not check_interval(time_interval=partition_interval, exception=exception):
+        partition_interval = '14 days'
+
     headers = {
         "command": f"partition {db_name} {table_name} using {partition_column} by {partition_interval}",
         "User-Agent": "AnyLog/1.23"
@@ -213,13 +243,33 @@ def set_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table
     if return_cmd is True:
         output = headers['command']
     else:
-        execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
+        output = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return output
 
 
 def drop_data_partition(conn:anylog_connector.AnyLogConnector, db_name:str, table_name:str='*', partition_keep:int=3,
-                        destination:str="", view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+                        destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False)->Union[bool, str]:
+    """
+    Drop partition(s) table(s)
+    :args:
+        conn:anylog_connector.AnyLogConnector - Connection to AnyLog
+        db_name:str - logical database name
+        table_name:str - table name ("*" means all tables in given database)
+        partition_keep:int - number of partitioned tables to keep
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        output
+        headers:dict - REST header information
+    :return:
+        if return_cmd -> return generated command
+        else ->
+            True - success
+            False - fails
+    """
     output = None
     headers = {
         "command": f"drop partition where dbms={db_name} and table={table_name} and keep={partition_keep}",

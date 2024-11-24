@@ -19,7 +19,7 @@ from examples.__support__ import  check_conn
 
 def main():
     parse = argparse.ArgumentParser()
-    parse.add_argument("conn", type=check_conn, default='127.0.0.1:32549', help='REST connection information')
+    parse.add_argument("conn", type=check_conn, default='127.0.0.1:32549', help='REST connection information (Format: {user}:{password}@{ip}{port})')
     parse.add_argument('--configs', type=support_file.check_configs, default=None, help='dotenv configuration file(s)')
     parse.add_argument('--timeout', type=float, default=30, help='REST timeout')
     parse.add_argument('--edgelake',  type=bool, const=True, nargs='?', default=False, help='Connect to EdgeLake instance')
@@ -28,8 +28,8 @@ def main():
     args = parse.parse_args()
     args.configs = os.path.expanduser(os.path.expandvars(args.configs[0]))
 
-    conn, auth = next(iter(args.conn.items()))
-    anylog_conn = anylog_connector.AnyLogConnector(conn, auth=auth, timeout=args.timeout)
+    conn = list(args.conn)[0]
+    anylog_conn = anylog_connector.AnyLogConnector(conn=conn, timeout=args.timeout)
 
     # set params from config file
     params = support_file.read_configs(config_file=args.configs, exception=args.exception)
@@ -53,7 +53,7 @@ def main():
     # validate node
     node_status = generic_get.get_status(conn=anylog_conn, view_help=False, return_cmd=False, exception=args.exception)
     if node_status is False:
-        print(f"Failed to communicate with node against {conn}. Cannot continue...")
+        print(f"Failed to communicate with node against {args.conn}. Cannot continue...")
         exit(1)
 
     # set node params to be used

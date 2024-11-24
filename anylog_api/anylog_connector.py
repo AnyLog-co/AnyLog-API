@@ -1,7 +1,15 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
 import requests
+from typing import Union
+
+import anylog_api.__support__ as support
 
 class AnyLogConnector:
-    def __init__(self, conn:str, auth:tuple=None, timeout:int=30):
+    def __init__(self, conn:str, timeout:int=30):
         """
         The following are the base support for AnyLog via REST
             - GET: extract information from AnyLog (information + queries)
@@ -14,13 +22,18 @@ class AnyLogConnector:
             auth:tuple - Authentication information
             timeout:int - REST timeout
         """
-        self.conn = conn
-        self.auth = auth
-        if self.auth is None:
-            self.auth = ()
-        self.timeout = timeout
+        try:
+            if support.check_conn_info(conn=conn) is True:
+                self.conn, self.auth = support.separate_conn_info(conn=conn)
+        except ValueError as e:
+            raise ValueError(f"Invalid connection format: {conn}") from e
 
-    def get(self, headers:dict)->(str, str):
+        try:
+            self.timeout = int(timeout)
+        except:
+            raise ValueError(f'Timeout value must be of type int. Current format is {type(type)}')
+
+    def get(self, headers:dict)->Union[requests.Response, bool, str]:
         """
         requests GET command
         :args:
@@ -34,7 +47,7 @@ class AnyLogConnector:
         error = None
 
         try:
-            r = requests.get('http://%s' % self.conn, headers=headers, auth=self.auth, timeout=self.timeout)
+            r = requests.get(f'http://{self.conn}', headers=headers, auth=self.auth, timeout=self.timeout)
         except Exception as e:
             error = str(e)
             r = False
@@ -45,7 +58,7 @@ class AnyLogConnector:
 
         return r, error
 
-    def put(self, headers:dict, payload:str):
+    def put(self, headers:dict, payload:str)->Union[requests.Response, bool, str]:
         """
         Execute a PUT command against AnyLog - mainly used for Data
         :args:
@@ -58,7 +71,7 @@ class AnyLogConnector:
         """
         error = None
         try:
-            r = requests.put('http://%s' % self.conn, auth=self.auth, timeout=self.timeout, headers=headers,
+            r = requests.put(f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
                              data=payload)
         except Exception as e:
             error = str(e)
@@ -70,7 +83,7 @@ class AnyLogConnector:
 
         return r, error
 
-    def post(self, headers:dict, payload:str=None):
+    def post(self, headers:dict, payload:str=None)->Union[requests.Response, bool, str]:
         """
         Execute POST command against AnyLog. payload is required under the following conditions:
             1. payload can be data that you want to add into AnyLog, in which case you should also have an
@@ -89,7 +102,7 @@ class AnyLogConnector:
         """
         error = None
         try:
-            r = requests.post('http://%s' % self.conn, headers=headers, data=payload, auth=self.auth,
+            r = requests.post(f'http://{self.conn}', headers=headers, data=payload, auth=self.auth,
                               timeout=self.timeout)
         except Exception as e:
             error = str(e)

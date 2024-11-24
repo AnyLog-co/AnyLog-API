@@ -1,90 +1,19 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
+from typing import Union
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-def set_debug(conn:anylog_connector.AnyLogConnector, state:str='off', destination:str=None, view_help:bool=False,
-              return_cmd:bool=False, exception:bool=False):
-    """
-    set debug (used mainly in scripts)
-        - on
-        - off
-        - interactive
-    :url:
-       https://github.com/AnyLog-co/documentation/blob/master/cli.md#the-set-debug-command
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        state:str - debug state
-        destination:str - Remote node to query against
-        view_help:bool - get information about command
-        return_cmd:bool - return command rather than executing it
-        exception:bool - whether to print exception
-    :params:
-        status;bool - command status
-        headers:dict - REST headers
-    :return:
-        None - if not executed
-        True - if success
-        False - if fails / not ran
-    """
-    status = None
-    headers = {
-        "command": f"set debug {state}",
-        "User-Agent": "AnyLog/1.23"
-    }
-    if destination is not None:
-        headers['destination'] = destination
-
-    if state not in ['on','off','interactive']:
-        status = False
-        if exception is True:
-            print(f"Invalid value for state {state} (Options; on, off, interactive]")
-    if view_help is True:
-        get_help(conn=conn, cmd=headers['command'], exception=exception)
-    if return_cmd is True:
-        return headers['command']
-    elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
-    return status
-
-
-# def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
-#                exception:bool=False):
-#     """
-#     add dictionary param
-#     :args:
-#         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-#         params:dict - dictionary of key / value pairs to set node with
-#         destination:str - Remote node to query against
-#         view_help:bool - get information about command
-#         return_cmd:bool - return command rather than executing it
-#         exception:bool - whether to print exception
-#     :params:
-#         headers:dict - REST head information
-#     """
-#     headers = {
-#         "command": None,
-#         "User-Agent": "AnyLog/1.23"
-#     }
-#     if destination is not None:
-#         headers['destination'] = destination
-#
-#     for key in params:
-#         if params[key] in ['false', 'False', 'True', 'true', 'file']:
-#             headers['command'] = f'set {key.strip()} = {params[key].strip()}'
-#         elif params[key] != "":
-#             headers['command'] = f'{key.strip()} = {params[key].strip()}'
-#         if view_help is True:
-#             get_help(conn=conn, cmd=headers['command'], exception=exception)
-#             break
-#         else:
-#             execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
-
 
 def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:str=None, view_help:bool=False,
-               exception:bool=False):
+               exception:bool=False)->None:
     """
     add dictionary param
     :args:
@@ -98,7 +27,7 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
         headers:dict - REST head information
     """
     headers = {
-        "command": None,
+        "command": "",
         "User-Agent": "AnyLog/1.23"
     }
     if destination is not None:
@@ -131,14 +60,14 @@ def set_params(conn:anylog_connector.AnyLogConnector, params:dict, destination:s
                 future.result()  # We could check results or exceptions here if needed
             except Exception as e:
                 if exception:
-                    print(f"Exception during command execution: {e}")
+                    raise Exception(f"Exception during command execution: {e}")
 
 
 
 def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destination:str=None,
-                  return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
+                  return_cmd:bool=False,  view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
     """
-    Set node name
+    Sets a name that identifies the node
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         node_name:str - node name
@@ -154,7 +83,6 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
         True - if success
         False - if fails
     """
-    status = None
     headers = {
         "command": f"set node name {node_name}",
         "User-Agent": "AnyLog/1.23"
@@ -165,17 +93,17 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    elif view_help is False:
+        status = headers['command']
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
 def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  returnn_cmd:bool=False,
-             view_help:bool=False, exception:bool=False):
+             view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
     """
-    Set root path
+    Declare the location of the root directory to the AnyLog Files
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         path:str - root directory path
@@ -202,18 +130,20 @@ def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=No
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     elif returnn_cmd is True:
-        return headers['command']
-    elif view_help is False:
+        status = headers['command']
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
-def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  return_cmd:bool=False,  view_help:bool=False, exception:bool=False):
+def disable_cli(conn:anylog_connector.AnyLogConnector, enable_cli:bool=False, destination:str=None,
+                return_cmd:bool=False,  view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
     """
-    Disable the CLI
+    Disable the AnyLog CLI, when AnyLog is configured as a background process
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        enable_cli:bool - whether to enable the CLI (if disabled)
         destination:str - Remote node to query against
         view_help:bool - get information about command
         return_cmd:bool - return command rather than executing it
@@ -226,28 +156,32 @@ def disable_cli(conn:anylog_connector.AnyLogConnector, destination:str=None,  re
         True - if success
         False - if fails
     """
-    status = None
     headers = {
         "command": "set cli off",
         "User-Agent": "AnyLog/1.23"
     }
+
+    if enable_cli is True:
+        headers['command'] = headers['command'].replace('off', 'on')
+
     if destination is not None:
         headers['destination'] = destination
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    elif view_help is False:
+        status = headers['command']
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
 def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
-                     view_help:bool=False, exception:bool=False):
+                     view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
     """
-    create work directories
+    Create the work directories at their default locations or locations configured using "set anylog home" command.
+    The location of the directories is based on `set anylog home`
     :tree:
     /app
     ├── EdgeLake                        [Directory containing authentication keys and passwords]
@@ -278,7 +212,6 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
         True - if success
         False - if fails
     """
-    status = None
     headers = {
         "command": "create work directories",
         "User-Agent": "AnyLog/1.23"
@@ -289,20 +222,56 @@ def create_work_dirs(conn:anylog_connector.AnyLogConnector, destination:str=None
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    elif view_help is False:
+        status=headers['command']
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
 
 
 def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, destination:str=None, return_cmd:bool=False,
-                     view_help:bool=False, exception:bool=False):
+                     view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
     """
     Set license key for AnyLog node
     :args:
         conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         license_key:str - license key to be used
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        output:str
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": f"set license where activation_key={license_key}",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def reset_error_log(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
+                    view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    reset error log
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
         destination:str - Remote node to query against
         view_help:bool - get information about command
         return_cmd:bool - return command rather than executing it
@@ -315,9 +284,8 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
         True - if success
         False - if fails
     """
-    status = None
     headers = {
-        "command": f"set license where activation_key={license_key}",
+        "command": "reset error log",
         "User-Agent": "AnyLog/1.23"
     }
 
@@ -327,11 +295,164 @@ def set_license_key(conn:anylog_connector.AnyLogConnector, license_key:str, dest
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
-        return headers['command']
-    elif view_help is False:
-        status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
-    return status
+    return output
 
 
+def reset_event_log(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
+                    view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    reset event log
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": "reset event log",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def set_echo_queue(conn:anylog_connector.AnyLogConnector, disable_queue:bool=False, destination:str=None,
+                   return_cmd:bool=False, view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    dis/enable echo queue
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        disable_queue:bool - whether to set echo queue off
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": "set echo queue on",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if disable_queue is True:
+        headers['command'] += headers['command'].replace('on', 'off')
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def reset_echo_queue(conn:anylog_connector.AnyLogConnector, destination:str=None, return_cmd:bool=False,
+                     view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
+    """
+    reset echo queue
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": "reset echo queue",
+        "User-Agent": "AnyLog/1.23"
+    }
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
+
+
+def set_trace(conn:anylog_connector.AnyLogConnector, trace_level:int, cmd:str=None, destination:str=None,
+              return_cmd:bool=False, view_help:bool=False, exception:bool=False)->Union[bool, str, None]:
+    """
+    Set trace level when commands comes into node
+    :args:
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        trace_level:int - level of trace
+            * 0 - disable
+            * 1 - 3 -- level of tracing
+        cmd:str - specific command to trace
+            Examples - rest, tcp, run client, etc...
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        status;bool - command status
+        headers:dict - REST headers
+    :return:
+        None - if not executed
+        True - if success
+        False - if fails
+    """
+    headers = {
+        "command": f"trace level={int(trace_level)}",
+        "User-Agent": "AnyLog/1.23"
+    }
+    if cmd:
+        headers['command'] += f" {cmd}"
+
+    if destination:
+        headers['destination'] = destination
+
+    if view_help is True:
+        get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output = headers['command']
+    else:
+        output = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+
+    return output
 

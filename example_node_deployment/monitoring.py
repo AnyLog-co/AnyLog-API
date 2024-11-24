@@ -20,16 +20,16 @@ def __monitoring_cmds(conn:anylog_connector.AnyLogConnector, exception:bool=Fals
     node_name = get_hostname(conn=conn, destination=None, view_help=False, return_cmd=True, exception=exception)
     free_space = monitoring_cmd.get_disk_space(conn=conn, param='percentage', path='.', json_format=False,
                                                destination=None, view_help=False, return_cmd=True, exception=exception)
-    cpu_percent = monitoring_cmd.get_node_info(conn=conn, param=['cpu_percent'], json_format=False,
-                                               destination=None, view_help=False, return_cmd=True, exception=exception)
-    packets_recv = monitoring_cmd.get_node_info(conn=conn, param=['net_io_counters', 'packets_recv'], json_format=False,
-                                               destination=None, view_help=False, return_cmd=True, exception=exception)
-    packets_sent = monitoring_cmd.get_node_info(conn=conn, param=['net_io_counters', 'packets_sent'], json_format=False,
+    cpu_percent = monitoring_cmd.get_node_info(conn=conn, attribute_function='cpu_percent', destination=None,
+                                               view_help=False, return_cmd=True, exception=exception)
+    packets_recv = monitoring_cmd.get_node_info(conn=conn, attribute_function='net_io_counters',
+                                                attribute='packets_recv',view_help=False, return_cmd=True, exception=exception)
+    packets_sent = monitoring_cmd.get_node_info(conn=conn, attribute_function='net_io_counters', attribute='packets_sent',
                                                 destination=None, view_help=False, return_cmd=True, exception=exception)
-    errin = monitoring_cmd.get_node_info(conn=conn, param=['net_io_counters', 'errin'], json_format=False, destination=None,
-                                         view_help=False, return_cmd=True, exception=exception)
-    errout = monitoring_cmd.get_node_info(conn=conn, param=['net_io_counters', 'errout'], json_format=False, destination=None,
-                                         view_help=False, return_cmd=True, exception=exception)
+    errin = monitoring_cmd.get_node_info(conn=conn, attribute_function='net_io_counters', attribute='errin',
+                                         destination=None, view_help=False, return_cmd=True, exception=exception)
+    errout = monitoring_cmd.get_node_info(conn=conn, attribute_function='net_io_counters', attribute='errout',
+                                          destination=None, view_help=False, return_cmd=True, exception=exception)
 
 
     # generate schedule process

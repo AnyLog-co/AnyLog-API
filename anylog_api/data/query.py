@@ -1,15 +1,47 @@
+import datetime
+import warnings
+from typing import Union
+
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
 from anylog_api.anylog_connector_support import extract_get_results
 from anylog_api.__support__ import check_interval
 
+FORMATS = ['%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S',
+               '%Y-%m-%d %H:%M', '%Y-%m-%d']
 
-def build_increments_query(table_name:str, time_interval:str, units:int, time_column:str, value_columns,
-                           calc_min:bool=True, calc_avg:bool=True, calc_max:bool=True, row_count:bool=True,
-                           where_condition:str=None, order_by:bool=True, limit:int=0, exception:bool=False)->str:
+def __check_timestamp(start_date)->bool:
+    """
+    Check whether timestamp given in period is valid
+    :args:
+        start_date:str - datetime timestamp
+    :global:
+        FORMATS:list - List of formats supported
+    :params:
+        status:bool
+    :return:
+        status
+    """
+    status = False
+    for frmt in FORMATS:
+        try:
+            datetime.datetime.strptime(start_date, frmt)
+        except ValueError:
+            pass
+        else:
+            status = True
+            break
+
+    return status
+
+
+def build_increments_query(table_name:str, time_interval:str, units:int, date_column:str,
+                           other_columns:Union[dict,list]=None, ts_min:bool=True, ts_max:bool=True, calc_min:bool=True,
+                           calc_avg:bool=True, calc_max:bool=True, row_count:bool=False, where_condition:str=None,
+                           order_by:str=None, limit:int=0, exception:bool=False)->str:
     """
     The increments functions considers data in increments of time (i.e. every 5 minutes) within a time range
-    (i.e. between October 15, 2019 and October 16, 2019).date-column is the column name of the column that determines
+    (i.e. between 'October 15, 2019' and 'October 16, 2019').date-column is the column name of the column that determines
     the date and time to consider. The time-interval and units (of time-interval) determine the time increments to
     consider (i.e. every 2 days) and the time-range is determined in the where clause.
     :url:
@@ -25,82 +57,85 @@ def build_increments_query(table_name:str, time_interval:str, units:int, time_co
         ORDER BY
             min_ts
     :args:
-        table_name:str - logical table name
-        time_interval:str - time interval (second, minute, hour, day, week, month, year)
-        unit:int - value for time interval
-        time_column:str - timestamp column name
-        value_columns - list or string of non-timestamp value column name
-        calc_min:bool - calculate min value
-        calc_avg:bool - calculate avg value
-        calc_max:bool - calculate max value
-        row_count:bool - calculate row count
-        where_condition:str - user defined where condition
-        order_by:bool - whether to enable order by (min / max) timestamp
-        limit:int - limit number of rows to return. if set to 0, then no limit
+        table_name:str - the table to query against
+        time_interval:str - time interval
+            * seconds
+            * minutes
+            * hours
+            * days
+            * months
+        units:int - units (of time-interval)
+        date_column:str - timestamp column name
+        other_columns:Union[dict, list] - other columns to utilize for query
+            sample dict: {'str_variable': 'str', 'int_variable': 'int'}
+            sample list: ['str_variable', 'min(int_variable)', 'max(int_variable)']
+        calc_min:bool - when other_columns is in dict format and column type is int/float, add min(other_columns) to query
+        calc_avg:bool - when other_columns is in dict format and column type is int/float, add avg(other_columns) to query
+        calc_max:bool - when other_columns is in dict format and column type is int/float, add max(other_columns) to query
+        row_count:bool - utilize date_column column to generate row count
+        where_condition:str - WHERE condition
+        order_by:str - ORDER BY based on timestamp and `GROUP BY`
+            * desc
+            * asc
+        exception:bool - print exceptions
     :params:
-        sql_cmd:str - generated sql
+        group_by:list - based on the way the query is built, columns to group by
+        increments_cmd:str - generated  increments command
+        cmd:str - generated command
     :return:
-        sql_cmd
-        if time_interval not met --> ""
+        cmd
     """
-    group_by = []
-    if check_interval(time_interval=time_interval, exception=exception) is False:
-        return ""
-    if not time_column:
+
+    group_by=[]
+    increments_cmd = f"increments(%s, {int(units)}, {date_column})"
+    if check_interval(time_interval, exception) is True:
+        increments_cmd = increments_cmd % time_interval
+    else:
+        raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
+
+    cmd = f"SELECT {increments_cmd}, "
+
+    # timestamp
+    if all(param is False for param in [ts_min, ts_max]):
         if exception is True:
-            print(f"Missing timestamp column name")
-        return ""
-
-    sql_cmd = f"SELECT increments({time_interval}, {units}, {time_column}), "
-    if all(False is x for x in [calc_min, calc_max]):
-        sql_cmd += f"MIN({time_column}) AS min_ts, MAX({time_column}) AS max_ts, "
-    if calc_min is True:
-        sql_cmd += f"MIN({time_column}) AS min_ts, "
-    if calc_max is True:
-        sql_cmd += f"MIN({time_column}) AS max_ts, "
-
-    if value_columns and not isinstance(value_columns, list):
-        value_columns = value_columns.split(",")
-    if value_columns:
-        for value_column in value_columns:
-            if calc_min is True:
-                sql_cmd += f"MIN({value_column}) AS min_{value_column}, "
-            if calc_max is True:
-                sql_cmd += f"MAX({value_column}) AS max_{value_column}, "
-            if calc_avg is True:
-                sql_cmd += f"AVG({value_column}) AS avg_{value_column}, "
-            if all(x is False for x in [calc_min, calc_max, ]):
-                sql_cmd += f"{value_column}, "
-                group_by.append(value_column)
-            if value_column != value_columns[-1]:
-                sql_cmd += ", "
-
+            raise ValueError('Unable to generate query without an aggregate on timestamp column')
+    if ts_min is True:
+        cmd += f" min({date_column}) as min_{date_column}, "
+    if ts_max is True:
+        cmd += f" max({date_column}) as max_{date_column}, "
     if row_count is True:
-        sql_cmd += f" COUNT(*) AS row_count "
+        cmd += f"count({date_column}) as row_count, "
 
-    sql_cmd += f' FROM {table_name} '
+    # other columns
+    for column in other_columns:
+        if isinstance(other_columns, dict) and other_columns[column] in ['int', 'float']:
+            if all(key is False for key in [calc_min, calc_max, calc_avg]):
+                group_by.append(column)
+                if exception is True:
+                    warnings.warn(f'Grouping by numeric values')
+            if calc_min is True:
+                cmd += f" min({column}) as min_{column}, "
+            if calc_avg is True:
+                cmd += f" avg({column}) as avg_{column}, "
+            if calc_max is True:
+                cmd += f" max({column}) as max_{column}, "
+        else:
+            cmd += f"{column}, "
+            group_by.append(column)
 
-    if where_condition:
-        sql_cmd += f"WHERE {where_condition} "
-    if group_by:
-        sql_cmd += "GROUP BY "
-        for value in group_by:
-            sql_cmd += f"{value_column}"
-            if value != group_by[-1]:
-                sql_cmd += ", "
-    if order_by is True:
-        sql_cmd += " ORDER BY min_ts"
-        if calc_min is False:
-            sql_cmd = sql_cmd.replace('ORDER BY min_ts', 'ORDER BY max_ts')
-    if limit > 0:
-        sql_cmd += f" limit {limit}"
+    cmd += cmd.rsplit(',', 1)[0] + f" FROM {table_name}"
+    cmd += f" WHERE {where_condition}" if where_condition is not None else ""
+    cmd += f" GROUP BY {','.join(group_by)}" if len(group_by) > 0 else ""
+    if order_by:
+        cmd += f"ORDER BY min_{date_column}" + f", {','.join(group_by)} {order_by}" if group_by else f" {order_by}"
+    cmd += f" LIMIT {limit};" if limit > 0  else ";"
 
-    return sql_cmd
+    return cmd
 
 
-def build_period_query(table_name:str, time_interval:str, units:int, time_column:str, value_columns:list,
-                       start_ts='NOW()', where_conditions:str=None, group_by:str=None, order_by_columns:str=None, limit:int=0,
-                       exception:bool=False)->str:
+def build_period_query(table_name:str, time_interval:str, units:int, date_column:str, start_date:str='NOW()',
+                       other_columns:list=None, where_condition:str=None, group_by:list=None, order_by:str=None,
+                       limit:int=0, exception:bool=False)->str:
     """
     The period function finds the first occurrence of data before or at a specified date (and if a filter-criteria is
     specified, the occurrence needs to satisfy the filter-criteria) and considers the readings in a period of time which
@@ -117,239 +152,103 @@ def build_period_query(table_name:str, time_interval:str, units:int, time_column
             period(minute, 1, now(), timestamp)
     :args:
         table_name:str - logical table name
-        time_interval:str - time interval (second, minute, hour, day, week, month, year)
-        unit:int - value for time interval
-        time_column:str - timestamp column name (used in period function)
-        value_columns:list - list or string of value column names
-        start_ts:str - start timestamp
-        where_condition:str - user defined where condition
-        group_by:str - comma - separated values to group by
-        order_by_columns:str - comma separated values to order by (with asc/desc)
-        exception:bool - print exception
+                time_interval:str - time interval
+            * seconds
+            * minutes
+            * hours
+            * days
+            * months
+        units:int - units (of time-interval)
+        date_column:str - timestamp column name
+        other_columns:Union[dict, list] - other columns to utilize for query
+            sample list: ['str_variable', 'min(int_variable)', 'max(int_variable)']
+        where_condition:str - WHERE condition
+        group_by:list - list of columns to group by
+        order_by:str - ORDER BY based on timestamp column
+            * desc
+            * asc
+        exception:bool - print exceptions
+    :global:
+        FORMATS:list - List of formats supported
     :params:
-        sql_cmd:str - generated sql
+        period_function:str - period function
+        cmd:str - generated SELECT command
     :return:
-        sql_cmd
-        if time_interval not met --> ""
+        cmd
     """
-    if check_interval(time_interval=time_interval, exception=exception) is False:
-        return ""
-    if not time_column:
-        if exception is True:
-            print(f"Missing timestamp column name")
-        return ""
+    period_function=f"period(%s, {units}, '{start_date}', {date_column})"
+    if check_interval(time_interval, exception) is True:
+        period_function = period_function % time_interval
+    else:
+        raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
+    if start_date.lower() != 'now()' and __check_timestamp(start_date=start_date) is False:
+        raise ValueError(f'Invalid start_timestamp value, cannot continue. Accepted Values: {",".join(FORMATS)}')
 
-    period_cmd = f"period({time_interval}, {units}, {start_ts},{time_column})"
-    sql_cmd = "select "
+    cmd = f"SELECT {date_column}" + f", {', '.join(other_columns)} FROM {table_name}" if other_columns is not None else f" FROM {table_name}"
 
-    if type(value_columns) not in [tuple, list]:
-        value_columns = value_columns.strip().split(",")
-    for value_column in value_columns:
-        sql_cmd += f"{value_column},"
+    cmd += f" WHERE {period_function}" + f" and ({where_condition})" if where_condition is not None else ""
+    cmd += f" GROUP BY {','.join(group_by)}" if group_by is not None and len(group_by) > 0  else ""
+    cmd += f" ORDER BY {date_column} {order_by}" if order_by.lower() in ['asc', 'desc'] else ""
+    cmd += f" LIMIT {limit};" if limit > 0 else ";"
 
-    sql_cmd = sql_cmd.rsplit(",", 1)[0] + f" FROM {table_name} WHERE {period_cmd}"
-
-    if where_conditions:
-        sql_cmd += f" and {where_conditions}"
-
-    if group_by:
-        sql_cmd += f" GROUP BY {group_by}"
-    if order_by_columns:
-        sql_cmd += f" ORDER BY {order_by_columns}"
-    if limit > 0 :
-        sql_cmd += f" limit {limit}"
-
-    return sql_cmd
+    return cmd
 
 
-def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, destination:str='network',
-               output_format:str='json', stat:bool=True, timezone:str=None, include:list=[], extend:list=[],
-               view_help:bool=False, return_cmd:bool=False, exception:bool=False):
+def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str, output_format:str='json',
+               stat:bool=True, timezone:str='local', include:list=None, extend:list=None, destination:str='network',
+               view_help:bool=False, return_cmd:bool=False, exception:bool=False)->Union[str, dict, None]:
+    """
+    Execute query
+    :url:
+        https://github.com/AnyLog-co/documentation/blob/master/queries.md
+    :args:
+        conn:anylog_connector.AnyLogConnector - Connection to AnyLog
+        db_name:str - logical database name
+        sql_query:str - query to execute
+        output_format:str - The format of the result set
+            * table
+            * json
+            * json:list
+            * json:output
+        stat:bool - Adds processing statistics to the query output
+        timezone:str - Timezone used for time values in the result set
+        include:list - Allows to treat remote tables with a different name as the table being queried. The value is specified as dbms.table
+        extend:list - Include node variables (which are not in the table data) in the query result set. Example: extend = (@ip, @port.str, @DBMS, @table, !disk_space.int).
+        destination:str - Remote node to query against
+        view_help:bool - get information about command
+        return_cmd:bool - return command rather than executing it
+        exception:bool - whether to print exception
+    :params:
+        output
+        headers:dict - REST header information
+    :return:
+        if return_cmd is True -> return cmd
+        else -> return query result
+    """
     headers = {
-        "command": f'sql {db_name}',
+        "command": "",
         "User-Agent": "AnyLog/1.23",
         "destination": destination
     }
+    command = f'sql {db_name}'
 
-    if extend:
-        if isinstance(extend, list) or isinstance(extend, tuple):
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({','.join(extend)}) and")
-        else:
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({extend}) and")
-    if include:
-        if isinstance(include, list) or isinstance(include, tuple):
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} extend=({','.join(include)}) and")
-        else:
-            headers['command'] = headers['command'].replace(db_name, f"{db_name} include=({include}) and")
-    if timezone:
-        headers['command'] = headers['command'].replace(db_name, f"{db_name} timezone={timezone} and")
-    if stat is False:
-        headers['command'] = headers['command'].replace(db_name, f"{db_name} stat=false and")
-    if output_format in ['json', 'table', 'json:list']:
-        headers['command'] = headers['command'].replace(db_name, f"{db_name} format={output_format} and")
-    headers['command'] = headers['command'].rsplit('and', 1)[0] + " " + sql_query
+    command += f"sql {db_name} "
+    command += f" format={output_format.lower()} and " if output_format.lower() in ['json', 'table', 'json:list', 'json:output'] else ""
+    command += f" stat={str(stat).lower()}" if isinstance(stat, bool) else ""
+    command += f" timezone={timezone}" if timezone else ""
+    command += f" include={tuple(','.join(include))} and" if isinstance(include, (list, tuple)) and len(include) > 0 else ""
+    command += f" extend={tuple(','.join(extend))} and" if isinstance(extend, (list, tuple)) and len(extend) > 0 else ""
+    command = command.strip().rsplit('and', 1)[0].strip() if command.strip().split()[-1] == 'and' else command.strip()
+    headers['command'] += f'{command} "{sql_query}"'
 
-    output = {"command": None, "results": None}
     if view_help is True:
-        if return_cmd is True:
-            print(headers['command'], "\n")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
+    if return_cmd is True:
+        output  = headers['command']
     else:
-        output['results'] = extract_get_results(conn=conn, headers=headers, exception=exception)
-        if return_cmd is True:
-            output['command'] = headers['command']
+        output = extract_get_results(conn=conn, headers=headers, exception=exception)
 
     return output
 
-# def query_data_archive(conn:anylog_connector.AnyLogConnector, db_name:str, output_format:str='json', stat:bool=True,
-#                timezone:str=None, include:str=None, extend:list=[], query_title:str=None, dest:str=None, drop:bool=True,
-#                output_table_name:str=None, file_path:str=None, sql_cmd:str=None, increment_function:bool=False,
-#                period_function:bool=False, table_name:str=None, time_interval:str=None, units:int=None,
-#                time_column:str=None, value_columns=None, start_ts='NOW()', calc_min:bool=True, calc_avg:bool=True,
-#                calc_max:bool=True, row_count:bool=True, where_condition:str="", group_by:str="", order_by:str="",
-#                destination:str=None, view_help:bool=False, return_cmd:bool=False, exception:bool=False):
-#     """
-#     Generate and execute query
-#     :url:
-#         https://github.com/AnyLog-co/documentation/blob/master/queries.md
-#     :supported query types:
-#         1. fully defined by user (sql_cmd)
-#         2. increments
-#         3. period
-#         4. generic (aggregate) query based on user defined params
-#     :args:
-#         conn:anylog_connector.AnyLogConnector - conneection to AnyLog / EdgeLake
-#         db_name;str - logical database name
-#         output_format:str - result output format
-#             -> json
-#             -> table
-#             -> json:list
-#         stat:bool - whether to return statistics
-#         timezone:str - timezone
-#         include:list - list of tables to query against
-#         extend:list - blockchain info to include in results
-#         query_title:str - query title
-#         dest:str - whether to store results to file or local database
-#         drop:bool - if dest is dbms then whether remove table
-#         output_table_name:str -
-#         table_name:str - logical table name
-#         file_path:str - path to store query in
-#         sql_cmd:str -user defined SQL command
-#         increment_function:bool - based on user param, generate increments function SQL request
-#         period_function:bool -  based on user param, generate period function SQL request
-#     :user-query-args:
-#         time_interval:str - time interval (second, minute, hour, day, week, month, year)
-#         unit:int - value for time interval
-#         time_column:str - timestamp column name
-#         start_ts:str - start timestamp
-#         value_columns - list or string of non-timestamp value column name
-#         calc_min:bool - calculate min value
-#         calc_avg:bool - calculate avg value
-#         calc_max:bool - calculate max value
-#         row_count:bool - calculate row count
-#         where_condition:str - user defined where condition
-#         group_by:str - user defined group by
-#         ordr_by:str - user defined group by
-#         destination:str -  remote request param
-#         view_help:str - get help on command
-#         return_cmd:str - return generated command
-#         exception:bool - print exception
-#     :params:
-#         output - result output
-#         headers:dict - REST headers
-#     :return:
-#         output
-#     """
-#     output = None
-#     headers = {
-#         "command": f"sql {db_name}",
-#         "User-Agent": "AnyLog/1.23"
-#     }
-#     if destination:
-#         headers['destination'] = destination
-#
-#     # prepare SQL
-#     if sql_cmd not in [None, ""]:
-#         pass
-#     if increment_function is True and period_function is True:
-#         if exception is True:
-#             print("Query cannot support both increment and period functions in the same query request")
-#         return status
-#     elif increment_function is True:
-#         sql_cmd = build_increments_query(table_name=table_name, time_interval=time_interval, units=units,
-#                                          time_column=time_column, value_columns=value_columns, calc_min=calc_min,
-#                                          calc_avg=calc_avg, calc_max=calc_max, row_count=row_count,
-#                                          where_condition=where_condition, exception=exception)
-#     elif period_function:
-#         sql_cmd = build_period_query(table_name=table_name, time_interval=time_interval, units=units, start_ts=start_ts,
-#                                      time_column=time_column, value_columns=value_columns, calc_min=calc_min,
-#                                      calc_avg=calc_avg, calc_max=calc_max, row_count=row_count, exception=exception)
-#     else:
-#         sql_cmd = "SELECT"
-#         if time_column:
-#             if all(False is x for x in [calc_min, calc_avg, calc_max, row_count]):
-#                 sql_cmd += f" {time_column},"
-#             if calc_min is True:
-#                 sql_cmd += f" MIN({time_column}) AS min_{time_column},"
-#             if calc_max is True:
-#                 sql_cmd += f" MAX({time_column}) AS max_{time_column},"
-#             if not value_columns and row_count is True:
-#                 sql_cmd += f" COUNT({time_column}) AS count_{time_column},"
-#         if not isinstance(value_columns, list):
-#             value_columns = value_columns.split(",")
-#         for value_column in value_columns:
-#             if all(False is x for x in [calc_min, calc_avg, calc_max, row_count]):
-#                 sql_cmd += f" {value_column},"
-#             if calc_min is True:
-#                 sql_cmd += f" MIN({time_column}) AS min_{time_column},"
-#             if calc_avg is True:
-#                 sql_cmd += f" AVG({time_column}) AS avg_{time_column},"
-#             if calc_max is True:
-#                 sql_cmd += f" MAX({time_column}) AS max_{time_column},"
-#             if row_count is True:
-#                 sql_cmd += f" COUNT({time_column}) AS count_{time_column},"
-#
-#         sql_cmd = sql_cmd.rsplit(",", 1)[0] + f" FROM {table_name}"
-#         if where_condition:
-#             sql_cmd += f" WHERE {where_condition}"
-#         if group_by:
-#             sql_cmd += f" GROUP BY {group_by}"
-#         if order_by:
-#             sql_cmd += f" ORDER BY {order_by}"
-#
-#     # Prepare request configs
-#     if output_format in ['json', 'table', 'json:list']:
-#         headers['command'] += f" format={output_format} and"
-#     if stat is True:
-#         headers['command'] += f" stat=true and"
-#     if timezone:
-#         headers['command'] += f" timezone={timezone} and"
-#     if include:
-#         headers['command'] += f" include=({','.join(include)}) and"
-#     if extend:
-#         headers['command'] += f" extend=({','.join(extend)}) and"
-#     if query_title:
-#         headers['command'] += f" title={query_title} and"
-#     elif output_table_name:
-#         headers['command'] += f" title={output_table_name.replace('_', ' ')} and"
-#     if dest in ['dbms', 'file']:
-#         headers['command'] += f" dest={dest} and"
-#         if dest == 'dbms' and drop is True:
-#             headers['command'] += f" drop=true and"
-#         if dest == 'dbms' and output_table_name:
-#             headers['command'] += f" table={output_table_name} and"
-#         elif dest == 'dbms' and query_title:
-#             headers['command'] += f" table={query_title.replace(' ', '_')} and"
-#         if dest == 'file' and file_path:
-#             headers['command'] += f" file={file_path} and"
-#
-#     headers['command'] = f'{headers["command"].rsplit("and", 1)[0]} "{sql_cmd}"'
-#
-#     if view_help is True:
-#         get_help(conn=conn, cmd=headers['command'], exception=exception)
-#     if return_cmd is True:
-#         output = headers['command']
-#     elif view_help is False:
-#         output = extract_get_results(conn=conn, headers=headers, exception=exception)
-#
-#     return output
+
+

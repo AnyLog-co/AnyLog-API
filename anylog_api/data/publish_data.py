@@ -1,7 +1,12 @@
-from Cython.Compiler.Nodes import PassStatNode
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/
+"""
+import warnings
+from email.quoprimime import header_decode
 
 import anylog_api.anylog_connector as anylog_connector
-from anylog_api.__support__ import add_conditions
 from anylog_api.__support__ import json_dumps
 from anylog_api.anylog_connector_support import execute_publish_cmd
 from anylog_api.anylog_connector_support import extract_get_results
@@ -41,9 +46,9 @@ def put_data(conn:anylog_connector.AnyLogConnector, payload, db_name:str, table_
     if mode not in ['streaming', 'file']:
         headers['mode'] = 'streaming'
         if exception is True:
-            print(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
+            warnings.warn(f"Warning: Invalid mode format {mode}. Options: streaming (default), file ")
 
-    serialize_data = json_dumps(payload)
+    serialize_data = json_dumps(content=payload, exception=exception)
 
     if return_cmd is True:
         status = headers
@@ -79,9 +84,9 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
     }
 
     if isinstance(payload, list):
-        serialize_data = [json_dumps(row) for row in payload]
+        serialize_data = [json_dumps(content=row, exception=exception) for row in payload]
     elif isinstance(payload, dict):
-        serialize_data = json_dumps(payload)
+        serialize_data = json_dumps(content=payload, exception=exception)
     else:
         serialize_data = payload
 
@@ -93,10 +98,10 @@ def post_data(conn:anylog_connector.AnyLogConnector, payload, topic:str, return_
     return status
 
 
-def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str, port:int=None, username:str=None,
-                   password:str=None, log:bool=False, policy_id:str=None, db_name:str=None, table_name:str=None,
-                   values:dict={}, is_rest_broker:bool=False, destination:str=None, view_help:bool=False,
-                   return_cmd:bool=False, exception:bool=False):
+def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str, port:int=None,
+                   is_rest_broker:bool=False, username:str=None, password:str=None, log:bool=False,
+                   policy_id:str=None, db_name:str=None, table_name:str=None, values:dict=None, destination:str=None,
+                   view_help:bool=False, return_cmd:bool=False, exception:bool=False):
     """
     Enable message client for POST, MQTT, Kafka
     :args:
@@ -104,6 +109,7 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         broker:str - broker
         topic:str - topic name
         port:int - port associated with broker value
+        is_rest_broker:bool - whether REST (POST)s connection for message client
         username:str - user associated with broker
         password:str - password associated with user
         log:bool - whether to enable logging or not
@@ -131,62 +137,51 @@ def run_msg_client(conn:anylog_connector.AnyLogConnector, broker:str, topic:str,
         True -->  data sent
         False --> Fails to send data
     """
-    status = None
     headers = {
-        "command": f'run msg client where broker={broker}',
+        "command": f'run msg client where broker={broker} and ',
         "User-Agent": 'AnyLog/1.23'
     }
 
-    if port:
-        headers["command"] += f" and port={port}"
-    if is_rest_broker is True:
-        headers["command"] += " and user-agent=anylog"
-    if username:
-        headers["command"] += f" and user={username}"
-    if password:
-        headers["command"] += f" and password={password}"
-    if log is True:
-        headers["command"] += " and log=true"
-    else:
-        headers["command"] += " and log=false"
-    headers["command"] += f" and topic={topic}"
+    headers['command'] += f" port={port} and " if port else  ""
+    headers['command'] += f" user-agent=anylog and " if is_rest_broker is True else ""
+    headers['command'] += f" user={username} and " if username else ""
+    headers['command'] += f" password={password} and " if password else ""
+    headers['command'] += f" log={str(log).lower()} and " if isinstance(log, bool) else " log=false and "
 
-    if db_name or table_name or values:
-        headers["command"] = headers["command"].replace(f"topic={topic}", f"topic=(name={topic}")
-        if db_name:
-            headers['command'] += f" and dbms={db_name}"
-        if table_name:
-            headers['command'] += f" and table={table_name}"
-        if values:
-            for key, values_dict in values.items():
-                headers['command'] += " and "
-                if 'value' in values_dict and 'bring' in values_dict['value']:
-                    values_dict['value'] = '"' + values_dict['value'] + "'"
-                if 'type' in values_dict and values_dict['type'].lower() == 'timestamp':
-                    if 'value' not in values_dict:
-                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp=now()"
-                    else:
-                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}.timestamp={values_dict['value']}"
-                elif 'value' in values_dict:
-                    if 'type' not in values_dict or values_dict['type'].lower() not in ['string', 'int', 'float',
-                                                                                        'bool', 'timestamp']:
-                        headers['command'] += f"column.{key.replace(' ', '_').replace('-', '_')}=(type=string and value={values_dict['value']})"
-                    else:
-                        key = key.replace(' ', '_').replace('-', '_')
-                        value = values_dict["value"].replace('"', '').replace("'","")
-                        headers['command'] += f'column.{key}=(type={values_dict["type"].lower()} and value="{value}")'
-        headers['command'] += ")"
+    complete_topic = ""
+    complete_topic += f" topic=(name={topic} and" if {topic} else f" topic=(name=# and"
+    complete_topic += f" policy={policy_id} and" if policy_id and policy_id else ""
+    complete_topic += f" dbms={db_name} and" if db_name else ""
+    complete_topic += f" table={table_name} and" if table_name else ""
+    if not values and complete_topic == f" topic=(name={topic} and" if topic else f" topic=(name=# and":
+        complete_topic = f" topic={topic}" if topic else "topic=#"
+    elif not values and not complete_topic == f" topic=(name={topic} and" if topic else f" topic=(name=# and":
+        complete_topic = complete_topic.strip().rsplit("and", 1)[0].strip() + ")"
+    else:
+        for key in values:
+            column_name = key.lower().strip().replace(" ", "_")
+            value = values[key]['value'].strip() if 'value' in values[key] else None
+            value_type = values[key]['type'] if 'type' in values[key] and values[key]['type'] in ['int', 'float', 'bool', 'string'] else "string"
+            if value_type == 'timestamp' and value and "bring" in value:
+                complete_topic += f' column.{column_name}.timestamp="{value}" and'
+            elif value_type == 'timestamp' and value:
+                complete_topic += f' column.{column_name}.timestamp={value} and'
+            elif value_type == 'timestamp' and not value:
+                complete_topic += f' column.{column_name}.timestamp=now() and'
+            elif value is not None and value and "bring" in value:
+                complete_topic += f' column.{column_name}=(type={value_type} and value="{value}") and'
+            elif value:
+                complete_topic += f' column.{column_name}=(type={value_type} and value={value}) and'
+        complete_topic = complete_topic.strip().rsplit("and", 1)[0].strip() + ")"
+    headers['command'] += " " + complete_topic
 
     if destination:
         headers['destination'] = destination
-
     if view_help is True:
-        headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n","").replace("\t", " ")
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
-        headers['command'] = headers['command'].split('<')[-1].split('>')[0].replace("\n", "").replace("\t", " ")
+    else:
         status = execute_publish_cmd(conn=conn, cmd='POST', headers=headers, payload=None, exception=exception)
 
     return status
@@ -210,13 +205,23 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         if view_help == True - None
         results for query
     """
-    output = None
     headers = {
         "command": "get msg client",
         "User-Agent": "AnyLog/1.23"
     }
 
-    add_conditions(headers, id=client_id)
+
+    if client_id:
+        try:
+            client_id = int(client_id)  # Raises ValueError if conversion fails
+        except ValueError:
+            if exception is True:
+                warnings.warn('Invalid value type for client ID. Value must be an integer.')
+        except KeyError as e:
+            if exception is True:
+                warnings.warn(f"Missing required key in headers: {e}")
+        else:
+            headers['command'] += f" WHERE id={client_id}"
 
     if destination is not None:
         headers['destination'] = destination
@@ -225,7 +230,7 @@ def get_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, de
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         output = headers['command']
-    elif view_help is False:
+    else:
         output = extract_get_results(conn=conn, headers=headers,  exception=exception)
 
     return output
@@ -250,7 +255,6 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
         if execution succeeds - True
         if execution fails - False
     """
-    status = None
     headers = {
         "command": "exit mqtt",
         "User-Agent": "AnyLog/1.23"
@@ -265,7 +269,7 @@ def exit_msg_client(conn:anylog_connector.AnyLogConnector, client_id:int=None, d
         get_help(conn=conn, cmd=headers['command'], exception=exception)
     if return_cmd is True:
         status = headers['command']
-    elif view_help is False:
+    else:
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
 
     return status
