@@ -1,4 +1,6 @@
 import argparse
+import datetime
+
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.generic.get as generic_get
 import anylog_api.data.query as query_data
@@ -35,14 +37,15 @@ def main():
 
 
     increments_query = query_data.build_increments_query(table_name=args.table_name, time_interval='minute', units=5,
-                                                         date_column='timestamp', other_columns={'value': ['min', 'max', 'avg', 'sum']},
+                                                         date_column='timestamp',
+                                                         other_columns={'value': ['min', 'max', 'avg', 'sum']},
                                                          ts_min=True, ts_max=True, row_count=False,
                                                          where_condition='timestamp >= NOW() - 1 hour',
-                                                         order_by='asc', limit=10, exception=args.exception)
+                                                         order_by='desc', limit=10, exception=args.exception)
 
     print(f"Query: {increments_query}")
     print(query_data.query_data(conn=anylog_conn, db_name=args.db_name, sql_query=increments_query,
-                                output_format='table', destination='network', return_cmd=False,
+                                output_format='json', destination='network', return_cmd=False,
                                 exception=args.exception))
 
     increments_query = query_data.build_increments_query(table_name=args.table_name, time_interval='minute', units=5,
@@ -54,7 +57,26 @@ def main():
 
     print(f"Query: {increments_query}")
     print(query_data.query_data(conn=anylog_conn, db_name=args.db_name, sql_query=increments_query,
-                                output_format='table', destination='network', return_cmd=False,
+                                output_format='json:list', stat=False, destination='network', return_cmd=False,
+                                exception=args.exception))
+
+    period_query = query_data.build_period_query(table_name=args.table_name, time_interval='minute', units=5,
+                                                 date_column='timestamp', other_columns=['value'], start_date='NOW()',
+                                                 order_by='asc', limit=10, exception=args.exception)
+
+    print(f"Query: {period_query}")
+    print(query_data.query_data(conn=anylog_conn, db_name=args.db_name, sql_query=period_query, output_format='table',
+                                destination='network', return_cmd=False, exception=args.exception))
+
+    timestamp = datetime.datetime.now() - datetime.timedelta(hours=24)
+    timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    period_query = query_data.build_period_query(table_name=args.table_name, time_interval='hour', units=1,
+                                                 date_column='timestamp', other_columns=['value'], start_date=timestamp,
+                                                 order_by='asc', limit=10, exception=args.exception)
+
+    print(f"Query: {period_query}")
+    print(query_data.query_data(conn=anylog_conn, db_name=args.db_name, sql_query=period_query, timezone='utc',
+                                output_format='json:output', stat=False, destination='network', return_cmd=False,
                                 exception=args.exception))
 
 

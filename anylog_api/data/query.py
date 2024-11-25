@@ -169,8 +169,9 @@ def build_increments_query(table_name:str, time_interval:str, units:int, date_co
 
 
 def build_period_query(table_name:str, time_interval:str, units:int, date_column:str, start_date:str='NOW()',
-                       other_columns:list=None, where_condition:str=None, group_by:list=None, order_by:str=None,
-                       limit:int=0, exception:bool=False)->str:
+                       other_columns:Union[dict, list]=None, ts_min:bool=False, ts_max:bool=False, row_count:bool=False,
+                       where_condition:str=None, group_by:list=None, order_by:str=None, limit:int=0,
+                       exception:bool=False)->str:
     """
     The period function finds the first occurrence of data before or at a specified date (and if a filter-criteria is
     specified, the occurrence needs to satisfy the filter-criteria) and considers the readings in a period of time which
@@ -211,21 +212,77 @@ def build_period_query(table_name:str, time_interval:str, units:int, date_column
     :return:
         cmd
     """
+    group_by = []
     period_function=f"period(%s, {units}, '{start_date}', {date_column})"
     if check_interval(time_interval, exception) is True:
         period_function = period_function % time_interval
     else:
         raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
-    if start_date.lower() != 'now()' and __check_timestamp(start_date=start_date) is False:
-        raise ValueError(f'Invalid start_timestamp value, cannot continue. Accepted Values: {",".join(FORMATS)}')
+    if 'now' not in start_date.lower() and __check_timestamp(start_date=start_date) is False:
+        raise ValueError(f'Invalid start_timestamp value, cannot continue. Accepted Values: {", ".join(FORMATS)}')
 
-    cmd = f"SELECT {date_column}" + f", {', '.join(other_columns)} FROM {table_name}" if other_columns is not None else f" FROM {table_name}"
+    cmd = "SELECT "
+    if all(param is False for param in [ts_min, ts_max]):
+        cmd += f"{date_column}, "
+        group_by.append(date_column)
+    cmd += f"min({date_column}) as min_{date_column}, " if ts_min is True else ""
+    cmd += f"max({date_column}) as max_{date_column}, " if ts_max is True else ""
+    if isinstance(other_columns, dict):
+        for column, operations in other_columns.items():
+            if not operations or "distinct" in operations:
+                cmd += f"{column}, "
+                group_by.append(column)
+            if "min" in operations:
+                cmd += f"MIN({column}) AS min_{column}, "
+            if "max" in operations:
+                cmd += f"MAX({column}) AS max_{column}, "
+            if "avg" in operations:
+                cmd += f"AVG({column}) AS avg_{column}, "
+            if "sum" in operations:
+                cmd += f"SUM({column}) AS sum_{column}, "
+            if "distinct" in operations:
+                cmd += f"DISTINCT({column}) AS distinct_{column}, "
+            if "count_distinct" in operations:
+                cmd += f"COUNT(DISTINCT({column})) AS count_distinct_{column}, "
+    elif isinstance(other_columns, list):
+        cmd += ", ".join(other_columns) + ", "
 
-    cmd += f" WHERE {period_function}" + f" and ({where_condition})" if where_condition is not None else ""
-    cmd += f" GROUP BY {','.join(group_by)}" if group_by is not None and len(group_by) > 0  else ""
-    cmd += f" ORDER BY {date_column} {order_by}" if order_by.lower() in ['asc', 'desc'] else ""
-    cmd += f" LIMIT {limit};" if limit > 0 else ";"
+    # Clean trailing comma
+    cmd = cmd.rstrip(", ")
 
+    # Add FROM clause
+    cmd += f" FROM {table_name}"
+
+    # Add WHERE clause
+    cmd += f" WHERE {period_function} "
+    cmd += f" and ({where_condition})" if where_condition else ""
+
+    # Add GROUP BY clause
+    if group_by:
+        cmd += f" GROUP BY {', '.join(group_by)}"
+
+    # Add ORDER BY clause
+    if order_by:
+        cmd += " ORDER BY "
+        if ts_min:
+            cmd += f"min_{date_column}, "
+        elif ts_max:
+            cmd += f"max_{date_column}, "
+        if group_by:
+            cmd += f"{', '.join(group_by)}, "
+        cmd = cmd.rstrip(", ")
+        if order_by.lower() not in ['asc', 'desc']:
+            if exception:
+                raise ValueError("ORDER BY value must be 'asc' or 'desc'.")
+        else:
+            cmd += f" {order_by.upper()}"
+
+    # Add LIMIT clause
+    if limit > 0:
+        cmd += f" LIMIT {limit}"
+
+    # Finalize query
+    cmd = cmd.strip() + ";"
     return cmd
 
 
