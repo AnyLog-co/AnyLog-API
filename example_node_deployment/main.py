@@ -53,7 +53,7 @@ def main():
     # validate node
     node_status = generic_get.get_status(conn=anylog_conn, view_help=False, return_cmd=False, exception=args.exception)
     if node_status is False:
-        print(f"Failed to communicate with node against {args.conn}. Cannot continue...")
+        raise f"Failed to communicate with node against {args.conn}. Cannot continue..."
         exit(1)
 
     # set node params to be used
