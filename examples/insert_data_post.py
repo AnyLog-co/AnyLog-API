@@ -1,4 +1,6 @@
 import argparse
+import random
+
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.generic.get as generic_get
 import anylog_api.data.publish_data as publish_data
@@ -38,20 +40,21 @@ def main():
                        help="Whether to print exceptions")
     args = parse.parse_args()
 
-    # validate node is accessible
-    conn, auth = next(iter(args.conn.items()))
-    anylog_conn = anylog_connector.AnyLogConnector(conn, auth=auth, timeout=args.timeout)
-    if generic_get.get_status(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
-                              exception=args.exception) is False:
-        print(f"Failed to communicated with {anylog_conn.conn}. cannot continue...")
-        exit(1)
+    for conn in args.conn:
+        args.conn[conn] = anylog_connector.AnyLogConnector(conn=conn, timeout=args.timeout)
+        node_status = generic_get.get_status(conn=args.conn[conn], view_help=False, return_cmd=False,
+                                             exception=args.exception)
+        if node_status is False:
+            raise f"Failed to communicate with node against {conn}. Cannot continue..."
 
-    publish_data.run_msg_client(conn=anylog_conn, broker='rest', topic=args.topic, db_name="bring [dbms]",
-                                table_name="bring [table]",
-                                values={
-                                    "timestamp": {"type": "timestamp", "value": "bring [timestamp]"},
-                                    "value": {"type": "float", "value": "bring [value]"}
-                                }, destination="", is_rest_broker=True, view_help=False, return_cmd=False, exception=args.exception)
+
+        publish_data.run_msg_client(conn=args.conn[conn], broker='rest', topic=args.topic, db_name="bring [dbms]",
+                                    table_name="bring [table]",
+                                    values={
+                                        "timestamp": {"type": "timestamp", "value": "bring [timestamp]"},
+                                        "value": {"type": "float", "value": "bring [value]"}
+                                    }, destination="", is_rest_broker=True, view_help=False, return_cmd=False, exception=args.exception)
+
 
 
     # Generate rows - notice db_name and table are specified in the data generator
@@ -60,12 +63,13 @@ def main():
 
     status = True
     for row in payloads:
-        if publish_data.post_data(conn=anylog_conn, payload=row, topic=args.topic, return_cmd=False,
+        conn = random.choice(list(args.conn.keys()))
+        if publish_data.post_data(conn=args.conn[conn], payload=row, topic=args.topic, return_cmd=False,
                                   exception=args.exception) is False:
             status = False
 
     if status is False:
-        print("Successfully inserted data")
+        print("Failed to insert data")
     else:
         print("Successfully inserted data")
 

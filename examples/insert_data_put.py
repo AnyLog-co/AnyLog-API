@@ -1,4 +1,6 @@
 import argparse
+import random
+
 import anylog_api.anylog_connector as anylog_connector
 import anylog_api.generic.get as generic_get
 import anylog_api.data.publish_data as publish_data
@@ -40,24 +42,27 @@ def main():
     args = parse.parse_args()
 
     # validate node is accessible
-    conn, auth = next(iter(args.conn.items()))
-    anylog_conn = anylog_connector.AnyLogConnector(conn, auth=auth, timeout=args.timeout)
-    if generic_get.get_status(conn=anylog_conn, destination=None, view_help=False, return_cmd=False,
-                              exception=args.exception) is False:
-        print(f"Failed to communicated with {anylog_conn.conn}. cannot continue...")
-        exit(1)
+    for conn in args.conn:
+        args.conn[conn] = anylog_connector.AnyLogConnector(conn=conn, timeout=args.timeout)
+        node_status = generic_get.get_status(conn=args.conn[conn], view_help=False, return_cmd=False,
+                                             exception=args.exception)
+        if node_status is False:
+            raise f"Failed to communicate with node against {conn}. Cannot continue..."
 
     # Generate rows - notice db_name and table are not specified in the data generator
     payloads = support.data_generator(db_name=None, table=None, total_rows=args.total_rows, wait_time=args.wait_time)
 
-    if publish_data.put_data(conn=anylog_conn, payload=payloads, db_name=args.db_name, table_name=args.table_name,
-                             mode='streaming', return_cmd=False, exception=args.exception) is True:
-        print("Successfully inserted data")
+    status = True
+    for payload in payloads:
+        conn = random.choice(list(args.conn.keys()))
+        if not publish_data.put_data(conn=args.conn[conn], payload=payload, db_name=args.db_name, table_name=args.table_name,
+                                 mode=args.publish_mode, return_cmd=False, exception=args.exception):
+            status = False
+
+    if status is False:
+        print("Failed to insert data")
     else:
-        print(f"Failed to insert data into {anylog_conn.conn}")
-
-
-
+        print("Successfully inserted data")
 
 
 if __name__ == '__main__':
