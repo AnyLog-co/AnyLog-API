@@ -36,9 +36,9 @@ def __check_timestamp(start_date)->bool:
 
 
 def build_increments_query(table_name:str, time_interval:str, units:int, date_column:str,
-                           other_columns:Union[dict,list]=None, ts_min:bool=True, ts_max:bool=True, calc_min:bool=True,
-                           calc_avg:bool=True, calc_max:bool=True, row_count:bool=False, where_condition:str=None,
-                           order_by:str=None, limit:int=0, exception:bool=False)->str:
+                           other_columns:Union[dict,list]=None, ts_min:bool=True, ts_max:bool=True,
+                           row_count:bool=False, where_condition:str=None, order_by:str=None, limit:int=0,
+                           exception:bool=False)->str:
     """
     The increments functions considers data in increments of time (i.e. every 5 minutes) within a time range
     (i.e. between 'October 15, 2019' and 'October 16, 2019').date-column is the column name of the column that determines
@@ -85,57 +85,93 @@ def build_increments_query(table_name:str, time_interval:str, units:int, date_co
     :return:
         cmd
     """
+    if not table_name or not time_interval or not date_column:
+        raise ValueError("Table name, time interval, and date column must be specified.")
 
-    group_by=[]
-    increments_cmd = f"increments(%s, {int(units)}, {date_column})"
-    if check_interval(time_interval, exception) is True:
-        increments_cmd = increments_cmd % time_interval
-    else:
-        raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
+    if time_interval not in ['second', 'minute', 'hour', 'day', 'month', 'year']:
+        raise ValueError(
+            f"Invalid time interval: {time_interval}. Must be one of: second, minute, hour, day, month, year.")
 
+    if not isinstance(units, int) or units <= 0:
+        raise ValueError("Units must be a positive integer.")
+
+    # Base increments function
+    increments_cmd = f"increments({time_interval}, {units}, {date_column})"
     cmd = f"SELECT {increments_cmd}, "
 
-    # timestamp
-    if all(param is False for param in [ts_min, ts_max]):
-        if exception is True:
-            raise ValueError('Unable to generate query without an aggregate on timestamp column')
-    if ts_min is True:
-        cmd += f" min({date_column}) as min_{date_column}, "
-    if ts_max is True:
-        cmd += f" max({date_column}) as max_{date_column}, "
-    if row_count is True:
-        cmd += f"count({date_column}) as row_count, "
+    # Add timestamp aggregations
+    if not ts_min and not ts_max and not row_count:
+        if exception:
+            raise ValueError("At least one of ts_min, ts_max, or row_count must be True.")
+    cmd += f"MIN({date_column}) AS min_{date_column}, " if ts_min else ""
+    cmd += f"MAX({date_column}) AS max_{date_column}, " if ts_max else ""
+    cmd += f"COUNT(*) AS row_count, " if row_count else ""
 
-    # other columns
-    for column in other_columns:
-        if isinstance(other_columns, dict) and other_columns[column] in ['int', 'float']:
-            if all(key is False for key in [calc_min, calc_max, calc_avg]):
+    # Process other_columns
+    group_by = []
+    if isinstance(other_columns, dict):
+        for column, operations in other_columns.items():
+            if not operations or "distinct" in operations:
+                cmd += f"{column}, "
                 group_by.append(column)
-                if exception is True:
-                    warnings.warn(f'Grouping by numeric values')
-            if calc_min is True:
-                cmd += f" min({column}) as min_{column}, "
-            if calc_avg is True:
-                cmd += f" avg({column}) as avg_{column}, "
-            if calc_max is True:
-                cmd += f" max({column}) as max_{column}, "
-        else:
-            cmd += f"{column}, "
-            group_by.append(column)
+            if "min" in operations:
+                cmd += f"MIN({column}) AS min_{column}, "
+            if "max" in operations:
+                cmd += f"MAX({column}) AS max_{column}, "
+            if "avg" in operations:
+                cmd += f"AVG({column}) AS avg_{column}, "
+            if "sum" in operations:
+                cmd += f"SUM({column}) AS sum_{column}, "
+            if "distinct" in operations:
+                cmd += f"DISTINCT({column}) AS distinct_{column}, "
+            if "count_distinct" in operations:
+                cmd += f"COUNT(DISTINCT({column})) AS count_distinct_{column}, "
+    elif isinstance(other_columns, list):
+        cmd += ", ".join(other_columns) + ", "
 
-    cmd += cmd.rsplit(',', 1)[0] + f" FROM {table_name}"
-    cmd += f" WHERE {where_condition}" if where_condition is not None else ""
-    cmd += f" GROUP BY {','.join(group_by)}" if len(group_by) > 0 else ""
+    # Clean trailing comma
+    cmd = cmd.rstrip(", ")
+
+    # Add FROM clause
+    cmd += f" FROM {table_name}"
+
+    # Add WHERE clause
+    if where_condition:
+        cmd += f" WHERE {where_condition}"
+
+    # Add GROUP BY clause
+    if group_by:
+        cmd += f" GROUP BY {', '.join(group_by)}"
+
+    # Add ORDER BY clause
     if order_by:
-        cmd += f"ORDER BY min_{date_column}" + f", {','.join(group_by)} {order_by}" if group_by else f" {order_by}"
-    cmd += f" LIMIT {limit};" if limit > 0  else ";"
+        cmd += " ORDER BY "
+        if ts_min:
+            cmd += f"min_{date_column}, "
+        elif ts_max:
+            cmd += f"max_{date_column}, "
+        if group_by:
+            cmd += f"{', '.join(group_by)}, "
+        cmd = cmd.rstrip(", ")
+        if order_by.lower() not in ['asc', 'desc']:
+            if exception:
+                raise ValueError("ORDER BY value must be 'asc' or 'desc'.")
+        else:
+            cmd += f" {order_by.upper()}"
 
+    # Add LIMIT clause
+    if limit > 0:
+        cmd += f" LIMIT {limit}"
+
+    # Finalize query
+    cmd = cmd.strip() + ";"
     return cmd
 
 
 def build_period_query(table_name:str, time_interval:str, units:int, date_column:str, start_date:str='NOW()',
-                       other_columns:list=None, where_condition:str=None, group_by:list=None, order_by:str=None,
-                       limit:int=0, exception:bool=False)->str:
+                       other_columns:Union[dict, list]=None, ts_min:bool=False, ts_max:bool=False, row_count:bool=False,
+                       where_condition:str=None, group_by:list=None, order_by:str=None, limit:int=0,
+                       exception:bool=False)->str:
     """
     The period function finds the first occurrence of data before or at a specified date (and if a filter-criteria is
     specified, the occurrence needs to satisfy the filter-criteria) and considers the readings in a period of time which
@@ -176,21 +212,77 @@ def build_period_query(table_name:str, time_interval:str, units:int, date_column
     :return:
         cmd
     """
+    group_by = []
     period_function=f"period(%s, {units}, '{start_date}', {date_column})"
     if check_interval(time_interval, exception) is True:
         period_function = period_function % time_interval
     else:
         raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
-    if start_date.lower() != 'now()' and __check_timestamp(start_date=start_date) is False:
-        raise ValueError(f'Invalid start_timestamp value, cannot continue. Accepted Values: {",".join(FORMATS)}')
+    if 'now' not in start_date.lower() and __check_timestamp(start_date=start_date) is False:
+        raise ValueError(f'Invalid start_timestamp value, cannot continue. Accepted Values: {", ".join(FORMATS)}')
 
-    cmd = f"SELECT {date_column}" + f", {', '.join(other_columns)} FROM {table_name}" if other_columns is not None else f" FROM {table_name}"
+    cmd = "SELECT "
+    if all(param is False for param in [ts_min, ts_max]):
+        cmd += f"{date_column}, "
+        group_by.append(date_column)
+    cmd += f"min({date_column}) as min_{date_column}, " if ts_min is True else ""
+    cmd += f"max({date_column}) as max_{date_column}, " if ts_max is True else ""
+    if isinstance(other_columns, dict):
+        for column, operations in other_columns.items():
+            if not operations or "distinct" in operations:
+                cmd += f"{column}, "
+                group_by.append(column)
+            if "min" in operations:
+                cmd += f"MIN({column}) AS min_{column}, "
+            if "max" in operations:
+                cmd += f"MAX({column}) AS max_{column}, "
+            if "avg" in operations:
+                cmd += f"AVG({column}) AS avg_{column}, "
+            if "sum" in operations:
+                cmd += f"SUM({column}) AS sum_{column}, "
+            if "distinct" in operations:
+                cmd += f"DISTINCT({column}) AS distinct_{column}, "
+            if "count_distinct" in operations:
+                cmd += f"COUNT(DISTINCT({column})) AS count_distinct_{column}, "
+    elif isinstance(other_columns, list):
+        cmd += ", ".join(other_columns) + ", "
 
-    cmd += f" WHERE {period_function}" + f" and ({where_condition})" if where_condition is not None else ""
-    cmd += f" GROUP BY {','.join(group_by)}" if group_by is not None and len(group_by) > 0  else ""
-    cmd += f" ORDER BY {date_column} {order_by}" if order_by.lower() in ['asc', 'desc'] else ""
-    cmd += f" LIMIT {limit};" if limit > 0 else ";"
+    # Clean trailing comma
+    cmd = cmd.rstrip(", ")
 
+    # Add FROM clause
+    cmd += f" FROM {table_name}"
+
+    # Add WHERE clause
+    cmd += f" WHERE {period_function} "
+    cmd += f" and ({where_condition})" if where_condition else ""
+
+    # Add GROUP BY clause
+    if group_by:
+        cmd += f" GROUP BY {', '.join(group_by)}"
+
+    # Add ORDER BY clause
+    if order_by:
+        cmd += " ORDER BY "
+        if ts_min:
+            cmd += f"min_{date_column}, "
+        elif ts_max:
+            cmd += f"max_{date_column}, "
+        if group_by:
+            cmd += f"{', '.join(group_by)}, "
+        cmd = cmd.rstrip(", ")
+        if order_by.lower() not in ['asc', 'desc']:
+            if exception:
+                raise ValueError("ORDER BY value must be 'asc' or 'desc'.")
+        else:
+            cmd += f" {order_by.upper()}"
+
+    # Add LIMIT clause
+    if limit > 0:
+        cmd += f" LIMIT {limit}"
+
+    # Finalize query
+    cmd = cmd.strip() + ";"
     return cmd
 
 
@@ -226,20 +318,18 @@ def query_data(conn:anylog_connector.AnyLogConnector, db_name:str, sql_query:str
         else -> return query result
     """
     headers = {
-        "command": "",
+        "command": f'sql {db_name}',
         "User-Agent": "AnyLog/1.23",
         "destination": destination
     }
-    command = f'sql {db_name}'
 
-    command += f"sql {db_name} "
-    command += f" format={output_format.lower()} and " if output_format.lower() in ['json', 'table', 'json:list', 'json:output'] else ""
-    command += f" stat={str(stat).lower()}" if isinstance(stat, bool) else ""
-    command += f" timezone={timezone}" if timezone else ""
-    command += f" include={tuple(','.join(include))} and" if isinstance(include, (list, tuple)) and len(include) > 0 else ""
-    command += f" extend={tuple(','.join(extend))} and" if isinstance(extend, (list, tuple)) and len(extend) > 0 else ""
-    command = command.strip().rsplit('and', 1)[0].strip() if command.strip().split()[-1] == 'and' else command.strip()
-    headers['command'] += f'{command} "{sql_query}"'
+    headers['command'] += f" format={output_format.lower()} and" if output_format.lower() in ['json', 'table', 'json:list', 'json:output'] else ""
+    headers['command'] += f" stat={str(stat).lower()} and" if isinstance(stat, bool) else ""
+    headers['command'] += f" timezone={timezone} and" if timezone else ""
+    headers['command'] += f" include={tuple(','.join(include))} and" if isinstance(include, (list, tuple)) and len(include) > 0 else ""
+    headers['command'] += f" extend={tuple(','.join(extend))} and" if isinstance(extend, (list, tuple)) and len(extend) > 0 else ""
+    headers['command'] = headers['command'].strip().rsplit('and', 1)[0].strip() if headers['command'].strip().split()[-1] == 'and' else headers['command'].strip()
+    headers['command'] += f' "{sql_query}"'
 
     if view_help is True:
         get_help(conn=conn, cmd=headers['command'], exception=exception)

@@ -41,7 +41,7 @@ def connect_dbms(conn:anylog_connector.AnyLogConnector, params:dict, destination
                                    destination=destination, view_help=view_help, exception=exception)
         database_cmds.create_table(conn=conn, db_name='almgm', table_name='tsd_info', return_cmd=return_cmd,
                                    destination=destination, view_help=view_help, exception=exception)
-    if node_type == 'query' or ('system_query' in  params and params['system_query'] is True):
+    if node_type == 'query' or ('system_query' in  params and params['system_query'] in [True, 'true', 'True'] ):
         database_cmds.connect_dbms(conn=conn, db_name='system_query', db_type=db_type, memory=memory,
                                    db_user=db_user, db_password=db_passwd, db_ip=db_ip, db_port=db_port,
                                    return_cmd=return_cmd, destination=destination, view_help=view_help,

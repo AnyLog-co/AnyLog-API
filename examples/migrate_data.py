@@ -1,5 +1,4 @@
 import argparse
-import ast
 import datetime
 import json
 import anylog_api.anylog_connector as anylog_connector
