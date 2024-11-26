@@ -4,6 +4,9 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 from typing import Union
+import pathlib
+
+from Cython.Compiler.Code import read_utilities_from_utility_dir
 
 import anylog_api.anylog_connector as anylog_connector
 from anylog_api.generic.get import get_help
@@ -100,7 +103,7 @@ def set_node_name(conn:anylog_connector.AnyLogConnector, node_name:str, destinat
     return status
 
 
-def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  returnn_cmd:bool=False,
+def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=None,  return_cmd:bool=False,
              view_help:bool=False, exception:bool=False)->Union[bool,str,None]:
     """
     Declare the location of the root directory to the AnyLog Files
@@ -124,15 +127,19 @@ def set_path(conn:anylog_connector.AnyLogConnector, path:str, destination:str=No
         "command": f"set anylog home {path}",
         "User-Agent": "AnyLog/1.23"
     }
+
     if destination is not None:
         headers['destination'] = destination
 
-    if view_help is True:
+    # Path validation based on platform
+    if view_help:
         get_help(conn=conn, cmd=headers['command'], exception=exception)
-    elif returnn_cmd is True:
+    if return_cmd is True:
         status = headers['command']
-    else:
+    elif pathlib.Path(path):  # Ensure path is absolute
         status = execute_publish_cmd(conn=conn, cmd='post', headers=headers, payload=None, exception=exception)
+    elif exception is True:
+        raise ValueError(f'Invalid absolute path for {path}.')
 
     return status
 
