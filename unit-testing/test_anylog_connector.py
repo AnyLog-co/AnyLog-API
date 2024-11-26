@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from anylog_api.anylog_connector import AnyLogConnector
-from anylog_api.__support__ import check_ip, check_conn_info
+from anylog_api.__support__ import check_ip
 
 
 class TestAnyLogConnector(unittest.TestCase):
