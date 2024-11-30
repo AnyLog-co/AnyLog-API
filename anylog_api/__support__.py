@@ -7,29 +7,6 @@ import json
 import re
 
 
-def json_loads(content, exception:bool=False)->dict:
-    """
-    Convert serialized JSON into dictionary form
-    :args:
-        content - content to convert into dictionary
-        exception:bool - whether to print exception
-    :params:
-        output - content as dictionary form
-    :return:
-        output
-        if fails - raise JSON error
-    """
-    output = None
-    try:
-        output = json.loads(content.replace("'", "\""))
-    except Exception as error:
-        if exception is True:
-            raise json.JSONDecodeError(msg=f"Failed to convert content into dictionary format (Error: {error})",
-                                       doc=content, pos=0)
-
-    return output
-
-
 def json_dumps(content, indent:int=0, exception:bool=False)->str:
     """
     Convert dictionary into serialized JSON
@@ -57,32 +34,6 @@ def json_dumps(content, indent:int=0, exception:bool=False)->str:
     return output
 
 
-def check_ip(conn:str)->bool:
-    """
-    Validate if IP address is correct
-    :args:
-        conn:str - IP to check against
-    :params:
-        pattern:str - IP address pattern
-    :return:
-        if success return True, Else reutnr exception
-    """
-    pattern1 = r'^(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])' \
-              r'(?:\.(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3}:\d{1,5}$'
-    pattern2 = r'^localhost(?::\d{1,5})?$'
-    if not re.match(pattern1, conn) and not re.match(pattern2, conn):
-        raise ValueError('Connection information not in correct format - example [IP_Address]:[ANYLOG_REST_PORT]')
-    else:
-        ip, port = conn.split(":")
-        try:
-            if not 2048 <= int(port) <= 60000:
-                raise ValueError(f"Connection port not in valid range. Range between 2048 to 60000")
-        except ValueError:
-            raise ValueError(f"Connection port not in valid range. Range between 2048 to 60000")
-
-    return True
-
-
 def check_conn_info(conn:str)->bool:
     """
     Check whether connection is correct format
@@ -103,6 +54,7 @@ def check_conn_info(conn:str)->bool:
 
     return True
 
+
 def separate_conn_info(conn:str)->(str, tuple):
     """
     Separate connection information provided
@@ -114,35 +66,19 @@ def separate_conn_info(conn:str)->(str, tuple):
     :return:
         conn, auth
     """
-    pattern1 = r'^(?:\d{1,3}\.){3}\d{1,3}:\d{1,5}$'
-    pattern = f'^(?:[a-zA-Z0-9._%+-]+(?::[a-zA-Z0-9._%+-]+)?@)?{pattern1}'
-    auth = ()
-    if re.match(pattern, conn) is True or '@' in conn:
+    auth = None
+    if check_conn_info(conn=conn) is True and '@' in conn:
         auth, conn = conn.split('@')
         auth = tuple(auth.split(":"))
 
     return conn, auth
 
 
-def check_interval(time_interval:str, exception:bool=False)->bool:
-    """
-    Validate if user-defined interval is supported
-    :args:
-        time_interval:str - user defined interval
-        exception:bool - whether to print exception
-    :params:
-        status:bool
-        time_interval_pattern:str - supported intervals
-    :return:
-        True - valid interval
-        False - invalid interval
-    """
-    status = True
-    time_interval_pattern = r'^\d*\s*(second|seconds|minute|minutes|hour|hours|day|days|month|months|year|years)$'
+def validate_conn_info(conn:str):
+    if not conn:
+        raise ValueError('Missing connection information, cannot continue....')
+    conns_list = {conn_info: None for conn_info in conn.split(",")}
+    if not all(check_conn_info(conn) for conn in list(conns_list.keys())):
+        raise ValueError('One or more set of connections has invalid format')
+    return conns_list
 
-    if not bool(re.match(time_interval_pattern, time_interval.strip())):
-        if exception is True:
-            raise ValueError(f"Interval value {time_interval} - time interval options: second, minute, day, month or year")
-        status = False
-
-    return status

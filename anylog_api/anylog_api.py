@@ -259,7 +259,7 @@ class AnyLogAPI:
         return output
 
 
-    def put_data(self, payload, db_name:str, table_name:str, mode:str='streaming', view_help:bool=False):
+    def execute_put(self, payload, db_name:str, table_name:str, mode:str='streaming', view_help:bool=False):
         """
         Insert data into EdgeLake / AnyLog via PUT
         :args:
