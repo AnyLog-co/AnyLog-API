@@ -44,7 +44,7 @@ COMPILER_DIRECTIVES = {
 # Define the entry point for running the package
 ENTRY_POINTS = {
     'console_scripts': [
-        'anylog-api = anylog_api.__main__:main',  # Entry point to run package from CLI
+        'anylog-api = anylog_api.anylog_api:main',  # Assuming main() is in anylog_api.py
     ],
 }
 
