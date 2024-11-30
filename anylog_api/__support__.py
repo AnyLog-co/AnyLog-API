@@ -75,10 +75,23 @@ def separate_conn_info(conn:str)->(str, tuple):
 
 
 def validate_conn_info(conn:str):
+    """
+    For argparse - validate connection information and store into a dictionary
+    :args:
+        conn:str - comma separated REST connection information
+    :params:
+        conns_list:dict - connections cconvert into dictionary
+    :raise:
+        case 1: missing connection information
+        case 2: invalid format
+    :return;
+        conns_list
+    """
     if not conn:
         raise ValueError('Missing connection information, cannot continue....')
     conns_list = {conn_info: None for conn_info in conn.split(",")}
     if not all(check_conn_info(conn) for conn in list(conns_list.keys())):
         raise ValueError('One or more set of connections has invalid format')
+
     return conns_list
 
