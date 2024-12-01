@@ -3,6 +3,7 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
+import ast
 import json
 import re
 
@@ -94,4 +95,43 @@ def validate_conn_info(conn:str):
         raise ValueError('One or more set of connections has invalid format')
 
     return conns_list
+
+
+def format_data(data:dict):
+    """
+    Format data for dictionary values
+    :args:
+        data:dict
+    :return:
+        data
+    """
+    for key in data:
+        try:
+            data[key] = ast.literal_eval(data[key])
+        except ValueError:
+            if str(data[key]).lower() == 'true':
+                data[key] = True
+            elif str(data[key]).lower() == 'false':
+                data[key] = False
+        except SyntaxError:
+            pass
+
+    return data
+
+
+def validate_params(params:list, is_edgelake:bool=False):
+    """
+    Validate list of params
+    :args:
+        params:dict - required params
+        is_edgelake:bool - if (not) EdgeLake, requires license
+    :raise:
+        1. missing key param
+        2. missing license key if not EdgeLake
+    """
+    if not all(key in params for key in ['node_type', 'node_name', 'company_name']):
+        raise ValueError(f"Missing one or more required params - required params: {','.join(['node_type', 'node_name', 'company_name'])}")
+    if is_edgelake is False and 'license_key' not in params:
+        raise ValueError(f"AnyLog deployment must have an active license key in order to run REST against the node")
+
 

@@ -243,7 +243,7 @@ class AnyLogAPI:
         output = None
         headers = {
             "command": command,
-            "User-Agent": "AnyLogg/1.23"
+            "User-Agent": "AnyLog/1.23"
         }
 
         if "sql" == command.split()[0] and destination:
@@ -308,7 +308,7 @@ class AnyLogAPI:
         return status
 
 
-    def execute_post(self, command:str, payload:Union[dict, list]=None, topic:str=None, destination=None,
+    def execute_post(self, command:str, payload:Union[dict, list, str]=None, topic:str=None, destination=None,
                      view_help:bool=False):
         """
         Execute PUBLISH command against AnyLog/EdgeLake
