@@ -1,7 +1,6 @@
 import json
-
 import anylog_api.anylog_api as anylog_api
-from anylog_api.anylog_api import AnyLogAPI
+
 
 
 def __create_database_connection(db_name:str, db_type:str, db_user:str=None, db_passwwd:str=None, db_ip:str=None,
@@ -39,6 +38,26 @@ def __create_database_connection(db_name:str, db_type:str, db_user:str=None, db_
 def generic_node(params:dict)->dict:
     """
     Create the base for a given (node) policy
+    :sample-policy:
+    {
+      "master" : {
+        "name" : "anylog-master",
+        "company" : "New Company",
+        "ip" : "73.202.142.172",
+        "local_ip" : "10.0.0.228",
+        "rest_ip" : "10.0.0.228",
+        "port" : 2048,
+        "rest_port" : 2148,
+        "tcp_bind" : "true",
+        "rest_bind" : "true",
+        "script" : [
+            "connect dbms blockchain where type=sqlite", "create table ledger where dbms=blockchain",
+            "connect dbms system_query where type=sqlite and memory=true",
+            "run scheduler 1",
+            "run blockchain sync where source=master and time=30 second and dest=file and connection=10.0.0.228:2048"
+        ]
+      }
+    }
     :args:
         params:dict - User defined params
     :params:
