@@ -90,7 +90,7 @@ class AnyLogAPI:
 
         # Define a function to handle the command execution for each key-value pair
         def execute_command(key, value):
-            if value in ['false', 'False', 'True', 'true', 'file']:
+            if value in ['false', 'False', 'True', 'true', 'file', 'query']:
                 command = f'set {key.strip()} = {value.strip()}'
             elif value != "":
                 command = f'{key.strip()} = {value.strip()}'

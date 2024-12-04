@@ -6,8 +6,6 @@ import random
 import time
 
 
-
-
 def check_configs(config_files:str):
     """
     Check configuration file(s)
