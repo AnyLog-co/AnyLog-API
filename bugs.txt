@@ -1,7 +1,0 @@
-get scheduler where format=json
-get rest calls where format=json
-reset echo queue where size = 50
-
-https://anylog.atlassian.net/browse/AB-26
-https://anylog.atlassian.net/browse/AB-27
-

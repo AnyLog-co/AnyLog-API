@@ -3,135 +3,163 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
-import ast
-import json
-import re
+import requests
+from typing import Union
+
+import anylog_api.anylog_connector as anylog_connector
+
+# Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
+NETWORK_ERRORS_GENERIC = {
+    1: "Informational",
+    2: "Successful",
+    3: "Redirection",
+    4: "Client Error",
+    5: "Server Error",
+    7: "Developer Error"
+}
+NETWORK_ERRORS = {
+    100: "Continue",
+    101: "Switching Protocols",
+    200: "OK",
+    201: "Created",
+    202: "Accepted",
+    203: "Non-Authoritative Information",
+    204: "No Content",
+    205: "Reset Content",
+    206: "Partial Content",
+    300: "Multiple Choices",
+    301: "Moved Permanently",
+    302: "Found",
+    303: "See Other",
+    304: "Not Modified",
+    305: "Use Proxy",
+    307: "Temporary Redirect",
+    400: "Bad Request",
+    401: "Unauthorized",
+    402: "Payment Required",
+    403: "Forbidden",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    406: "Not Acceptable",
+    407: "Proxy Authentication Required",
+    408: "Request Timeout",
+    409: "Conflict",
+    410: "Gone",
+    411: "Length Required",
+    412: "Precondition Failed",
+    413: "Payload Too Large",
+    414: "URI Too Long",
+    415: "Unsupported Media Type",
+    416: "Range Not Satisfiable",
+    417: "Expectation Failed",
+    418: "I'm a teapot",
+    426: "Upgrade Required",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    502: "Bad Gateway",
+    503: "Service Unavailable",
+    504: "Gateway Time-out",
+    505: "HTTP Version Not Supported",
+    102: "Processing",
+    207: "Multi-Status",
+    226: "IM Used",
+    308: "Permanent Redirect",
+    422: "Unprocessable Entity",
+    423: "Locked",
+    424: "Failed Dependency",
+    428: "Precondition Required",
+    429: "Too Many Requests",
+    431: "Request Header Fields Too Large",
+    451: "Unavailable For Legal Reasons",
+    506: "Variant Also Negotiates",
+    507: "Insufficient Storage",
+    511: "Network Authentication Required"
+}
 
 
-def json_dumps(content, indent:int=0, exception:bool=False)->str:
+def __raise_rest_error(call_type:str, cmd:str, error:str):
     """
-    Convert dictionary into serialized JSON
+    Print Error message
     :args:
-        content - content to convert into dictionary
-        indent:int - JSON indent
-        exception:bool - whether to print exception
+        error_type:str - Error Type
+        cmd:str - command that failed
+        error:str - error message
+    :global:
+        NETWORK_ERRORS:dict - based on initial error code value print error message
+        NETWORK_ERRORS_GENERIC:dict - based on initial error code value print error message
     :params:
-        output - content as dictionary form
+        error_msg:str - generated error message
+    :raise:
+        error message
+    """
+    error_msg = f'Failed to execute {call_type} for "{cmd}" '
+    try:
+        error = int(error)
+    except KeyError or ValueError:
+        pass
+
+    if isinstance(error, int):
+        if error in NETWORK_ERRORS:
+            error_msg += f'(Network Error {error} - {NETWORK_ERRORS[error]})'
+        elif int(str(error)[0]) in NETWORK_ERRORS_GENERIC:
+            error_msg += f'(Network Error {error} - {NETWORK_ERRORS_GENERIC[int(str(error)[0])]})'
+        else:
+            error_msg += f'(Network Error: {error})'
+    else:
+        error_msg += f'(Error: {error})'
+
+    raise requests.RequestException(error_msg)
+
+
+def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
+    """
+    Given the results from a GET request, extract the results as JSON, then text if JSON fails
+    :args:
+        cmd:str - original command executed
+        r:requests.get - (raw) results from GET request
+        exception:bool - whether to print exceptions
+    :params:
+        output:str - result from GET request
     :return:
-        output
-        if fails - raise JSON error
+        if success returns result as either JSON or text, if fails returns None
     """
     output = None
     try:
-        if indent > 0:
-            output = json.dumps(content, indent=indent)
-        else:
-            output = json.dumps(content)
-    except Exception as error:
-        if exception is True:
-            raise json.JSONDecodeError(msg=f"Failed to convert content into serialized JSON format (Error: {error})",
-                                       doc=str(content), pos=0)
+        output = r.json()
+    except requests.JSONDecodeError:
+        try:
+            output = r.text
+        except Exception as error:
+            if exception is True:
+                raise requests.JSONDecodeError(f'Failed to extract results for "{cmd}" (Error: {error})')
 
     return output
 
 
-def check_conn_info(conn:str)->bool:
+def extract_get_results(command:str, response:requests.get, error:str=None)->Union[None, str]:
     """
-    Check whether connection is correct format
+    execute / extract results for GET request
     :args:
-        conn:str - REST connection IP:Port
+        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
+        headers:dict - REST headers
+        exception:bool - whether to print exception
     :params:
-        pattern:str - pattern to check connection is correct format
+        output - results from GET request
     :return:
-        if fails then raise an error
-        else - True
+        output
     """
-    pattern1 = r'^(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])' \
-              r'(?:\.(?:[0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3}:\d{1,5}$'
-    pattern2 = f'^(?:[a-zA-Z0-9._%+-]+(?::[a-zA-Z0-9._%+-]+)?@)?{pattern1}'
+    output = None
+    if response is False:
+        __raise_rest_error(call_type='GET', cmd=command, error=error)
+    elif not isinstance(response, bool):
+        output = __extract_results(cmd=command, r=response)
 
-    if not re.match(pattern1, conn) and not re.match(pattern2, conn):
-        raise ValueError('Connection information not in correct format - example [IP_Address]:[ANYLOG_REST_PORT]')
-
-    return True
-
-
-def separate_conn_info(conn:str)->(str, tuple):
-    """
-    Separate connection information provided
-    :args:
-        conn:str - REST connection information
-    :params:
-        pattern:str - pattern information
-        auth:tuple - authentication information
-    :return:
-        conn, auth
-    """
-    auth = None
-    if check_conn_info(conn=conn) is True and '@' in conn:
-        auth, conn = conn.split('@')
-        auth = tuple(auth.split(":"))
-
-    return conn, auth
+    return output
 
 
-def validate_conn_info(conn:str):
-    """
-    For argparse - validate connection information and store into a dictionary
-    :args:
-        conn:str - comma separated REST connection information
-    :params:
-        conns_list:dict - connections cconvert into dictionary
-    :raise:
-        case 1: missing connection information
-        case 2: invalid format
-    :return;
-        conns_list
-    """
-    if not conn:
-        raise ValueError('Missing connection information, cannot continue....')
-    conns_list = {conn_info: None for conn_info in conn.split(",")}
-    if not all(check_conn_info(conn) for conn in list(conns_list.keys())):
-        raise ValueError('One or more set of connections has invalid format')
+def validate_put_post(command:str, response, error:str=None)->bool:
+    status = True
+    if response is False:
+        __raise_rest_error(call_type='PUT', command=command, error=error)
 
-    return conns_list
-
-
-def format_data(data:dict):
-    """
-    Format data for dictionary values
-    :args:
-        data:dict
-    :return:
-        data
-    """
-    for key in data:
-        try:
-            data[key] = ast.literal_eval(data[key])
-        except ValueError:
-            if str(data[key]).lower() == 'true':
-                data[key] = True
-            elif str(data[key]).lower() == 'false':
-                data[key] = False
-        except SyntaxError:
-            pass
-
-    return data
-
-
-def validate_params(params:list, is_edgelake:bool=False):
-    """
-    Validate list of params
-    :args:
-        params:dict - required params
-        is_edgelake:bool - if (not) EdgeLake, requires license
-    :raise:
-        1. missing key param
-        2. missing license key if not EdgeLake
-    """
-    if not all(key in params for key in ['node_type', 'node_name', 'company_name']):
-        raise ValueError(f"Missing one or more required params - required params: {','.join(['node_type', 'node_name', 'company_name'])}")
-    if is_edgelake is False and 'license_key' not in params:
-        raise ValueError(f"AnyLog deployment must have an active license key in order to run REST against the node")
-
-
+    return status

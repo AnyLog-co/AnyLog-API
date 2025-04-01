@@ -3,12 +3,10 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
-import requests
-from dotenv.cli import enumerate_env
-
+import httpx
 import anylog_api.__support__ as support
 
-def __validate_type(anylog_conn):
+async def __validate_type(anylog_conn):
     """
     Validate input is of type AnyLogConnector
     :args:
@@ -39,7 +37,7 @@ class AnyLogConnector:
         self.timeout = timeout
 
 
-    def get(self, command:str, destination:str=None)->(bool or str or dict):
+    async def get(self, command:str, destination:str=None)->(bool or str or dict):
         """
         requests GET command
         :args:
@@ -63,7 +61,8 @@ class AnyLogConnector:
             headers['destination'] = destination
 
         try:
-            response = requests.get(f'http://{self.conn}', headers=headers, auth=self.auth, timeout=self.timeout)
+            async with httpx.AsyncClient() as requests:
+                response = requests.get(f'http://{self.conn}', headers=headers, auth=self.auth, timeout=self.timeout)
         except Exception as e:
             error = str(e)
             response = False
@@ -103,7 +102,8 @@ class AnyLogConnector:
             'Content-Type': 'text/plain'
         }
         try:
-            response = requests.put(f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
+            async with httpx.AsyncClient() as requests:
+                response = requests.put(f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
                              data=payload)
         except Exception as e:
             error = str(e)
@@ -148,7 +148,8 @@ class AnyLogConnector:
             headers['destination'] = destination
 
         try:
-            response = requests.post(f'http://{self.conn}', headers=headers, data=payload, auth=self.auth,
+            async with httpx.AsyncClient() as requests:
+                response = requests.post(f'http://{self.conn}', headers=headers, data=payload, auth=self.auth,
                                      timeout=self.timeout)
         except Exception as e:
             error = str(e)
@@ -162,7 +163,7 @@ class AnyLogConnector:
 
 
 
-def check_status(anylog_conn:AnyLogConnector)->bool:
+async def check_status(anylog_conn:AnyLogConnector)->bool:
     """
     Check whether node is running
     :url:
@@ -177,11 +178,9 @@ def check_status(anylog_conn:AnyLogConnector)->bool:
         False - else
     """
     status = False
-    output = anylog_conn.get(
-        command="get status where format=json"
-    )
+    output = anylog_conn.get(command="get status where format=json")
 
-    __validate_type(anylog_conn=anylog_conn)
+    await __validate_type(anylog_conn=anylog_conn)
     if isinstance(output, dict) and 'Status' in output and 'running' in output['Status'] and 'not running' not in output['Status']:
         status = True
 
