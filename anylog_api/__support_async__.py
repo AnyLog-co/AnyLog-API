@@ -1,12 +1,6 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/
-"""
-import requests
+import aiohttp
 
-# Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
-NETWORK_ERRORS_GENERIC = {
+NETWORK_ERRORS_GENERIC={
     1: "Informational",
     2: "Successful",
     3: "Redirection",
@@ -14,7 +8,8 @@ NETWORK_ERRORS_GENERIC = {
     5: "Server Error",
     7: "Developer Error"
 }
-NETWORK_ERRORS = {
+
+NETWORK_ERRORS={
     100: "Continue",
     101: "Switching Protocols",
     200: "OK",
@@ -57,20 +52,6 @@ NETWORK_ERRORS = {
     503: "Service Unavailable",
     504: "Gateway Time-out",
     505: "HTTP Version Not Supported",
-    102: "Processing",
-    207: "Multi-Status",
-    226: "IM Used",
-    308: "Permanent Redirect",
-    422: "Unprocessable Entity",
-    423: "Locked",
-    424: "Failed Dependency",
-    428: "Precondition Required",
-    429: "Too Many Requests",
-    431: "Request Header Fields Too Large",
-    451: "Unavailable For Legal Reasons",
-    506: "Variant Also Negotiates",
-    507: "Insufficient Storage",
-    511: "Network Authentication Required"
 }
 
 
@@ -90,10 +71,11 @@ def __raise_rest_error(cmd_type:str, cmd:str, error:str):
         error message
     """
     error_msg = f'Failed to execute {cmd_type} for "{cmd}" '
+
     try:
         error = int(error)
-    except KeyError or ValueError:
-        pass
+    except ValueError:
+        pass  # Non-integer errors are handled as plain text
 
     if isinstance(error, int):
         if error in NETWORK_ERRORS:
@@ -105,58 +87,33 @@ def __raise_rest_error(cmd_type:str, cmd:str, error:str):
     else:
         error_msg += f'(Error: {error})'
 
-    raise requests.RequestException(error_msg)
+    raise Exception(error_msg)
 
 
-def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
-    """
-    Given the results from a GET request, extract the results as JSON, then text if JSON fails
-    :args:
-        cmd:str - original command executed
-        r:requests.get - (raw) results from GET request
-        exception:bool - whether to print exceptions
-    :params:
-        output:str - result from GET request
-    :return:
-        if success returns result as either JSON or text, if fails returns None
-    """
+async def __extract_results(cmd:str, response:aiohttp.ClientResponse, exception:bool=False)->str:
     output = None
     try:
-        output = r.json()
-    except requests.JSONDecodeError:
+        output= await response.json()
+    except aiohttp.ContentTypeError:
         try:
-            output = r.text
+            output= await response.text()
         except Exception as error:
-            if exception is True:
-                raise requests.JSONDecodeError(f'Failed to extract results for "{cmd}" (Error: {error})')
-
+            if exception:
+                raise Exception(f'Failed to extract results for "{cmd}" (Error:{error})')
     return output
 
 
-def extract_get_results(command:str, response:requests.get, error:str=None):
-    """
-    execute / extract results for GET request
-    :args:
-        conn:anylog_connector.AnyLogConnector - connection to AnyLog node
-        headers:dict - REST headers
-        exception:bool - whether to print exception
-    :params:
-        output - results from GET request
-    :return:
-        output
-    """
+async def extract_get_results(command:str, response:aiohttp.ClientResponse, error:str=None):
     output = None
-    if response is False:
+    if not response or response.status >= 400:
         __raise_rest_error(cmd_type='GET', cmd=command, error=error)
     elif not isinstance(response, bool):
-        output = __extract_results(cmd=command, r=response)
+        output= await __extract_results(cmd=command, response=response)
 
     return output
 
 
-def validate_put_post(cmd_type:str, command:str, response, error:str=None)->bool:
-    status = True
-    if response is False:
+async def validate_put_post(cmd_type:str, command:str, response:aiohttp.ClientResponse, error:str=None)->bool:
+    if not response or response.status >= 400:
         __raise_rest_error(cmd_type=cmd_type, cmd=command, error=error)
-
-    return status
+    return True

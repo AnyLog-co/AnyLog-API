@@ -3,17 +3,18 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
-import requests
-import anylog_api.__support__ as support
+import ast
 
+import aiohttp
+import anylog_api.__support_async__ as support
 
 class AnyLogConnector:
     def __init__(self, conn:str, auth:tuple=(), timeout:int=30):
         """
         The following are the base support for AnyLog via REST
-            - GET: extract information from AnyLog (information + queries)
-            - POST: Execute or POST command against AnyLog
-            - POST_POLICY: POST information to blockchain
+            - GET:extract information from AnyLog (information + queries)
+            - POST:Execute or POST command against AnyLog
+            - POST_POLICY:POST information to blockchain
         :url:
             https://github.com/AnyLog-co/documentation/blob/master/using%20rest.md
         :param:
@@ -21,12 +22,13 @@ class AnyLogConnector:
             auth:tuple - Authentication information
             timeout:int - REST timeout
         """
-        self.conn = conn
-        self.auth = auth
-        self.timeout = timeout
+        self.conn=conn
+        self.auth=None
+        if auth:
+            self.auth=aiohttp.BasicAuth(*auth)
+        self.timeout=timeout
 
-
-    def get(self, command:str, destination:str=None)->(bool or str or dict):
+    async def get(self, command:str, destination:str=None):
         """
         requests GET command
         :args:
@@ -40,29 +42,27 @@ class AnyLogConnector:
             if GET generates a result then returns result
             if GET fails then an exception is raised
         """
-        error = None
-        headers = {
-            "command": command,
-            "User-Agent": "AnyLog/1.23"
+        error=None
+        headers={
+            "command":command,
+            "User-Agent":"AnyLog/1.23"
         }
-
         if destination:
-            headers['destination'] = destination
+            headers['destination']=destination
 
         try:
-            response = requests.get(f'http://{self.conn}', headers=headers, auth=self.auth, timeout=self.timeout)
+            async with aiohttp.ClientSession(auth=self.auth) as session:
+                async with session.get(f'http://{self.conn}', headers=headers, timeout=self.timeout) as response:
+                    if response.status < 200 or response.status > 299:
+                        error=response.status
+                        return await support.extract_get_results(command=command, response=response, error=str(error))
+                    return await response.text()
         except Exception as e:
-            error = str(e)
+            error=str(e)
             response = False
-        else:
-            if int(response.status_code) < 200 or int(response.status_code) > 299:
-                error = int(response.status_code)
-                response = False
+            return await support.extract_get_results(command=command, response=False, error=str(error))
 
-        return support.extract_get_results(command=command, response=response, error=error)
-
-
-    def put(self, dbms:str, table:str, payload, mode:str='streaming')->bool:
+    async def put(self, dbms:str, table:str, payload, mode:str='streaming')->bool:
         """
         Execute a PUT command against AnyLog - mainly used for Data
         :args:
@@ -78,32 +78,27 @@ class AnyLogConnector:
         :return:
             if PUT succeed returns True, else returns False
         """
-        error = None
         if mode.lower() not in ['streaming', 'file']:
-            raise ValueError(f'Invalid mode option {mode}. Valid options streaming, file')
+            raise ValueError(f'Invalid mode option {mode}. Valid options:streaming, file')
 
-        headers = {
-            'type': 'json',
-            'dbms': dbms,
-            'table': table,
-            'mode': mode.lower(),
-            'Content-Type': 'text/plain'
+        headers={
+            'type':'json',
+            'dbms':dbms,
+            'table':table,
+            'mode':mode.lower(),
+            'Content-Type':'text/plain'
         }
+
         try:
-            response = requests.put(f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
-                             data=payload)
+            async with aiohttp.ClientSession(auth=self.auth) as session:
+                async with session.put(f'http://{self.conn}', headers=headers, data=payload, timeout=self.timeout) as response:
+                    if response.status < 200 or response.status > 299:
+                        return support.validate_put_post('PUT', 'data', False, str(response.status))
+                    return True
         except Exception as e:
-            error = str(e)
-            response = False
-        else:
-            if int(response.status_code) < 200 or int(response.status_code) > 299:
-                error = str(response.status_code)
-                response = False
+            return support.validate_put_post('PUT', 'data', False, str(e))
 
-        return support.validate_put_post(cmd_type='PUT', command='data', response=response, error=error)
-
-
-    def post(self, command:str, topic:str=None, destination:str=None, payload=None)->bool:
+    async def post(self, command:str, topic:str=None, destination:str=None, payload=None)->bool:
         """
         Execute POST command against AnyLog. payload is required under the following conditions:
             1. payload can be data that you want to add into AnyLog, in which case you should also have an
@@ -123,29 +118,24 @@ class AnyLogConnector:
         :return:
             if POST succeed returns True, else returns False
         """
-        error = None
-        headers = {
-            "command": command,
-            "User-Agent": "AnyLog/1.23"
+        headers={
+            "command":command,
+            "User-Agent":"AnyLog/1.23"
         }
-
         if topic:
-            headers['topic'] = topic
+            headers['topic']=topic
         if destination:
-            headers['destination'] = destination
+            headers['destination']=destination
 
         try:
-            response = requests.post(f'http://{self.conn}', headers=headers, data=payload, auth=self.auth,
-                                     timeout=self.timeout)
+            async with aiohttp.ClientSession(auth=self.auth) as session:
+                async with session.post(f'http://{self.conn}', headers=headers, data=payload, timeout=self.timeout) as response:
+                    if response.status < 200 or response.status > 299:
+                        return support.validate_put_post('POST', 'data', False, str(response.status))
+                    return True
         except Exception as e:
-            error = str(e)
-            response = False
-        else:
-            if int(response.status_code) < 200 or int(response.status_code) > 299:
-                error = str(response.status_code)
-                response = False
+            return support.validate_put_post('POST', 'data', False, str(e))
 
-        return support.validate_put_post(cmd_type='POST', command='data', response=response, error=error)
 
 def validate_type(anylog_conn):
     """
@@ -158,7 +148,7 @@ def validate_type(anylog_conn):
     if not isinstance(anylog_conn, AnyLogConnector):
         raise ValueError(f"Invalid AnyLog connection information")
 
-def check_status(anylog_conn:AnyLogConnector)->bool:
+async def check_status(anylog_conn:AnyLogConnector)->bool:
     """
     Check whether node is running
     :url:
@@ -172,19 +162,15 @@ def check_status(anylog_conn:AnyLogConnector)->bool:
         True - if accessible
         False - else
     """
-    status = False
-    output = anylog_conn.get(
-        command="get status where format=json"
-    )
-
     validate_type(anylog_conn=anylog_conn)
+    output=await anylog_conn.get("get status where format=json")
+    output =ast.literal_eval(output)
     if isinstance(output, dict) and 'Status' in output and 'running' in output['Status'] and 'not running' not in output['Status']:
-        status = True
+        return True
+    return False
 
-    return status
 
-
-def get_status(anylog_conn:AnyLogConnector, destination:str=None, json_format:bool=False)->str or dict:
+async def get_status(anylog_conn:AnyLogConnector, destination:str=None, json_format:bool=False):
     """
     Execute `get status`
     :url:
@@ -198,12 +184,12 @@ def get_status(anylog_conn:AnyLogConnector, destination:str=None, json_format:bo
     :return:
         result for `get status`
     """
-    command = "get status where format=json" if json_format is True else "get status"
     validate_type(anylog_conn=anylog_conn)
-    return anylog_conn.get(command=command, destination=destination)
+    command="get status where format=json" if json_format else "get status"
+    return await anylog_conn.get(command, destination)
 
 
-def get_processes(anylog_conn:AnyLogConnector, json_format:bool=False)->str or dict:
+async def get_processes(anylog_conn:AnyLogConnector, json_format:bool=False):
     """
     Execute `get processes`
     :url:
@@ -216,12 +202,11 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=False)->str or d
     :return:
         result for `get processes`
     """
-    command = "get processes where format=json" if json_format is True else "get processes"
-    validate_type(anylog_conn=anylog_conn)
-    return anylog_conn.get(command=command)
+    command="get processes where format=json" if json_format else "get processes"
+    return await anylog_conn.get(command)
 
 
-def get_connections(anylog_conn:AnyLogConnector, json_format:bool=False)->str or dict:
+async def get_connections(anylog_conn:AnyLogConnector, json_format:bool=False):
     """
     Execute `get connections`
     :url:
@@ -234,12 +219,11 @@ def get_connections(anylog_conn:AnyLogConnector, json_format:bool=False)->str or
     :return:
         result for `get connections`
     """
-    command = "get connections where format=json" if json_format is True else "get connections"
-    validate_type(anylog_conn=anylog_conn)
-    return anylog_conn.get(command=command)
+    command="get connections where format=json" if json_format else "get connections"
+    return await anylog_conn.get(command)
 
 
-def check_node(anylog_conn:AnyLogConnector)->str:
+async def check_node(anylog_conn:AnyLogConnector):
     """
     Check if node is accessible
     :url:
@@ -249,14 +233,12 @@ def check_node(anylog_conn:AnyLogConnector)->str:
     :params:
         command:str - command to execute
     :return:
-        return status of  node based on command (not JSON format)
+        return status of  node basaed on command (not JSON formata)
     """
-    command = "test node"
-    validate_type(anylog_conn=anylog_conn)
-    return anylog_conn.get(command=command, destination=None)
+    return await anylog_conn.get("test node")
 
 
-def check_network(anylog_conn:AnyLogConnector, extra_params:str=None)->str:
+async def check_network(anylog_conn:AnyLogConnector, extra_params:str=None):
     """
     Check if node is accessible
     :url:
@@ -267,8 +249,7 @@ def check_network(anylog_conn:AnyLogConnector, extra_params:str=None)->str:
     :params:
         command:str - command to execute
     :return:
-        return status of  node based on command (not JSON format)
+        return status of  node basaed on command (not JSON formata)
     """
-    command = "test network" if not extra_params else f"test network {extra_params}"
-    validate_type(anylog_conn=anylog_conn)
-    return anylog_conn.get(command=command, destination=None)
+    command="test network" if not extra_params else f"test network {extra_params}"
+    return await anylog_conn.get(command)
