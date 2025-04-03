@@ -1,12 +1,10 @@
-import datetime
-import json
-import random
 import asyncio
+import json
 
 import anylog_api.async_anylog_connector as anylog_connector
 
 # Connect to AnyLog / EdgeLake connector
-conn = '66.228.59.163:32349'
+conn = '127.0.0.1:32349'
 auth = ()
 timeout = 30
 anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=timeout)
@@ -26,11 +24,11 @@ async def main():
         print(output)
 
         # Query data
-        sql_cmd = "sql nov format=table select * from rand_data"
+        sql_cmd = "sql test format=table select * from rand_data"
         output = await anylog_conn.get(command=sql_cmd, destination='network')
         print(output)
 
-        sql_cmd = "sql nov format=json and stat=false select timestamp, value from rand_data where period(minute, 1, now(), timestamp)"
+        sql_cmd = "sql test format=json and stat=false select timestamp, value from rand_data where period(minute, 1, now(), timestamp)"
         output = await anylog_conn.get(command=sql_cmd, destination='network')
         output = json.loads(output)
         print(json.dumps(output, indent=2))

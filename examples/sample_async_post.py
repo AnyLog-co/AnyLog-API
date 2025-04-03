@@ -6,7 +6,7 @@ import asyncio
 import anylog_api.async_anylog_connector as anylog_connector
 
 # Connect to AnyLog / EdgeLake connector
-conn = '173.255.196.108:32149'
+conn = '127.0.0.1:32149'
 auth = ()
 timeout = 30
 anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=timeout)
@@ -22,7 +22,7 @@ async def main():
     DATA = []
     for i in range(10):
         DATA.append({
-            'dbms': 'nov',
+            'dbms': 'test',
             'table': 'rand_data',
             "timestamp": datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f'),
             "value": random.random()

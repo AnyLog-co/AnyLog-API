@@ -7,7 +7,7 @@ import anylog_api.async_anylog_connector as anylog_connector
 
 async def main():
     # Connect to AnyLog / EdgeLake connector
-    conn = '170.187.157.30:32149'
+    conn = '127.0.0.1:32149'
     auth = ()
     timeout = 30
     anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=timeout)
@@ -22,7 +22,7 @@ async def main():
 
     # Validate communication with the node
     if await anylog_connector.check_status(anylog_conn):
-        status = await anylog_conn.put(dbms='nov', table='rand_data', mode='streaming', payload=SERIALIZED_DATA)
+        status = await anylog_conn.put(dbms='test', table='rand_data', mode='streaming', payload=SERIALIZED_DATA)
         print('success' if status else 'fail')
 
     # Show streaming

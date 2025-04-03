@@ -5,7 +5,7 @@ import random
 import anylog_api.anylog_connector as anylog_connector
 
 # Connect to AnyLog / EdgeLake connector
-conn = '173.255.196.108:32149'
+conn = '127.0.0.1:32149'
 auth = ()
 timeout = 30
 anylog_conn = anylog_connector.AnyLogConnector(conn=conn, auth=auth, timeout=timeout)
