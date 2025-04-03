@@ -6,8 +6,6 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/
 import requests
 from typing import Union
 
-import anylog_api.anylog_connector as anylog_connector
-
 # Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
 NETWORK_ERRORS_GENERIC = {
     1: "Informational",
@@ -77,7 +75,7 @@ NETWORK_ERRORS = {
 }
 
 
-def __raise_rest_error(call_type:str, cmd:str, error:str):
+def __raise_rest_error(cmd_type:str, cmd:str, error:str):
     """
     Print Error message
     :args:
@@ -92,7 +90,7 @@ def __raise_rest_error(call_type:str, cmd:str, error:str):
     :raise:
         error message
     """
-    error_msg = f'Failed to execute {call_type} for "{cmd}" '
+    error_msg = f'Failed to execute {cmd_type} for "{cmd}" '
     try:
         error = int(error)
     except KeyError or ValueError:
@@ -150,16 +148,16 @@ def extract_get_results(command:str, response:requests.get, error:str=None)->Uni
     """
     output = None
     if response is False:
-        __raise_rest_error(call_type='GET', cmd=command, error=error)
+        __raise_rest_error(cmd_type='GET', cmd=command, error=error)
     elif not isinstance(response, bool):
         output = __extract_results(cmd=command, r=response)
 
     return output
 
 
-def validate_put_post(command:str, response, error:str=None)->bool:
+def validate_put_post(cmd_type:str, command:str, response, error:str=None)->bool:
     status = True
     if response is False:
-        __raise_rest_error(call_type='PUT', command=command, error=error)
+        __raise_rest_error(cmd_type=cmd_type, command=command, error=error)
 
     return status

@@ -4,20 +4,7 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import requests
-from dotenv.cli import enumerate_env
-
 import anylog_api.__support__ as support
-
-def __validate_type(anylog_conn):
-    """
-    Validate input is of type AnyLogConnector
-    :args:
-        anylog_conn:AnyLogConnector - connection to check
-    :raise: 
-        if invalid raise ValueError
-    """
-    if not isinstance(anylog_conn, AnyLogConnector):
-        raise ValueError(f"Invalid AnyLog connection information")
 
 
 class AnyLogConnector:
@@ -113,7 +100,7 @@ class AnyLogConnector:
                 error = str(response.status_code)
                 response = False
 
-        return support.validate_put_post(command='data', response=response, error=error)
+        return support.validate_put_post(cmd_type='PUT', command='data', response=response, error=error)
 
 
     def post(self, command:str, topic:str=None, destination:str=None, payload=None)->bool:
@@ -158,9 +145,18 @@ class AnyLogConnector:
                 error = str(response.status_code)
                 response = False
 
-        return support.validate_put_post(command='data', response=response, error=error)
+        return support.validate_put_post(cmd_type='POST', command='data', response=response, error=error)
 
-
+def validate_type(anylog_conn):
+    """
+    Validate input is of type AnyLogConnector
+    :args:
+        anylog_conn:AnyLogConnector - connection to check
+    :raise:
+        if invalid raise ValueError
+    """
+    if not isinstance(anylog_conn, AnyLogConnector):
+        raise ValueError(f"Invalid AnyLog connection information")
 
 def check_status(anylog_conn:AnyLogConnector)->bool:
     """
@@ -181,7 +177,7 @@ def check_status(anylog_conn:AnyLogConnector)->bool:
         command="get status where format=json"
     )
 
-    __validate_type(anylog_conn=anylog_conn)
+    validate_type(anylog_conn=anylog_conn)
     if isinstance(output, dict) and 'Status' in output and 'running' in output['Status'] and 'not running' not in output['Status']:
         status = True
 
@@ -203,7 +199,7 @@ def get_status(anylog_conn:AnyLogConnector, destination:str=None, json_format:bo
         result for `get status`
     """
     command = "get status where format=json" if json_format is True else "get status"
-    __validate_type(anylog_conn=anylog_conn)
+    validate_type(anylog_conn=anylog_conn)
     return anylog_conn.get(command=command, destination=destination)
 
 
@@ -221,7 +217,7 @@ def get_processes(anylog_conn:AnyLogConnector, json_format:bool=False)->str or d
         result for `get processes`
     """
     command = "get processes where format=json" if json_format is True else "get processes"
-    __validate_type(anylog_conn=anylog_conn)
+    validate_type(anylog_conn=anylog_conn)
     return anylog_conn.get(command=command)
 
 
@@ -239,7 +235,7 @@ def get_connections(anylog_conn:AnyLogConnector, json_format:bool=False)->str or
         result for `get connections`
     """
     command = "get connections where format=json" if json_format is True else "get connections"
-    __validate_type(anylog_conn=anylog_conn)
+    validate_type(anylog_conn=anylog_conn)
     return anylog_conn.get(command=command)
 
 
@@ -256,7 +252,7 @@ def check_node(anylog_conn:AnyLogConnector)->str:
         return status of  node basaed on command (not JSON formata)
     """
     command = "test node"
-    __validate_type(anylog_conn=anylog_conn)
+    validate_type(anylog_conn=anylog_conn)
     return anylog_conn.get(command=command, destination=None)
 
 
@@ -274,5 +270,5 @@ def check_network(anylog_conn:AnyLogConnector, extra_params:str=None)->str:
         return status of  node basaed on command (not JSON formata)
     """
     command = "test network" if not extra_params else f"test network {extra_params}"
-    __validate_type(anylog_conn=anylog_conn)
+    validate_type(anylog_conn=anylog_conn)
     return anylog_conn.get(command=command, destination=None)
