@@ -6,7 +6,7 @@ This README provides setup instructions and sample usage for initializing a node
 The code supports both [asynchronous requests](anylog_api/async_anylog_connector.py) using _aiohttp_ library, and 
 [synchronous](anylog_api/anylog_connector.py) using standard _requests_ library. 
 
-## Requirements 
+~~## Requirements 
 1. An AnyLog or EdgeLake setup 
 2. python>=3.6 with pip 
 
@@ -19,7 +19,7 @@ cd $HOME/ ; git clone https://github.com/AnyLog-co/AnyLog-API ; cd $HOME/AnyLog-
 2. prepare python3 
 ```shell
 python3 -m pip install --upgrade pip wheel setuptools
-```
+```~~
 
 3. Create pip package 
 ```shell

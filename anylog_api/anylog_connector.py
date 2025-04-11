@@ -46,7 +46,7 @@ class AnyLogConnector:
             "User-Agent": "AnyLog/1.23"
         }
 
-        if destination:
+        if destination: # set to "network" if you want to `run client ()` without parameters
             headers['destination'] = destination
 
         try:
