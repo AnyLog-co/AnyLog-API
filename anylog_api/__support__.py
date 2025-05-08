@@ -125,9 +125,11 @@ def __raise_rest_error(cmd_type:str, cmd:str, error:str):
             error_msg += f'(Network Error {error} - {NETWORK_ERRORS_GENERIC[int(str(error)[0])]})'
         else:
             error_msg += f'(Network Error: {error})'
-    else:
+    elif isinstance(error, dict):
         error_msg += f"(Error: {error['err_text']})"
-
+    elif isinstance(error, str):
+        error_msg += f"(Error: {error})"
+    
     raise requests.RequestException(error_msg)
 
 
