@@ -1,4 +1,8 @@
 import aiohttp
+import logging
+
+# Configure logging (you can adjust level and handlers as needed)
+logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 
 NETWORK_ERRORS_GENERIC={
     1: "Informational",
@@ -87,7 +91,8 @@ def __raise_rest_error(cmd_type:str, cmd:str, error:str):
     else:
         error_msg += f'(Error: {error})'
 
-    raise Exception(error_msg)
+    err_msg = Exception(error_msg)
+    logging.error(err_msg)
 
 
 async def __extract_results(cmd:str, response:aiohttp.ClientResponse, exception:bool=False)->str:
@@ -99,7 +104,8 @@ async def __extract_results(cmd:str, response:aiohttp.ClientResponse, exception:
             output= await response.text()
         except Exception as error:
             if exception:
-                raise Exception(f'Failed to extract results for "{cmd}" (Error:{error})')
+                err_msg = Exception(f'Failed to extract results for "{cmd}" (Error:{error})')
+                logging.error(err_msg)
     return output
 
 

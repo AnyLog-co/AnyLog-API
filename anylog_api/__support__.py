@@ -6,6 +6,10 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/
 import ast
 import re
 import requests
+import logging
+
+# Configure logging (you can adjust level and handlers as needed)
+logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 
 # Network errors based on: https://github.com/for-GET/know-your-http-well/blob/master/json/status-codes.json
 NETWORK_ERRORS_GENERIC = {
@@ -95,7 +99,8 @@ def __extract_embedded_json(error):
             json_str = match.group(0)
             error_output = ast.literal_eval(json_str.strip('"').replace("\\\\", "\\") .replace("\\'", "'"))
     except Exception as e:
-        raise ValueError(f"Failed to extract valid JSON: {e}")
+        err_msg = ValueError(f"Failed to extract valid JSON: {e}")
+        logging.error(err_msg)
 
     return error_output
 
@@ -129,8 +134,9 @@ def __raise_rest_error(cmd_type:str, cmd:str, error:str):
         error_msg += f"(Error: {error['err_text']})"
     elif isinstance(error, str):
         error_msg += f"(Error: {error})"
-    
-    raise requests.RequestException(error_msg)
+
+    err_msg = requests.RequestException(error_msg)
+    logging.error(err_msg)
 
 
 def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
@@ -153,7 +159,8 @@ def __extract_results(cmd:str, r:requests.get, exception:bool=False)->str:
             output = r.text
         except Exception as error:
             if exception is True:
-                raise requests.JSONDecodeError(f'Failed to extract results for "{cmd}" (Error: {error})')
+                err_msg = requests.JSONDecodeError(f'Failed to extract results for "{cmd}" (Error: {error})')
+                logging.error(err_msg)
 
     return output
 
