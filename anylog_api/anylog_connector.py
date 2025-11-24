@@ -3,13 +3,8 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
-import logging
-
 import requests
 import anylog_api.__support__ as support
-
-# Configure logging (you can adjust level and handlers as needed)
-logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 
 
 class AnyLogConnector:
@@ -85,9 +80,7 @@ class AnyLogConnector:
         """
         error = None
         if mode.lower() not in ['streaming', 'file']:
-            err_msg = ValueError(f'Invalid mode option {mode}. Valid options streaming, file')
-            logging.warning(err_msg)
-            mode = 'streaming'
+            raise ValueError(f'Invalid mode option {mode}. Valid options streaming, file')
 
         headers = {
             'type': 'json',
@@ -163,8 +156,7 @@ def validate_type(anylog_conn):
         if invalid raise ValueError
     """
     if not isinstance(anylog_conn, AnyLogConnector):
-        err_msg = ValueError(f"Invalid AnyLog connection information")
-        logging.error(err_msg)
+        raise ValueError(f"Invalid AnyLog connection information")
 
 def check_status(anylog_conn:AnyLogConnector)->bool:
     """

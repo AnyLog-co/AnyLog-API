@@ -7,11 +7,6 @@ import ast
 
 import aiohttp
 import anylog_api.__support_async__ as support
-import logging
-
-# Configure logging (you can adjust level and handlers as needed)
-logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
-
 
 class AnyLogConnector:
     def __init__(self, conn:str, auth:tuple=(), timeout:int=30):
@@ -84,8 +79,7 @@ class AnyLogConnector:
             if PUT succeed returns True, else returns False
         """
         if mode.lower() not in ['streaming', 'file']:
-            err_msg = ValueError(f'Invalid mode option {mode}. Valid options:streaming, file')
-            logging.warning(err_msg)
+            raise ValueError(f'Invalid mode option {mode}. Valid options:streaming, file')
 
         headers={
             'type':'json',
@@ -152,8 +146,7 @@ def validate_type(anylog_conn):
         if invalid raise ValueError
     """
     if not isinstance(anylog_conn, AnyLogConnector):
-        err_msg = ValueError(f"Invalid AnyLog connection information")
-        logging.warning(err_msg)
+        raise ValueError(f"Invalid AnyLog connection information")
 
 async def check_status(anylog_conn:AnyLogConnector)->bool:
     """
