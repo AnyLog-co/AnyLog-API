@@ -8,7 +8,7 @@ import anylog_api.__support__ as support
 
 
 class AnyLogConnector:
-    def __init__(self, conn:str, auth:tuple=(), timeout:int=30):
+    def __init__(self, conn:str, auth:tuple=(), rest_timeout:float=30, connection_timeout:int=30):
         """
         The following are the base support for AnyLog via REST
             - GET: extract information from AnyLog (information + queries)
@@ -23,7 +23,35 @@ class AnyLogConnector:
         """
         self.conn = conn
         self.auth = auth
-        self.timeout = timeout
+        self.rest_timeout = rest_timeout
+        self.connection_timeout = connection_timeout
+
+
+    def _rest_calls(self, request_type:str, headers:dict, payload:str=None):
+        status = True
+        response = None
+        exception_msg = ""
+        try:
+            if request_type.upper() == "GET":
+                response = requests.get(url=f"http://{self.conn}", headers=headers, payload=payload, auth=self.authh, timeout=(self.connection_timeout, self.rest_timeout))
+            elif request_type.upper() == "POST":
+                response = requests.post(url=f"http://{self.conn}", headers=headers, payload=payload, auth=self.authh, timeout=(self.connection_timeout, self.rest_timeout))
+            elif request_type.upper() == "PUT":
+                response = requests.post(url=f"http://{self.conn}", headers=headers, payload=payload, auth=self.authh, timeout=(self.connection_timeout, self.rest_timeout))
+            else:
+                exception_msg = f"Invalid request type {request_type}"
+                status = False
+            if response:
+                response.raise_for_status()
+        except Exception as error:
+            exception_msg = f"Failed to execute {request_type.upper()} against {conn} (Error: {error})"
+            status = False
+        finally:
+            if exception_msg:
+                raise Exception(exception_msg)
+
+        return [status, response]
+
 
 
     def get(self, command:str, destination:str=None)->(bool or str or dict):
@@ -49,16 +77,7 @@ class AnyLogConnector:
         if destination: # set to "network" if you want to `run client ()` without parameters
             headers['destination'] = destination
 
-        try:
-            response = requests.get(f'http://{self.conn}', headers=headers, auth=self.auth, timeout=self.timeout)
-        except Exception as e:
-            error = str(e)
-            response = False
-        else:
-            if int(response.status_code) < 200 or int(response.status_code) > 299:
-                error = int(response.status_code)
-                response = False
-
+        status, response = self._rest_calls(request_type='GET', headers=headers)
         return support.extract_get_results(command=command, response=response, error=error)
 
 
@@ -89,17 +108,13 @@ class AnyLogConnector:
             'mode': mode.lower(),
             'Content-Type': 'text/plain'
         }
-        try:
-            response = requests.put(f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
-                             data=payload)
-        except Exception as e:
-            error = str(e)
-            response = False
-        else:
-            if int(response.status_code) < 200 or int(response.status_code) > 299:
-                error = str(response.status_code)
-                response = False
 
+        if payload and not isinstance(payload, str):
+            serialized_payload = json.dumps(payload)
+        else:
+            serialized_payload = payload
+
+        status, response = self._rest_calls(request_type='PUT', headers=headers, payload=serialized_payload)
         return support.validate_put_post(cmd_type='PUT', command='data', response=response, error=error)
 
 
@@ -134,17 +149,12 @@ class AnyLogConnector:
         if destination:
             headers['destination'] = destination
 
-        try:
-            response = requests.post(f'http://{self.conn}', headers=headers, data=payload, auth=self.auth,
-                                     timeout=self.timeout)
-        except Exception as e:
-            error = str(e)
-            response = False
+        if payload and not isinstance(payload, str):
+            serialized_payload = json.dumps(payload)
         else:
-            if int(response.status_code) < 200 or int(response.status_code) > 299:
-                error = str(response.status_code)
-                response = False
+            serialized_payload = payload
 
+        status, response = self._rest_calls(request_type='PUT', headers=headers, payload=serialized_payload)
         return support.validate_put_post(cmd_type='POST', command='data', response=response, error=error)
 
 def validate_type(anylog_conn):
