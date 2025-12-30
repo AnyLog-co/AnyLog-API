@@ -6,9 +6,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/
 import requests
 import anylog_api.__support__ as support
 
-
 class AnyLogConnector:
-    def __init__(self, conn:str, auth:tuple=(), rest_timeout:float=30, connection_timeout:int=30):
+    def __init__(self, conn:str, auth:tuple=(), rest_timeout:float=30, connection_timeout:float=30):
         """
         The following are the base support for AnyLog via REST
             - GET: extract information from AnyLog (information + queries)
@@ -19,25 +18,43 @@ class AnyLogConnector:
         :param:
             conn:str - REST connection info
             auth:tuple - Authentication information
-            timeout:int - REST timeout
+            connection_timeout:float - How long to wait for the server to respond when first attempting to connect.
+            rest_timeout:float - How long to wait for the server to finish processing and return a response
         """
         self.conn = conn
+        if auth and not conn.startswith("http"):
+            self.conn=f"https://{conn}"
+        elif not conn.startswith("http"):
+            self.conn = f"http://{conn}"
         self.auth = auth
         self.rest_timeout = rest_timeout
         self.connection_timeout = connection_timeout
 
 
-    def _rest_calls(self, request_type:str, headers:dict, payload:str=None):
+    def _rest_calls(self, request_type:str, headers:dict, payload:str=None)->(bool, requests.Response):
+        """
+        Generic method for sending rest requests
+        :args:
+            request_type:str - request type
+            headers:dict request headers
+            payload:str - serialized data
+        :params:
+            status:bool
+            response:requests.Response
+            exception_msg:str
+        :return:
+            status and response
+        """
         status = True
         response = None
         exception_msg = ""
         try:
             if request_type.upper() == "GET":
-                response = requests.get(url=f"http://{self.conn}", headers=headers, payload=payload, auth=self.authh, timeout=(self.connection_timeout, self.rest_timeout))
+                response = requests.get(url=self.conn, headers=headers, data=payload, auth=self.auth, timeout=(self.connection_timeout, self.rest_timeout))
             elif request_type.upper() == "POST":
-                response = requests.post(url=f"http://{self.conn}", headers=headers, payload=payload, auth=self.authh, timeout=(self.connection_timeout, self.rest_timeout))
+                response = requests.post(url=self.conn, headers=headers, data=payload, auth=self.auth, timeout=(self.connection_timeout, self.rest_timeout))
             elif request_type.upper() == "PUT":
-                response = requests.post(url=f"http://{self.conn}", headers=headers, payload=payload, auth=self.authh, timeout=(self.connection_timeout, self.rest_timeout))
+                response = requests.post(url=self.conn, headers=headers, data=payload, auth=self.auth, timeout=(self.connection_timeout, self.rest_timeout))
             else:
                 exception_msg = f"Invalid request type {request_type}"
                 status = False

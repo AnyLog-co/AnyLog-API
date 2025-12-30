@@ -7,26 +7,72 @@ import ast
 
 import aiohttp
 import anylog_api.__support_async__ as support
+import json
 
 class AnyLogConnector:
-    def __init__(self, conn:str, auth:tuple=(), timeout:int=30):
+    def __init__(self, conn:str, auth:tuple=(), rest_timeout:float=30, connection_timeout:float=30):
         """
         The following are the base support for AnyLog via REST
-            - GET:extract information from AnyLog (information + queries)
-            - POST:Execute or POST command against AnyLog
-            - POST_POLICY:POST information to blockchain
+            - GET: extract information from AnyLog (information + queries)
+            - POST: Execute or POST command against AnyLog
+            - POST_POLICY: POST information to blockchain
         :url:
             https://github.com/AnyLog-co/documentation/blob/master/using%20rest.md
         :param:
             conn:str - REST connection info
             auth:tuple - Authentication information
-            timeout:int - REST timeout
+            connection_timeout:float - How long to wait for the server to respond when first attempting to connect.
+            rest_timeout:float - How long to wait for the server to finish processing and return a response
         """
-        self.conn=conn
-        self.auth=None
-        if auth:
-            self.auth=aiohttp.BasicAuth(*auth)
-        self.timeout=timeout
+        self.conn = conn
+        if auth and not conn.startswith("http"):
+            self.conn=f"https://{conn}"
+        elif not conn.startswith("http"):
+            self.conn = f"http://{conn}"
+        self.auth = auth
+        self.rest_timeout = rest_timeout
+        self.connection_timeout = connection_timeout
+
+
+    async def _rest_calls(self, request_type:str, headers:dict, payload:str=None):
+        """
+               Generic method for sending rest requests
+               :args:
+                   request_type:str - request type
+                   headers:dict request headers
+                   payload:str - serialized data
+               :params:
+                   status:bool
+                   response:requests.Response
+                   exception_msg:str
+               :return:
+                   status and response
+               """
+        status = True
+        response = None
+        exception_msg = ""
+        try:
+            async with aiohttp.ClientSession(auth=self.auth) as session:
+                if request_type.upper() == "GET":
+                    response = session.get(self.conn, headers=headers, timeout=(self.connection_timeout, self.rest_timeout))
+                elif request_type.upper() == "PUT":
+                    response = session.put(f'http://{self.conn}', headers=headers, data=payload, timeout=(self.connection_timeout, self.rest_timeout))
+                elif request_type.upper() == "POST":
+                    response = session.post(f'http://{self.conn}', headers=headers, data=payload, timeout=(self.connection_timeout, self.rest_timeout))
+                else:
+                    exception_msg = f"Invalid request type {request_type}"
+                    status = False
+                if response:
+                    response.raise_for_status()
+        except Exception as error:
+            exception_msg = f"Failed to execute {request_type.upper()} against {conn} (Error: {error})"
+            status = False
+        finally:
+            if exception_msg:
+                raise Exception(exception_msg)
+
+        return [status, response]
+
 
     async def get(self, command:str, destination:str=None):
         """
@@ -50,17 +96,9 @@ class AnyLogConnector:
         if destination:
             headers['destination']=destination
 
-        try:
-            async with aiohttp.ClientSession(auth=self.auth) as session:
-                async with session.get(f'http://{self.conn}', headers=headers, timeout=self.timeout) as response:
-                    if response.status < 200 or response.status > 299:
-                        error=response.status
-                        return await support.extract_get_results(command=command, response=response, error=str(error))
-                    return await response.text()
-        except Exception as e:
-            error=str(e)
-            response = False
-            return await support.extract_get_results(command=command, response=False, error=str(error))
+        status, response = await self._rest_calls(request_type='GET', headers=headers)
+        return support.extract_get_results(command=command, response=response, error=error)
+
 
     async def put(self, dbms:str, table:str, payload, mode:str='streaming')->bool:
         """
@@ -89,14 +127,13 @@ class AnyLogConnector:
             'Content-Type':'text/plain'
         }
 
-        try:
-            async with aiohttp.ClientSession(auth=self.auth) as session:
-                async with session.put(f'http://{self.conn}', headers=headers, data=payload, timeout=self.timeout) as response:
-                    if response.status < 200 or response.status > 299:
-                        return support.validate_put_post('PUT', 'data', False, str(response.status))
-                    return True
-        except Exception as e:
-            return support.validate_put_post('PUT', 'data', False, str(e))
+        if payload and not isinstance(payload, str):
+            serialized_payload = json.dumps(payload)
+        else:
+            serialized_payload = payload
+
+        status, response = await self._rest_calls(request_type='PUT', headers=headers, payload=serialized_payload)
+        return support.validate_put_post(cmd_type='PUT', command='data', response=response, error=error)
 
     async def post(self, command:str, topic:str=None, destination:str=None, payload=None)->bool:
         """
@@ -127,14 +164,13 @@ class AnyLogConnector:
         if destination:
             headers['destination']=destination
 
-        try:
-            async with aiohttp.ClientSession(auth=self.auth) as session:
-                async with session.post(f'http://{self.conn}', headers=headers, data=payload, timeout=self.timeout) as response:
-                    if response.status < 200 or response.status > 299:
-                        return support.validate_put_post('POST', 'data', False, str(response.status))
-                    return True
-        except Exception as e:
-            return support.validate_put_post('POST', 'data', False, str(e))
+        if payload and not isinstance(payload, str):
+            serialized_payload = json.dumps(payload)
+        else:
+            serialized_payload = payload
+
+        status, response = await self._rest_calls(request_type='POST', headers=headers, payload=serialized_payload)
+        return support.validate_put_post(cmd_type='POST', command='data', response=response, error=error)
 
 
 def validate_type(anylog_conn):
