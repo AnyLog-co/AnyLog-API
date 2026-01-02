@@ -4,10 +4,12 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/
 """
 import requests
-import anylog_api.__support__ as support
+import __support__ as support
+import asyncio
+import rest_calls
 
 
-class AnyLogConnector:
+class RestAPI:
     def __init__(self, conn:str, auth:tuple=(), timeout:int=30):
         """
         The following are the base support for AnyLog via REST
@@ -21,14 +23,15 @@ class AnyLogConnector:
             auth:tuple - Authentication information
             timeout:int - REST timeout
         """
-        self.conn = conn
-        self.auth = auth
+        self.conn = rest_calls.__url_builder(conn=conn, is_auth=True if auth else False)
+        self.auth = None if not auth else auth
         self.timeout = timeout
 
+    async def __rest_call(self):
 
-    def get(self, command:str, destination:str=None)->(bool or str or dict):
+    async def async_get(self, command:str, destination:str=None)->(bool or str or dict):
         """
-        requests GET command
+        requests GET command as an async
         :args:
             command:str - command to execute
             destination:str - Remote connection to execute against
@@ -40,7 +43,6 @@ class AnyLogConnector:
             if GET generates a result then returns result
             if GET fails then an exception is raised
         """
-        error = None
         headers = {
             "command": command,
             "User-Agent": "AnyLog/1.23"
@@ -49,20 +51,25 @@ class AnyLogConnector:
         if destination: # set to "network" if you want to `run client ()` without parameters
             headers['destination'] = destination
 
-        try:
-            response = requests.get(f'http://{self.conn}', headers=headers, auth=self.auth, timeout=self.timeout)
-        except Exception as e:
-            error = str(e)
-            response = False
-        else:
-            if int(response.status_code) < 200 or int(response.status_code) > 299:
-                error = int(response.status_code)
-                response = False
+        response, error = await rest_calls.rest_async_call(request_type="GET", conn=self.conn, headers=headers,
+                                                           payload=None, auth=self.auth, timeout=self.timeout)
 
         return support.extract_get_results(command=command, response=response, error=error)
 
+    def get(self, command:str, destination:str=None)->(bool or str or dict):
+        """
+        requests GET command
+        :args:
+            command:str - command to execute
+            destination:str - Remote connection to execute against
+        :return:
+            if GET generates a result then returns result
+            if GET fails then an exception is raised
+        """
+        return asyncio.run(self.async_get(command=command, destination=destination))
 
-    def put(self, dbms:str, table:str, payload, mode:str='streaming')->bool:
+
+    async def async_put(self, dbms:str, table:str, payload, mode:str='streaming')->bool:
         """
         Execute a PUT command against AnyLog - mainly used for Data
         :args:
@@ -89,6 +96,7 @@ class AnyLogConnector:
             'mode': mode.lower(),
             'Content-Type': 'text/plain'
         }
+        response, error = await rest_calls.rest_async_call(request_type="PUT", )
         try:
             response = requests.put(f'http://{self.conn}', auth=self.auth, timeout=self.timeout, headers=headers,
                              data=payload)

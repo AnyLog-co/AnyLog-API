@@ -1,0 +1,8 @@
+{
+    "1": "Informational",
+    "2": "Successful",
+    "3": "Redirection",
+    "4": "Client Error",
+    "5": "Server Error",
+    "7": "Developer Error"
+}

@@ -3,8 +3,8 @@
 The AnyLog API enables seamless interaction with _AnyLog_ or _EdgeLake_ nodes to manage distributed data seamlessly. 
 This README provides setup instructions and sample usage for initializing a node, inserting data, and querying data.
 
-The code supports both [asynchronous requests](anylog_api/async_anylog_connector.py) using _aiohttp_ library, and 
-[synchronous](anylog_api/anylog_connector.py) using standard _requests_ library. 
+The code supports both [asynchronous requests](anylog-api-archive/async_anylog_connector.py) using _aiohttp_ library, and 
+[synchronous](anylog-api-archive/rest_api.py) using standard _requests_ library. 
 
 ~~## Requirements 
 1. An AnyLog or EdgeLake setup 
@@ -33,7 +33,7 @@ cd $HOME
 python3 -m venv venv 
 
 # Install AnyLog-API 
-python3 -m pip install $HOME/AnyLog-API/dist/anylog_api-0.0.0-py2.py3-none-any.whl 
+python3 -m pip install $HOME/AnyLog-API/dist/anylog-api-archive-0.0.0-py2.py3-none-any.whl 
 ```
 
 5. Use AnyLog-API based on [examples](examples/)
