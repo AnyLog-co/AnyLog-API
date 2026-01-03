@@ -98,6 +98,7 @@ class AnyLogConnector:
         except Exception as e:
             return support.validate_put_post('PUT', 'data', False, str(e))
 
+
     async def post(self, command:str, topic:str=None, destination:str=None, payload=None)->bool:
         """
         Execute POST command against AnyLog. payload is required under the following conditions:

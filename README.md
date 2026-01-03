@@ -33,7 +33,7 @@ cd $HOME
 python3 -m venv venv 
 
 # Install AnyLog-API 
-python3 -m pip install $HOME/AnyLog-API/dist/anylog-api-archive-0.0.0-py2.py3-none-any.whl 
+python3 -m pip install $HOME/AnyLog-API/dist/anylog-api-archivve-new-archive-0.0.0-py2.py3-none-any.whl 
 ```
 
 5. Use AnyLog-API based on [examples](examples/)
