@@ -17,7 +17,7 @@ if os.path.isfile(REQUIREMENTS_FILE):
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE)
 
-PKG_NAME = config['metadata'].get('name', 'anylog-api-archivve-new-archive')
+PKG_NAME = config['metadata'].get('name', 'anylog_api-archivve-new-archive')
 PKG_VERSION = config['metadata'].get('version', '0.0.1')
 PKG_AUTHOR = config['metadata'].get('author', 'AnyLog Co.')
 PKG_CONTACT = config['metadata'].get('contact', 'info@anylog.co')
@@ -26,7 +26,7 @@ PKG_DESCRIPTION = config['metadata'].get('description', 'Tool for AnyLog / EdgeL
 # Define the entry point for running the package (if applicable)
 ENTRY_POINTS = {
     'console_scripts': [
-        'anylog-api-archivve-new-archive = anylog-api-archivve-new-archive.anylog_connector:main',  # Update if there's a CLI entry point
+        'anylog_api-archivve-new-archive = anylog_api-archivve-new-archive.anylog_connector:main',  # Update if there's a CLI entry point
     ],
 }
 
