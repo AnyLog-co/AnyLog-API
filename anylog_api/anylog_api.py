@@ -39,31 +39,31 @@ class AnyLogAPI:
         # Help
         self.modules = {
             "anylog_conn": {
-                "path": os.path.join("anylog_api", "anylog_rest_api.py"),
+                "path": "anylog_api/anylog_rest_api.py",
                 "functions": self.anylog_conn.list_commands(),
             },
             "node_status": {
-                "path": os.path.join("anylog_api", "api_node_status.py"),
+                "path": "anylog_api/api_node_status.py",
                 "functions": self.node_status.list_commands(),
             },
             "logging": {
-                "path": os.path.join("anylog_api", "api_logs.py"),
+                "path": "anylog_api/api_logs.py",
                 "functions": self.logging.list_commands(),
             },
             "processes": {
-                "path": os.path.join("anylog_api", "api_process.py"),
+                "path": "anylog_api/api_process.py",
                 "functions": self.processes.list_commands(),
             },
             "blockchain": {
-                "path": os.path.join("anylog_api", "api_blockchain.py"),
+                "path": "anylog_api/api_blockchain.py",
                 "functions": self.blockchain.list_commands(),
             },
             "dbms": {
-                "path": os.path.join("anylog_api", "api_dbms.py"),
+                "path": "anylog_api/api_dbms.py",
                 "functions": self.dbms.list_commands(),
             },
             "southbound": {
-                "path": os.path.join("anylog_api", "api_southbound.py"),
+                "path": "anylog_api/api_southbound.py",
                 "functions": self.southbound.list_commands(),
             },
         }
