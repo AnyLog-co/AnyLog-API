@@ -1,15 +1,35 @@
+import json
 import asyncio
 import httpx
 import os
-import anylog_api.support as support
 
-from pprint import pprint
+from anylog_api.list_cmds import ListCommands
 
 ROOT_DIR = os.path.dirname(__file__)
-NETWORK_ERRORS = support.load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS.json"))
-NETWORK_ERRORS_GENERIC = support.load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS_GENERIC.json"))
 
-class AnyLogRest:
+def url_builder(conn:str, is_auth:bool=False)->str:
+    if conn.startswith("http"):
+        return conn
+    scheme = "https" if is_auth else "http"
+    return f"{scheme}://{conn}"
+
+def load_json(file_path:str)->dict:
+    full_path = os.path.expandvars(os.path.expanduser(file_path))
+    if not os.path.isfile(full_path):
+        raise FileNotFoundError(f"JSON file not found: {file_path}")
+
+    with open(full_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Convert keys to int if numeric
+    return {int(k): v for k, v in data.items()}
+
+
+
+NETWORK_ERRORS = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS.json"))
+NETWORK_ERRORS_GENERIC = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS_GENERIC.json"))
+
+class AnyLogRest(ListCommands):
     def __init__(self, conn:str, auth:tuple=None, connection_timeout:float=30, read_timeout:float=30,
                  write_timeout:float=30, pool:float=5):
         """
@@ -22,7 +42,7 @@ class AnyLogRest:
             read_timeout:float - Waiting for response data
             write_timeout:float - Sending request data
         """
-        self.conn = support.url_builder(conn=conn, is_auth=bool(auth))
+        self.conn = url_builder(conn=conn, is_auth=bool(auth))
         self.auth = auth
         try:
             self.timeout = httpx.Timeout(
@@ -34,19 +54,6 @@ class AnyLogRest:
         except (httpx.TimeoutException or Exception) as error:
             raise Exception(f"Failed to define connection timeout information (Error: {error})")
 
-
-    def list_commands(self):
-        """
-        provide docstring / help for functions
-        """
-        return {
-            name: getattr(self, name).__doc__
-            for name in dir(self)
-            if not name.startswith("_") and callable(getattr(self, name))
-        }
-
-    def connect(self):
-        status = Status()
 
 
     async def __async_exec__(self, cmd_type:str, headers:dict, payload=None):

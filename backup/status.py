@@ -1,8 +1,9 @@
 import asyncio
 from anylog_api.anylog_rest_api import AnyLogRest
+from anylog_api.list_cmds import ListCommands
 
 
-class Status:
+class Status(ListCommands):
     def __init__(self, anylog_conn:AnyLogRest):
         self.anylog_conn = anylog_conn
 
