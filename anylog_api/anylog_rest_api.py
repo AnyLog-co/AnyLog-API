@@ -28,6 +28,9 @@ def load_json(file_path:str)->dict:
 NETWORK_ERRORS = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS.json"))
 NETWORK_ERRORS_GENERIC = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS_GENERIC.json"))
 
+
+
+
 class AnyLogRest(ListCommands):
     def __init__(self, conn:str, auth:tuple=None, connection_timeout:float=30, read_timeout:float=30,
                  write_timeout:float=30, pool:float=5):

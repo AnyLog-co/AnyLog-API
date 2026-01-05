@@ -17,8 +17,8 @@ if os.path.isfile(REQUIREMENTS_FILE):
 config = configparser.ConfigParser()
 config.read(CONFIG_FILE)
 
-PKG_NAME = config['metadata'].get('name', 'anylog_api-archivve-new-archive')
-PKG_VERSION = config['metadata'].get('version', '0.0.1')
+PKG_NAME = config['metadata'].get('name', "AnyLog-API")
+PKG_VERSION = config['metadata'].get('version', '1.0')
 PKG_AUTHOR = config['metadata'].get('author', 'AnyLog Co.')
 PKG_CONTACT = config['metadata'].get('contact', 'info@anylog.co')
 PKG_DESCRIPTION = config['metadata'].get('description', 'Tool for AnyLog / EdgeLake RESTful API')
@@ -26,7 +26,7 @@ PKG_DESCRIPTION = config['metadata'].get('description', 'Tool for AnyLog / EdgeL
 # Define the entry point for running the package (if applicable)
 ENTRY_POINTS = {
     'console_scripts': [
-        'anylog_api-archivve-new-archive = anylog_api-archivve-new-archive.anylog_connector:main',  # Update if there's a CLI entry point
+        "anylog-api = anylog_api.anylog_api:main",  # Update if there's a CLI entry point
     ],
 }
 
@@ -41,6 +41,12 @@ setuptools.setup(
     url=config["metadata"].get("source", "https://github.com/AnyLog-co/AnyLog-API"),
     packages=setuptools.find_packages(exclude=("tests", "tests.*")),
     include_package_data=True,
+    package_data={
+        "anylog_api": [
+            "NETWORK_ERRORS.json",
+            "NETWORK_ERRORS_GENERIC.json",
+        ]
+    },
     install_requires=REQUIREMENTS_LIST,  # Installs dependencies from requirements.txt
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -1,4 +1,3 @@
-import os
 from anylog_api.anylog_rest_api import AnyLogRest
 from anylog_api.api_node_status import Status
 from anylog_api.api_logs import Logging
@@ -7,6 +6,7 @@ from anylog_api.api_blockchain import Blockchain
 from anylog_api.api_dbms import DBMS
 from anylog_api.api_data import Data
 from anylog_api.api_southbound import Southbound
+from anylog_api.api_generic import Generic
 
 class AnyLogAPI:
     def __init__(self, conn:str, auth:tuple=None, connection_timeout:float=30, read_timeout:float=30,
@@ -31,6 +31,7 @@ class AnyLogAPI:
         self.update_exec_mode = self.anylog_conn.update_exec_mode
 
         # Functions
+        self.generic = Generic(anylog_conn=self.anylog_conn)
         self.node_status = Status(anylog_conn=self.anylog_conn)
         self.logging = Logging(anylog_conn=self.anylog_conn)
         self.processes = Processes(anylog_conn=self.anylog_conn)
@@ -46,7 +47,10 @@ class AnyLogAPI:
                 "path": "anylog_api/anylog_rest_api.py",
                 "functions": self.anylog_conn.list_commands(),
             },
-
+            "generic": {
+                "path": "anylog_api/api_generic.py",
+                "functions": self.generic.list_commands()
+            },
             # 2. Node state & health
             "node_status": {
                 "path": "anylog_api/api_node_status.py",

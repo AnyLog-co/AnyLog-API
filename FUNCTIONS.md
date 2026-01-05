@@ -8,6 +8,9 @@
 	* post - Generic method for post requests against anylog/edgelake
 	* put - Generic method for put requests against anylog/edgelake
 	* update_exec_mode - Update execution mode for a given command
+* [generic](anylog_api/api_generic.py)
+	* async_get_dictionary - Get dictionary value(s)
+	* get_dictionary - Get dictionary value(s)
 * [node_status](anylog_api/api_node_status.py)
 	* async_get_status - Execute `get status`
 	* async_test_network - Test network status
