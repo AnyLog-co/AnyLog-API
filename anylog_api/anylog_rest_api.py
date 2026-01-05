@@ -3,7 +3,7 @@ import asyncio
 import httpx
 import os
 
-from anylog_api.list_cmds import ListCommands
+from anylog_api.support import ListCommands, ExecMode
 
 ROOT_DIR = os.path.dirname(__file__)
 
@@ -54,6 +54,7 @@ class AnyLogRest(ListCommands):
         except (httpx.TimeoutException or Exception) as error:
             raise Exception(f"Failed to define connection timeout information (Error: {error})")
 
+        self.exec_mode = ExecMode.EXECUTE
 
 
     async def __async_exec__(self, cmd_type:str, headers:dict, payload=None):
@@ -72,26 +73,35 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
-        try:
-            async with  httpx.AsyncClient(auth=self.auth, timeout=self.timeout) as client:
-                response = await client.request(method=cmd_type.upper(), url=self.conn, headers=headers,
-                                                json=payload if isinstance(payload, dict) else None,
-                                                content=payload if isinstance(payload, str) else None)
+        command = headers["command"]
+        if self.exec_mode == ExecMode.COMMAND:
+            return command
+        elif  self.exec_mode == ExecMode.HELP:
+            self.exec_mode = ExecMode.EXECUTE
+            await self.async_help(command)
+            self.exec_mode = ExecMode.HELP
+            return None
+        else:
+            try:
+                async with  httpx.AsyncClient(auth=self.auth, timeout=self.timeout) as client:
+                    response = await client.request(method=cmd_type.upper(), url=self.conn, headers=headers,
+                                                    json=payload if isinstance(payload, dict) else None,
+                                                    content=payload if isinstance(payload, str) else None)
 
-                status_code = int(response.status_code)
-                if response and not 200 <= int(response.status_code) < 300:
-                    if NETWORK_ERRORS.get(status_code):
-                        status_code_str = NETWORK_ERRORS.get(str(status_code))
-                    elif NETWORK_ERRORS_GENERIC.get(status_code):
-                        status_code_str = NETWORK_ERRORS_GENERIC.get(str(status_code)[0])
-                    raise httpx.NetworkError(f"Failed to execute {cmd_type.upper()} against {conn} (Network Error {status_code}: {status_code_str})")
-        except httpx.TimeoutException as error:
-            raise httpx.TimeoutException(f"Request timed out against {self.conn} (Error: {error})")
+                    status_code = int(response.status_code)
+                    if response and not 200 <= int(response.status_code) < 300:
+                        if NETWORK_ERRORS.get(status_code):
+                            status_code_str = NETWORK_ERRORS.get(str(status_code))
+                        elif NETWORK_ERRORS_GENERIC.get(status_code):
+                            status_code_str = NETWORK_ERRORS_GENERIC.get(str(status_code)[0])
+                        raise httpx.NetworkError(f"Failed to execute {cmd_type.upper()} against {conn} (Network Error {status_code}: {status_code_str})")
+            except httpx.TimeoutException as error:
+                raise httpx.TimeoutException(f"Request timed out against {self.conn} (Error: {error})")
 
-        except Exception as error:
-            raise Exception(f"Failed to execute {cmd_type.upper()} against {self.conn} (Error: {error})")
+            except Exception as error:
+                raise Exception(f"Failed to execute {cmd_type.upper()} against {self.conn} (Error: {error})")
 
-        return response
+            return response
 
 
     def __sync_exec__(self, cmd_type:str, headers:dict, payload=None):
@@ -131,6 +141,8 @@ class AnyLogRest(ListCommands):
 
         try:
             return response.json()
+        except AttributeError:
+            return response
         except Exception:
             return response.text
 
@@ -254,3 +266,20 @@ class AnyLogRest(ListCommands):
         asyncio.run(self.async_help(command=command))
 
 
+    def update_exec_mode(self, exec_mode:str):
+        """
+        Update execution mode for a given command
+        :args:
+            exec_mode:
+            - execute (default)
+            - command: returns command
+            - help: prints help for a
+            - info: function information
+        """
+        self.exec_mode = ExecMode.EXECUTE
+        if exec_mode.lower() == "command":
+            self.exec_mode = ExecMode.COMMAND
+        elif exec_mode.lower() == "help":
+            self.exec_mode = ExecMode.HELP
+        elif exec_mode.lower() == "info":
+            self.exec_mode =ExecMode.INFO

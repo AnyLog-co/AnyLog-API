@@ -1,6 +1,6 @@
 import asyncio
 from anylog_api.anylog_rest_api import AnyLogRest
-from anylog_api.list_cmds import ListCommands
+from anylog_api.support import ListCommands
 
 
 class Logging(ListCommands):

@@ -1,3 +1,5 @@
+from enum import Enum
+
 class ListCommands:
     """
     help with function information
@@ -11,3 +13,8 @@ class ListCommands:
             for name in dir(self)
             if not name.startswith("_") and callable(getattr(self, name))
         }
+
+class ExecMode(Enum):
+    EXECUTE = "execute" # execute command
+    COMMAND = "command" # return
+    HELP = "help" # print command help
