@@ -5,6 +5,7 @@ from anylog_api.api_logs import Logging
 from anylog_api.api_process import Processes
 from anylog_api.api_blockchain import Blockchain
 from anylog_api.api_dbms import DBMS
+from anylog_api.api_data import Data
 from anylog_api.api_southbound import Southbound
 
 class AnyLogAPI:
@@ -35,36 +36,51 @@ class AnyLogAPI:
         self.processes = Processes(anylog_conn=self.anylog_conn)
         self.blockchain = Blockchain(anylog_conn=self.anylog_conn)
         self.dbms = DBMS(anylog_conn=self.anylog_conn)
+        self.data = Data(anylog_conn=self.anylog_conn)
         self.southbound = Southbound(anylog_conn=self.anylog_conn)
+
         # Help
         self.modules = {
+            # 1. Connectivity / core
             "anylog_conn": {
                 "path": "anylog_api/anylog_rest_api.py",
                 "functions": self.anylog_conn.list_commands(),
             },
+
+            # 2. Node state & health
             "node_status": {
                 "path": "anylog_api/api_node_status.py",
                 "functions": self.node_status.list_commands(),
             },
-            "logging": {
-                "path": "anylog_api/api_logs.py",
-                "functions": self.logging.list_commands(),
-            },
-            "processes": {
-                "path": "anylog_api/api_process.py",
-                "functions": self.processes.list_commands(),
-            },
-            "blockchain": {
-                "path": "anylog_api/api_blockchain.py",
-                "functions": self.blockchain.list_commands(),
+
+            # 3. Data plane (what users usually care about)
+            "data": {
+                "path": "anylog_api/api_data.py",
+                "functions": self.data.list_commands(),
             },
             "dbms": {
                 "path": "anylog_api/api_dbms.py",
                 "functions": self.dbms.list_commands(),
             },
+
+            # 4. Processing & orchestration
+            "processes": {
+                "path": "anylog_api/api_process.py",
+                "functions": self.processes.list_commands(),
+            },
             "southbound": {
                 "path": "anylog_api/api_southbound.py",
                 "functions": self.southbound.list_commands(),
+            },
+
+            # 5. System-level / infrastructure
+            "blockchain": {
+                "path": "anylog_api/api_blockchain.py",
+                "functions": self.blockchain.list_commands(),
+            },
+            "logging": {
+                "path": "anylog_api/api_logs.py",
+                "functions": self.logging.list_commands(),
             },
         }
 

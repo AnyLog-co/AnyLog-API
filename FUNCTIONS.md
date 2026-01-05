@@ -15,6 +15,49 @@
 	* get_status - Execute `get status`
 	* test_network - Test network status
 	* test_node - Test node status
+* [data](anylog_api/api_data.py)
+	* async_post_data - Publish data into anylog / edgelake via post
+	* async_put_data - Publish content into anylog / edgelake via put
+	* async_query - Execute query request against the network
+	* post_data - Publish data into anylog / edgelake via post
+	* put_data - Publish content into anylog / edgelake via put
+	* query - Execute query request againsts the network
+	* sql_request_builder - Create a complete sql command for anylog / edgelake
+* [dbms](anylog_api/api_dbms.py)
+	* async_connect_dbms - Connect to logical database - for sqlite, psql and mongodb
+	* async_get_columns - Get list of columns based on logical database and table
+	* async_get_data_nodes - Get breakdown of data across the network
+	* async_get_databases - Get list of databases
+	* async_get_tables - Get list of tables based on logical database name
+	* connect_dbms - Connect to logical database - for sqlite, psql and mongodb
+	* get_columns - Get list of columns based on logical database and table
+	* get_data_nodes - Get breakdown of data across the network
+	* get_databases - Get list of databases
+	* get_tables - Get list of tables based on logical database name
+* [processes](anylog_api/api_process.py)
+	* async_get_operator - Get operator processing information
+	* async_get_processes - Get status of anylog processes
+	* async_get_publisher - Get publisher processing information
+	* async_get_streaming - Get streaming
+	* async_run_operator - Execute `run operator` to insert data
+	* async_run_publisher - Execute `run publisher`
+	* get_operator - Get operator processing information
+	* get_processes - Get status of anylog processes
+	* get_publisher - Get publisher processing information
+	* get_streaming - Get streaming
+	* run_operator - Execute `run operator` to insert data
+	* run_publisher - Execute `run publisher`
+* [southbound](anylog_api/api_southbound.py)
+	* async_get_msg_client - Execute `get msg client`
+	* async_run_msg_client - Execute `run msg client` command
+	* get_msg_client - Execute `get msg client`
+	* run_msg_client - Execute `run msg client` command
+* [blockchain](anylog_api/api_blockchain.py)
+	* async_blockchain_get - Execute `blockchain get` against the blockchain
+	* async_insert_policy - Insert blockchain policy
+	* blockchain_get - Execute `blockchain get` against the blockchain
+	* build_policy - Builder for blockchain policy
+	* insert_policy - Insert blockchain policy
 * [logging](anylog_api/api_logs.py)
 	* async_disable_echo_queue - Disable echo queue
 	* async_enable_echo_queue - Enable echo queue
@@ -32,38 +75,3 @@
 	* reset_echo_queue - Reset echo queue (size)
 	* reset_error_log - Reset event log
 	* reset_event_log - Reset event log
-* [processes](anylog_api/api_process.py)
-	* async_get_operator - Get operator processing information
-	* async_get_processes - Get status of anylog processes
-	* async_get_publisher - Get publisher processing information
-	* async_get_streaming - Get streaming
-	* async_run_operator - Execute `run operator` to insert data
-	* async_run_publisher - Execute `run publisher`
-	* get_operator - Get operator processing information
-	* get_processes - Get status of anylog processes
-	* get_publisher - Get publisher processing information
-	* get_streaming - Get streaming
-	* run_operator - Execute `run operator` to insert data
-	* run_publisher - Execute `run publisher`
-* [blockchain](anylog_api/api_blockchain.py)
-	* async_blockchain_get - Execute `blockchain get` against the blockchain
-	* async_insert_policy - Insert blockchain policy
-	* blockchain_get - Execute `blockchain get` against the blockchain
-	* build_policy - Builder for blockchain policy
-	* insert_policy - Insert blockchain policy
-* [dbms](anylog_api/api_dbms.py)
-	* async_connect_dbms - Connect to logical database - for sqlite, psql and mongodb
-	* async_get_columns - Get list of columns based on logical database and table
-	* async_get_data_nodes - Get breakdown of data across the network
-	* async_get_databases - Get list of databases
-	* async_get_tables - Get list of tables based on logical database name
-	* connect_dbms - Connect to logical database - for sqlite, psql and mongodb
-	* get_columns - Get list of columns based on logical database and table
-	* get_data_nodes - Get breakdown of data across the network
-	* get_databases - Get list of databases
-	* get_tables - Get list of tables based on logical database name
-* [southbound](anylog_api/api_southbound.py)
-	* async_get_msg_client - Execute `get msg client`
-	* async_run_msg_client - Execute `run msg client` command
-	* get_msg_client - Execute `get msg client`
-	* run_msg_client - Execute `run msg client` command
