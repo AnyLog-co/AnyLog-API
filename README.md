@@ -2,11 +2,13 @@
 
 ## File Struct
 
-**Base**:
+### Base
 * [anylog_api.py](anylog_api/anylog_api.py) -- this is the "main" that users import
 * [anylog_rest_api.py](anylog_api/anylog_rest_api.py) -- REST connection and communication code
-* [list_cmds.py](anylog_api/support.py) <-- support to get information about functions
+* [list_cmds.py](anylog_api/support.py) -- support to get information about functions
 
+---
+### Functions
 
 * [anylog_conn](anylog_api/anylog_rest_api.py) -- REST connection and communication code
   * help - Get list of commands  or information about a command
