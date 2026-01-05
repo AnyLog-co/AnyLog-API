@@ -25,7 +25,6 @@ def load_json(file_path:str)->dict:
     return {int(k): v for k, v in data.items()}
 
 
-
 NETWORK_ERRORS = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS.json"))
 NETWORK_ERRORS_GENERIC = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS_GENERIC.json"))
 
@@ -77,7 +76,7 @@ class AnyLogRest(ListCommands):
         if self.exec_mode == ExecMode.COMMAND:
             return command
         elif  self.exec_mode == ExecMode.HELP:
-            self.exec_mode = ExecMode.EXECUTE
+            self.exec_mode = None
             await self.async_help(command)
             self.exec_mode = ExecMode.HELP
             return None
@@ -125,7 +124,7 @@ class AnyLogRest(ListCommands):
 
     async def async_get(self, headers:dict):
         """
-        Execute request against AnyLog / EdgeLake instance - calls async process
+        Generic method for GET requests against AnyLog/EdgeLake
         :args:
             headers:dict - REST headers
         :params:
@@ -149,7 +148,7 @@ class AnyLogRest(ListCommands):
 
     def get(self, headers:dict):
         """
-        Execute request against AnyLog / EdgeLake instance - calls async process
+        Generic method for GET requests against AnyLog/EdgeLake
         :args:
             headers:dict - RESt headers
         :params:
@@ -165,7 +164,7 @@ class AnyLogRest(ListCommands):
 
     async def async_post(self, headers:dict, payload=None):
         """
-        Execute request against AnyLog / EdgeLake instance - calls async process
+        Generic method for POST requests against AnyLog/EdgeLake
         :args:
             headers:dict - RESt headers
             payload - content to publish to AnyLog/EdgeLake
@@ -183,7 +182,7 @@ class AnyLogRest(ListCommands):
 
     def post(self, headers:dict, payload=None):
         """
-        Execute request against AnyLog / EdgeLake instance - calls async process
+        Generic method for POST requests against AnyLog/EdgeLake
         :args:
             headers:dict - RESt headers
             payload - content to publish to AnyLog/EdgeLake
@@ -201,7 +200,7 @@ class AnyLogRest(ListCommands):
 
     async def async_put(self, headers:dict, payload=None):
         """
-        Execute request against AnyLog / EdgeLake instance - calls async process
+        Generic method for PUT requests against AnyLog/EdgeLake
         :args:
             headers:dict - RESt headers
             payload - content to publish to AnyLog/EdgeLake
@@ -219,9 +218,9 @@ class AnyLogRest(ListCommands):
 
     def put(self, headers:dict, payload=None):
         """
-        Execute request against AnyLog / EdgeLake instance - calls async process
+        Generic method for PUT requests against AnyLog/EdgeLake
         :args:
-            headers:dict - RESt headers
+            headers:dict - REST headers
             payload - content to publish to AnyLog/EdgeLake
         :params:
             status_code_str - error message if fails
