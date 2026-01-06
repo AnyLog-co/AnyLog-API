@@ -96,7 +96,7 @@ class AnyLogRest(ListCommands):
                             status_code_str = NETWORK_ERRORS.get(str(status_code))
                         elif NETWORK_ERRORS_GENERIC.get(status_code):
                             status_code_str = NETWORK_ERRORS_GENERIC.get(str(status_code)[0])
-                        raise httpx.NetworkError(f"Failed to execute {cmd_type.upper()} against {conn} (Network Error {status_code}: {status_code_str})")
+                        raise httpx.NetworkError(f"Failed to execute {cmd_type.upper()} against {self.conn} (Network Error {status_code}: {status_code_str})")
             except httpx.TimeoutException as error:
                 raise httpx.TimeoutException(f"Request timed out against {self.conn} (Error: {error})")
 

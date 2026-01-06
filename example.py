@@ -2,7 +2,7 @@ from anylog_api.anylog_api import AnyLogAPI
 
 
 anylog_conn = AnyLogAPI(conn="http://23.239.12.151:32349")
-print(anylog_conn.__help__())
+print(anylog_conn.generic.get_dictionary(param="ip"))
 
 
 

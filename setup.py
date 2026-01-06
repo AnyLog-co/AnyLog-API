@@ -53,7 +53,7 @@ setuptools.setup(
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.9",
     project_urls={
         "Bug Tracker": "https://github.com/AnyLog-co/AnyLog-API/issues",
         "Documentation": config["metadata"].get("docs", "https://github.com/AnyLog-co/documentation"),
