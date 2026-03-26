@@ -1,3 +1,5 @@
+import os
+
 from anylog_api.anylog_rest_api import AnyLogRest
 from anylog_api.api_node_status import Status
 from anylog_api.api_logs import Logging
@@ -44,46 +46,46 @@ class AnyLogAPI:
         self.modules = {
             # 1. Connectivity / core
             "anylog_conn": {
-                "path": "anylog_api/anylog_rest_api.py",
+                "path": os.path.join("anylog_api", "anylog_rest_api.py"),
                 "functions": self.anylog_conn.list_commands(),
             },
             "generic": {
-                "path": "anylog_api/api_generic.py",
+                "path": os.path.join("anylog_api", "api_generic.py"),
                 "functions": self.generic.list_commands()
             },
             # 2. Node state & health
             "node_status": {
-                "path": "anylog_api/api_node_status.py",
+                "path": os.path.join("anylog_api", "api_node_status.py"),
                 "functions": self.node_status.list_commands(),
             },
 
             # 3. Data plane (what users usually care about)
             "data": {
-                "path": "anylog_api/api_data.py",
+                "path": os.path.join("anylog_api", "api_data.py"),
                 "functions": self.data.list_commands(),
             },
             "dbms": {
-                "path": "anylog_api/api_dbms.py",
+                "path": os.path.join("anylog_api", "api_dbms.py"),
                 "functions": self.dbms.list_commands(),
             },
 
             # 4. Processing & orchestration
             "processes": {
-                "path": "anylog_api/api_process.py",
+                "path": os.path.join("anylog_api", "api_process.py"),
                 "functions": self.processes.list_commands(),
             },
             "southbound": {
-                "path": "anylog_api/api_southbound.py",
+                "path": os.path.join("anylog_api", "api_southbound.py"),
                 "functions": self.southbound.list_commands(),
             },
 
             # 5. System-level / infrastructure
             "blockchain": {
-                "path": "anylog_api/api_blockchain.py",
+                "path": os.path.join("anylog_api", "api_blockchain.py"),
                 "functions": self.blockchain.list_commands(),
             },
             "logging": {
-                "path": "anylog_api/api_logs.py",
+                "path": os.path.join("anylog_api", "api_logs.py"),
                 "functions": self.logging.list_commands(),
             },
         }
