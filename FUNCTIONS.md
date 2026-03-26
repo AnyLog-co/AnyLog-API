@@ -2,7 +2,7 @@
 	* async_get - Generic method for get requests against anylog/edgelake
 	* async_help - Get list of commands  or information about a command
 	* async_post - Generic method for post requests against anylog/edgelake
-	* async_put - Generic method for put requests against anylog/edgelake
+	* async_put - Generic method, for put requests against anylog/edgelake
 	* get - Generic method for get requests against anylog/edgelake
 	* help - Get list of commands  or information about a command
 	* post - Generic method for post requests against anylog/edgelake
@@ -22,9 +22,11 @@
 	* async_post_data - Publish data into anylog / edgelake via post
 	* async_put_data - Publish content into anylog / edgelake via put
 	* async_query - Execute query request against the network
+    * async_query_via_post - Execute query request againsts the network via POST as opposed to GET
 	* post_data - Publish data into anylog / edgelake via post
 	* put_data - Publish content into anylog / edgelake via put
 	* query - Execute query request againsts the network
+    * query_via_post - Execute query request againsts the network via POST as opposed to GET
 	* sql_request_builder - Create a complete sql command for anylog / edgelake
 * [dbms](anylog_api/api_dbms.py)
 	* async_connect_dbms - Connect to logical database - for sqlite, psql and mongodb

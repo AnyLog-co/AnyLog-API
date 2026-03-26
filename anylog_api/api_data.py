@@ -5,6 +5,7 @@ Data
 4. get data nodes
 """
 import asyncio
+import json
 
 from anylog_api.anylog_rest_api import AnyLogRest
 from anylog_api.support import ListCommands
@@ -13,7 +14,6 @@ from anylog_api.support import ListCommands
 class Data(ListCommands):
     def __init__(self, anylog_conn:AnyLogRest):
         self.anylog_conn = anylog_conn
-
 
     def sql_request_builder(self, db_name:str, query:str, output_format:str="json", stats:bool=True, include:str=None,
                             extend:str=None, timezone:str=None):
@@ -104,6 +104,68 @@ class Data(ListCommands):
         """
         return asyncio.run(self.async_query(request_stmt, db_name, query, output_format, stats, include, extend,
                                             timezone, destination))
+
+
+    async def async_query_via_post(self, request_stmt:str=None, db_name:str=None, query:str=None, output_format:str="json",
+                                   stats:bool=True, include:str=None, extend:str=None, timezone:str=None,
+                                   destination:str="network"):
+        """
+        Execute query request against the network via POST as opposed to GET
+        :args:
+            request_stmt:str - user's pre-defined request statement
+            - or utilizing sql_request_builder -
+            db_name:str - logical database name
+            query:str - SELECT / query statement
+            output_format:str - output format
+            stats:bool - include status in response
+            include:str - comma separated table(s) to include in request
+            extend:str - comma separated param(s) to include in request
+            timezone:str - timezone
+
+            destination:str - remote node(s) to send request against
+        :params:
+            headers:dict
+        :return:
+            query request results
+        """
+        if not request_stmt and (not db_name or not query):
+            return None
+        elif not request_stmt and db_name and query:
+            request_stmt = self.sql_request_builder(db_name, query, output_format, stats, include, extend, timezone)
+
+        headers  = {"Content-Type": "application/json"}
+        payload_headers = json.dumps({
+            "command": request_stmt,
+            "User-Agent": "AnyLog/1.23",
+            "destination": destination if destination else ""
+        })
+
+        return await self.anylog_conn.async_post(headers=headers, payload=payload_headers)
+
+    def query_via_post(self, request_stmt: str = None, db_name:str = None, query:str = None, output_format:str = "json",
+                       stats:bool = True, include:str = None, extend:str = None, timezone:str = None,
+                       destination:str = "network"):
+        """
+        Execute query request against the network via POST as opposed to GET
+        :args:
+            request_stmt:str - user's pre-defined request statement
+            - or utilizing sql_request_builder -
+            db_name:str - logical database name
+            query:str - SELECT / query statement
+            output_format:str - output format
+            stats:bool - include status in response
+            include:str - comma separated table(s) to include in request
+            extend:str - comma separated param(s) to include in request
+            timezone:str - timezone
+
+            destination:str - remote node(s) to send request against
+        :params:
+            headers:dict
+        :return:
+            query request results
+        """
+        return asyncio.run(self.async_query_via_post(request_stmt, db_name, query, output_format, stats, include, extend,
+                                                     timezone, destination))
 
     async def async_post_data(self, topic:str, payload, content_type:str="text/plain"):
         """
