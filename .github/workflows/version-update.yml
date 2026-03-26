@@ -3,7 +3,7 @@ name: Version Update
 on:
   push:
     branches:
-      - os-dev-new
+      - new-os-dev
       - pre-develop
 
 permissions:
