@@ -1,0 +1,6 @@
+bobross,https://www.twitch.tv/bobross
+timesquare,https://www.youtube.com/watch?v=rnXIjl_Rzy4
+giraffe,https://www.youtube.com/watch?v=m0EyiwkwCCk
+signcam,https://www.twitch.tv/stopsigncam
+barry,https://www.twitch.tv/barry,
+databaes,https://www.twitch.tv/databaes
