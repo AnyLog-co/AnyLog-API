@@ -24,3 +24,12 @@ print(anylog_conn.node_status.get_status(json_frmt=True)) # return generated com
 anylog_conn.update_exec_mode(exec_mode="help") # set execution mode
 anylog_conn.node_status.get_status(json_frmt=True) #  return `help` for `get status`
 ```
+
+**todo / Examples list**:
+1. every command should either <-- I believe that exists but missing `return` for non-GET 
+   * execute - exists 
+   * return help 
+   * return command rather than execute 
+2. sample for deployment-scripts via REST
+3. Sample for deployment-scripts via Policy
+4. sample for aggregation example
