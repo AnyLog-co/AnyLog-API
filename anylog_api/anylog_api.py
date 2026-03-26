@@ -7,6 +7,7 @@ from anylog_api.api_process import Processes
 from anylog_api.api_blockchain import Blockchain
 from anylog_api.api_dbms import DBMS
 from anylog_api.api_data import Data
+from anylog_api.api_data_aggregation import DataAggregation
 from anylog_api.api_southbound import Southbound
 from anylog_api.api_generic import Generic
 
@@ -40,6 +41,7 @@ class AnyLogAPI:
         self.blockchain = Blockchain(anylog_conn=self.anylog_conn)
         self.dbms = DBMS(anylog_conn=self.anylog_conn)
         self.data = Data(anylog_conn=self.anylog_conn)
+        self.data_aggregation = DataAggregation(anylog_conn=self.anylog_conn)
         self.southbound = Southbound(anylog_conn=self.anylog_conn)
 
         # Help
@@ -63,6 +65,10 @@ class AnyLogAPI:
             "data": {
                 "path": os.path.join("anylog_api", "api_data.py"),
                 "functions": self.data.list_commands(),
+            },
+            "data_aggregation": {
+                "path": os.path.join("anylog_api", "api_data_aggregation.py"),
+                "functions": self.data_aggregation.list_commands(),
             },
             "dbms": {
                 "path": os.path.join("anylog_api", "api_dbms.py"),

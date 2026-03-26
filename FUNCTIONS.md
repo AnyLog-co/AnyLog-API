@@ -28,6 +28,15 @@
 	* query - Execute query request againsts the network
     * query_via_post - Execute query request againsts the network via POST as opposed to GET
 	* sql_request_builder - Create a complete sql command for anylog / edgelake
+* [data_aggregation](anylog_api/api_data_aggregation.py)
+  * async_full_aggregation_creation - full aggregation process 
+    * connect dbms -> define partitioning for aggregation -> declare aggregation
+  * async_declare_aggregation - actual declare aggregation function
+  * async_get_aggregations - view aggregations
+  * full_aggregation_creation - full aggregation process 
+    * connect dbms -> define partitioning for aggregation -> declare aggregation
+  * declare_aggregation - actual declare aggregation function
+  * get_aggregations - view aggregations
 * [dbms](anylog_api/api_dbms.py)
 	* async_connect_dbms - Connect to logical database - for sqlite, psql and mongodb
 	* async_get_columns - Get list of columns based on logical database and table
