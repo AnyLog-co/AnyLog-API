@@ -1,4 +1,5 @@
 from enum import Enum
+import inspect
 
 class ListCommands:
     """
@@ -15,9 +16,11 @@ class ListCommands:
         }
 
 class ExecMode(Enum):
+    INFO = None
     EXECUTE = "execute" # execute command
     COMMAND = "command" # return
     HELP = "help" # print command help
+    INFO = "info" # print python function name + description
 
 
 
@@ -37,3 +40,19 @@ def load_json(file_path:str)->dict:
 
     # Convert keys to int if numeric
     return {int(k): v for k, v in data.items()}
+
+
+def exec_info(func):
+    """
+    If exec.info is enabled then provide python function information (as print)
+    :args:
+        func - function
+    :print:
+        method: get_status
+        description: `get status` against AnyLog node
+    """
+    doc = inspect.getdoc(func) or ""
+    summary = doc.splitlines()[0] if doc else ""  # just the first line of the docstring
+    info = f"method: {func.__name__}\ndescription: {summary}"
+    print(info)
+    return None
