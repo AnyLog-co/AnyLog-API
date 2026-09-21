@@ -54,7 +54,7 @@ class Processes(ListCommands):
             archive_sql:bool -  True moves the SQL file to the 'archive' dir if processing is successful. The file deleted if archive_sql is false.
             create_table:bool - A True value creates a table if the table doesn't exist.
             master_node - The IP and Port of a Master Node (if a master node is used).
-            update_tsd_info:bool - True/False to update a summary table (tsd_info table in almgm dbms) with status of files ingested.
+            update_tsd_info:bool - True/False to update a summary table (tsd_info table in almgm data) with status of files ingested.
             blockchain_conn:str - blockchain connection
         :params:
             headers:dict - REST headers
@@ -96,7 +96,7 @@ class Processes(ListCommands):
             archive_sql:bool -  True moves the SQL file to the 'archive' dir if processing is successful. The file deleted if archive_sql is false.
             create_table:bool - A True value creates a table if the table doesn't exist.
             master_node - The IP and Port of a Master Node (if a master node is used).
-            update_tsd_info:bool - True/False to update a summary table (tsd_info table in almgm dbms) with status of files ingested.
+            update_tsd_info:bool - True/False to update a summary table (tsd_info table in almgm data) with status of files ingested.
             blockchain_conn:str - blockchain connection
         :params:
             headers:dict - REST headers

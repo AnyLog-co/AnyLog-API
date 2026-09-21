@@ -63,15 +63,15 @@ def main():
         4. declare encoding (required if derived is set to True)
     :sample-policy:
     {"aggregation": {
-        "dbms": [db name],
+        "data": [db name],
         "table": [table name],
         # this configuration is set using  `--per-column` and should only be used if/when aggregation configuration is unique per column
         "value_column": [value column],
         "script": [
-            "set aggregation where dbms=[db_name] and table=[table_name] and intervals=[interval] and time=[interval_time] and time_column=[time_column] and value_column=[value_column]",
-            "set aggregation ingest where dbms=[db_name] and table=[table_name] and source=[true||false] and derived=[true||false]",
+            "set aggregation where data=[db_name] and table=[table_name] and intervals=[interval] and time=[interval_time] and time_column=[time_column] and value_column=[value_column]",
+            "set aggregation ingest where data=[db_name] and table=[table_name] and source=[true||false] and derived=[true||false]",
             # if `derived` is set to True then code includes `encoding`,
-            "set aggregation encoding where dbms=[db_name] and table=[table_name] and value_column=[value_column] and encoding=[bounds||arle]"
+            "set aggregation encoding where data=[db_name] and table=[table_name] and value_column=[value_column] and encoding=[bounds||arle]"
         ]
     }
     :positional arguments:

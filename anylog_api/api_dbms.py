@@ -1,5 +1,5 @@
 """
-connect dbms
+connect data
 get databases
 get tables
 get columns
@@ -35,7 +35,7 @@ class DBMS(ListCommands):
             raise ValueError(f"Unsupported db type ({db_type}) at this time")
 
         headers = {
-            "command": f"connect dbms {db_name} where type={db_type} and",
+            "command": f"connect data {db_name} where type={db_type} and",
             "User-Agent": "AnyLog/1.23",
             "destination": destination if destination else ""
         }
@@ -123,7 +123,7 @@ class DBMS(ListCommands):
             list of tables based on a logical database
         """
         headers = {
-            "command": f"get tables where dbms={db_name} and format=json" if json_frmt else f"get tables where dbms={db_name}",
+            "command": f"get tables where data={db_name} and format=json" if json_frmt else f"get tables where data={db_name}",
             "User-Agent": "AnyLog/1.23",
             "destination": destination if destination else ""
         }
@@ -159,8 +159,8 @@ class DBMS(ListCommands):
             list of tables based on a logical database
         """
         headers = {
-            "command": f"get columns where dbms={db_name} and table={table_name} and format=json" if json_frmt
-            else f"get columns where dbms={db_name} and table={table_name}",
+            "command": f"get columns where data={db_name} and table={table_name} and format=json" if json_frmt
+            else f"get columns where data={db_name} and table={table_name}",
             "User-Agent": "AnyLog/1.23",
             "destination": destination if destination else ""
         }

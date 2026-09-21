@@ -70,7 +70,7 @@ class AnyLogAPI:
                 "path": os.path.join("anylog_api", "api_data_aggregation.py"),
                 "functions": self.data_aggregation.list_commands(),
             },
-            "dbms": {
+            "data": {
                 "path": os.path.join("anylog_api", "api_dbms.py"),
                 "functions": self.dbms.list_commands(),
             },

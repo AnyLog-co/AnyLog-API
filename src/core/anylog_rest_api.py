@@ -3,32 +3,15 @@ import asyncio
 import httpx
 import os
 
-from src.core.support import ListCommands, ExecMode
+from src.core.support import ListCommands
+from src.core.support import ExecMode
+from src.core.support import load_json
+from src.core.support import url_builder
 
 ROOT_DIR = os.path.dirname(__file__)
 
-def url_builder(conn:str, is_auth:bool=False)->str:
-    if conn.startswith("http"):
-        return conn
-    scheme = "https" if is_auth else "http"
-    return f"{scheme}://{conn}"
-
-def load_json(file_path:str)->dict:
-    full_path = os.path.expandvars(os.path.expanduser(file_path))
-    if not os.path.isfile(full_path):
-        raise FileNotFoundError(f"JSON file not found: {file_path}")
-
-    with open(full_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    # Convert keys to int if numeric
-    return {int(k): v for k, v in data.items()}
-
-
 NETWORK_ERRORS = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS.json"))
 NETWORK_ERRORS_GENERIC = load_json(os.path.join(ROOT_DIR, "NETWORK_ERRORS_GENERIC.json"))
-
-
 
 
 class AnyLogRest(ListCommands):
@@ -56,10 +39,10 @@ class AnyLogRest(ListCommands):
         except (httpx.TimeoutException or Exception) as error:
             raise Exception(f"Failed to define connection timeout information (Error: {error})")
 
-        self.exec_mode = ExecMode.EXECUTE
+        # self.exec_mode = ExecMode.EXECUTE
 
 
-    async def __async_exec__(self, cmd_type:str, headers:dict, payload=None):
+    async def __async_exec__(self, cmd_type:str, headers:dict, payload=None, exec_mode=ExecMode.EXECUTE):
         """
         Execute request against AnyLog / EdgeLake instance
         :args:
@@ -76,12 +59,10 @@ class AnyLogRest(ListCommands):
             raw response
         """
         command = headers["command"]
-        if self.exec_mode == ExecMode.COMMAND:
+        if exec_mode == ExecMode.COMMAND:
             return command
-        elif  self.exec_mode == ExecMode.HELP:
-            self.exec_mode = None
+        elif exec_mode == ExecMode.HELP:
             await self.async_help(command)
-            self.exec_mode = ExecMode.HELP
             return None
         else:
             try:
@@ -106,26 +87,7 @@ class AnyLogRest(ListCommands):
             return response
 
 
-    def __sync_exec__(self, cmd_type:str, headers:dict, payload=None):
-        """
-        Execute request against AnyLog / EdgeLake instance - calls async process
-        :args:
-            cmd_type:str - command type (GET, PUT and POST)
-            headers:dict - RESt headers
-            payload - content to publish to AnyLog/EdgeLake
-        :params:
-            status_code_str - error message if fails
-            timeout:httpx.timeout - REST timeout
-            response - request response
-        :exception:
-            Network Error || Exception if execution fails
-        :return:
-            raw response
-        """
-
-        return asyncio.run(self.__async_exec__(cmd_type=cmd_type, headers=headers, payload=payload))
-
-    async def async_get(self, headers:dict):
+    async def async_get(self, headers:dict, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for GET requests against AnyLog/EdgeLake
         :args:
@@ -139,7 +101,7 @@ class AnyLogRest(ListCommands):
         :return:
             actual content from response
         """
-        response = await self.__async_exec__(cmd_type="GET", headers=headers)
+        response = await self.__async_exec__(cmd_type="GET", headers=headers, exec_mode=exec_mode)
 
         try:
             return response.json()
@@ -149,7 +111,7 @@ class AnyLogRest(ListCommands):
             return response.text
 
 
-    def get(self, headers:dict):
+    def get(self, headers:dict, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for GET requests against AnyLog/EdgeLake
         :args:
@@ -163,9 +125,9 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
-        return asyncio.run(self.async_get(headers=headers))
+        return asyncio.run(self.async_get(headers=headers, exec_mode=exec_mode))
 
-    async def async_post(self, headers:dict, payload=None):
+    async def async_post(self, headers:dict, payload=None, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for POST requests against AnyLog/EdgeLake
         :args:
@@ -180,10 +142,15 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
-        return await self.__async_exec__(cmd_type="POST", headers=headers, payload=payload)
+        if "User-Agent" in headers:
+            headers["AnyLog-Agent"] = headers.pop("User-Agent")
+        elif headers.get("AnyLog-Agent") is None:
+            headers["AnyLog-Agent"] = "AnyLog/1.23"
+
+        return await self.__async_exec__(cmd_type="POST", headers=headers, payload=payload, exec_mode=exec_mode)
 
 
-    def post(self, headers:dict, payload=None):
+    def post(self, headers:dict, payload=None, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for POST requests against AnyLog/EdgeLake
         :args:
@@ -198,10 +165,10 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
-        return self.__sync_exec__(cmd_type="POST", headers=headers, payload=payload)
+        return asyncio.run(self.async_post(headers=headers, payload=payload, exec_mode=exec_mode))
 
 
-    async def async_post_cmd(self, headers:dict):
+    async def async_get_via_post(self, headers:dict, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for executing GET requests via POST
         :args:
@@ -214,14 +181,25 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
+        if "User-Agent" in headers:
+            headers["AnyLog-Agent"] = headers.pop("User-Agent")
+        else:
+            headers["AnyLog-Agent"] = "AnyLog/1.23"
         payload = json.dumps(headers)
         request_headers = {
             "Content-Type": "application/json"
         }
-        return await self.__async_exec__(cmd_type="POST", headers=request_headers, payload=payload)
+        response = await self.__async_exec__(cmd_type="POST", headers=request_headers, payload=payload, exec_mode=exec_mode)
+
+        try:
+            return response.json()
+        except AttributeError:
+            return response
+        except Exception:
+            return response.text
 
 
-    def post_cmd(self, headers:dict):
+    def get_via_post(self, headers:dict, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for executing GET requests via POST
         :args:
@@ -234,14 +212,10 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
-        payload = json.dumps(headers)
-        request_headers = {
-            "Content-Type": "application/json"
-        }
-        return self.__sync_exec__(cmd_type="POST", headers=request_headers, payload=payload)
+        return asyncio.run(self.async_get_via_post(headers=headers, exec_mode=exec_mode))
 
 
-    async def async_put(self, headers:dict, payload=None):
+    async def async_put(self, headers:dict, payload=None, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for PUT requests against AnyLog/EdgeLake
         :args:
@@ -256,10 +230,10 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
-        return await self.__async_exec__(cmd_type="PUT", headers=headers, payload=payload)
+        return await self.__async_exec__(cmd_type="PUT", headers=headers, payload=payload, exec_mode=exec_mode)
 
 
-    def put(self, headers:dict, payload=None):
+    def put(self, headers:dict, payload=None, exec_mode=ExecMode.EXECUTE):
         """
         Generic method for PUT requests against AnyLog/EdgeLake
         :args:
@@ -274,10 +248,10 @@ class AnyLogRest(ListCommands):
         :return:
             raw response
         """
-        return self.__sync_exec__(cmd_type="PUT", headers=headers, payload=payload)
+        return asyncio.run(self.async_put(headers=headers, payload=payload, exec_mode=exec_mode))
 
 
-    async def async_help(self, command:str=None):
+    async def async_help(self, command:str=None, exec_mode=ExecMode.EXECUTE):
         """
         get list of commands  or information about a command
         :args:
@@ -292,10 +266,10 @@ class AnyLogRest(ListCommands):
             "User-Agent": "AnyLog/1.23"
         }
 
-        output = await self.async_get(headers=headers)
+        output = await self.async_get(headers=headers, exec_mode=exec_mode)
         print(output)
 
-    def help(self, command:str=None):
+    def help(self, command:str=None, exec_mode=ExecMode.EXECUTE):
         """
         get list of commands  or information about a command
         :args:
@@ -305,7 +279,7 @@ class AnyLogRest(ListCommands):
         :return:
             this is the only method that doesn't return a
         """
-        asyncio.run(self.async_help(command=command))
+        asyncio.run(self.async_help(command=command, exec_mode=exec_mode))
 
 
     def update_exec_mode(self, exec_mode:str):
@@ -315,7 +289,7 @@ class AnyLogRest(ListCommands):
             exec_mode:
             - execute (default)
             - command: returns command
-            - help: prints help for a
+            - help: prints help information for the command
             - info: function information
         """
         self.exec_mode = ExecMode.EXECUTE
@@ -323,5 +297,5 @@ class AnyLogRest(ListCommands):
             self.exec_mode = ExecMode.COMMAND
         elif exec_mode.lower() == "help":
             self.exec_mode = ExecMode.HELP
-        elif exec_mode.lower() == "info":
-            self.exec_mode =ExecMode.INFO
+        # elif exec_mode.lower() == "info":
+        #     self.exec_mode =ExecMode.INFO

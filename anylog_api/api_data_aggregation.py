@@ -29,7 +29,7 @@ class DataAggregation(ListCommands):
             1. if keep_aggregation
                 - check / name target_dbms and target_table
                 - list existing databases
-                - connect to dbms if DNE
+                - connect to data if DNE
                 - set partitioning for aggregation - if wanted (DNE)
                 - set schedule to drop aggregation - if wanted (DNE)
             2. if value_column is "*" (all) then iterate through columns in tables
@@ -97,7 +97,7 @@ class DataAggregation(ListCommands):
             1. if keep_aggregation
                 - check / name target_dbms and target_table
                 - list existing databases
-                - connect to dbms if DNE
+                - connect to data if DNE
                 - set partitioning for aggregation - if wanted (DNE)
                 - set schedule to drop aggregation - if wanted (DNE)
             2. if value_column is "*" (all) then iterate through columns in tables
@@ -149,7 +149,7 @@ class DataAggregation(ListCommands):
             headers:dict
         """
         command =  f"""set aggregation where 
-            dbms={db_name} and 
+            data={db_name} and 
             table={table_name} and 
             time_column={time_column} and
             value_column={value_column} and
@@ -212,7 +212,7 @@ class DataAggregation(ListCommands):
         if db_name or json_format is True:
             command += " WHERE"
         if db_name:
-            command += f" dbms={db_name} and"
+            command += f" data={db_name} and"
             if table_name:
                 command += f" table={table_name} and"
             if value_column:

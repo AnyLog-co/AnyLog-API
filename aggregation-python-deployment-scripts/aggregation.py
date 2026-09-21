@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("conn", type=str, default=None,
                         help="REST connection information to connect to AnyLog/EdgeLake to publish aggregation commands againsts")
-    parser.add_argument("dbms", type=str, default=None, help="logical database to do aggregation against")
+    parser.add_argument("data", type=str, default=None, help="logical database to do aggregation against")
     parser.add_argument("--columns", type=str, default=None,
                         help="[table].[column] to define aggregation against, if not set define then do for all")
     parser.add_argument("--aggregation-timestamp", type=str, default="insert_timestamp",
@@ -41,7 +41,7 @@ def main():
     if args.columns:
         for param in args.columns.split(','):
             table, column = param.strip().split('.')
-            if table not in columns: # and check_table(conn=conn, db_name=args.dbms, table_name=table):
+            if table not in columns: # and check_table(conn=conn, db_name=args.data, table_name=table):
                 columns[table] = {
                     "timestamp": None,
                     "columns": []

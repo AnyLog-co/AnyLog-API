@@ -213,7 +213,7 @@ class Data(ListCommands):
             headers:dict - REST headers
         """
         headers = {
-            "dbms": db_name,
+            "data": db_name,
             "table": table_name,
             "mode": mode if mode in ["streaming", "file"] else "streaming",
             "User-Agent": "AnyLog/1.23",

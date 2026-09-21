@@ -22,14 +22,14 @@ def create_policy(db_name:str, table_name:str, timestamp_column:str, value_colum
     """
     new_policy = {
         "aggregation": {
-            "dbms": db_name,
+            "data": db_name,
             "table": table_name,
             **({"value_column": value_columns[0]} if per_column else {}),
             "script": [],
         }
     }
 
-    base_cmd = f'set aggregation where dbms={db_name} and table={table_name} and intervals={interval} and time="{interval_time}" and time_column={timestamp_column} and value_column=%s'
+    base_cmd = f'set aggregation where data={db_name} and table={table_name} and intervals={interval} and time="{interval_time}" and time_column={timestamp_column} and value_column=%s'
 
     if isinstance(value_columns, str):
         command = copy.deepcopy(base_cmd) % value_columns
@@ -73,7 +73,7 @@ def define_ingestion(new_policy:dict, db_name:str, table_name:str, keep_source:b
     :return:
         new_policy
     """
-    command = f"set aggregation ingest where dbms={db_name} and table={table_name} and source={'true' if keep_source else 'false'} and derived={'true' if keep_aggregation else 'false'}"
+    command = f"set aggregation ingest where data={db_name} and table={table_name} and source={'true' if keep_source else 'false'} and derived={'true' if keep_aggregation else 'false'}"
     new_policy["aggregation"]["script"].append(command)
 
     return new_policy
@@ -100,7 +100,7 @@ def define_encoding(new_policy:dict, db_name:str, table_name:str, value_columns:
     :return:
         new_policy
     """
-    command = f"set aggregation encoding where dbms={db_name} and table={table_name} and value_column=%s"
+    command = f"set aggregation encoding where data={db_name} and table={table_name} and value_column=%s"
     if encoding_type:
         command += f" and encoding={encoding_type}"
     if tolerance_level:
@@ -134,7 +134,7 @@ def define_thresholds(new_policy:dict, db_name:str, table_name:str, value_column
     :return;
         updated new_policy
     """
-    command = f"set aggregation thresholds where dbms={db_name} and table={table_name} and column=%s and min={min_value} and max={max_value}"
+    command = f"set aggregation thresholds where data={db_name} and table={table_name} and column=%s and min={min_value} and max={max_value}"
 
     if avg_value:
         command += f" and avg={avg_value}"
