@@ -1,7 +1,7 @@
 import asyncio
 
 from src.core.anylog_rest_api import AnyLogRest
-from src.core.support import ExecMode
+from src.core.support import ExecMode, exec_info
 
 async def async_get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
     """
@@ -16,6 +16,9 @@ async def async_get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, rem
     :return:
         table or JSON of error log
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_get_error_log)
+
     headers = {
         "command": f"get error log where format=json" if json_format is True else "get error log",
         "AnyLog-Agent": "AnyLog/1.23",
@@ -35,6 +38,10 @@ def get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destinat
     :return:
         table or JSON of error log
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=get_error_log)
+
+
     return asyncio.run(async_get_error_log(anylog_conn=anylog_conn, json_format=json_format,
                                            remote_destination=remote_destination, exec_mode=exec_mode))
 
@@ -52,6 +59,9 @@ async def async_get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, rem
     :return:
         table or JSON of event log
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_get_event_log)
+
     headers = {
         "command": f"get event log where format=json" if json_format is True else "get event log",
         "AnyLog-Agent": "AnyLog/1.23",
@@ -71,6 +81,8 @@ def get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destinat
     :return:
         table or JSON of event log
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=get_event_log)
     return asyncio.run(async_get_event_log(anylog_conn=anylog_conn, json_format=json_format,
                                            remote_destination=remote_destination, exec_mode=exec_mode))
 
@@ -78,6 +90,8 @@ async def async_get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|No
     """
     Asynchronized `get echo queue`
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_get_echo_queue)
     headers = {
         "command": "get echo queue",
         "AnyLog-Agent": "AnyLog/1.23",
@@ -88,6 +102,9 @@ async def async_get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|No
 
 
 def get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=get_echo_queue)
+
     return asyncio.run(async_get_echo_queue(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
 
 

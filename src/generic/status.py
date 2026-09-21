@@ -4,7 +4,6 @@ other nodes in the network.
 """
 
 import asyncio
-import inspect
 
 from src.core.anylog_rest_api import AnyLogRest
 from src.core.support import ExecMode, exec_info
