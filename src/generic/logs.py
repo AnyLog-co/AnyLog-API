@@ -102,6 +102,7 @@ async def async_get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|No
 
 
 def get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
+
     if exec_mode == ExecMode.INFO:
         return exec_info(func=get_echo_queue)
 
@@ -118,13 +119,16 @@ async def async_reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|N
     :params:
         headers:dict - REST request headers
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_reset_event_log)
+
     headers = {
         "command": "reset event log",
         "AnyLog-Agent": "AnyLog/1.23",
         **({"destination": remote_destination} if remote_destination else {})
     }
-    await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
-
+    return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
+    
 
 def reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
     """
@@ -136,8 +140,11 @@ def reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, ex
     :params:
         headers:dict - REST request headers
     """
-    asyncio.run(async_reset_event_log(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=reset_event_log)
 
+    return asyncio.run(async_reset_event_log(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
+    
 
 async def async_reset_error_log(anylog_conn:AnyLogRest, remote_destination: str|None=None, exec_mode=ExecMode.EXECUTE):
     """
@@ -149,12 +156,15 @@ async def async_reset_error_log(anylog_conn:AnyLogRest, remote_destination: str|
     :params:
         headers:dict - REST request headers
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_reset_error_log)
+
     headers = {
         "command": "reset error log",
         "AnyLog-Agent": "AnyLog/1.23",
         **({"destination": remote_destination} if remote_destination else {})
     }
-    await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
+    return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
 
 
 def reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
@@ -167,7 +177,10 @@ def reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, ex
     :params:
         headers:dict - REST request headers
     """
-    asyncio.run(async_reset_error_log(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=reset_error_log)
+
+    return asyncio.run(async_reset_error_log(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
 
 
 
@@ -181,12 +194,16 @@ async def async_reset_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|
     :params:
         headers:dict - REST request headers
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_reset_echo_queue)
+
     headers = {
         "command": "reset echo queue",
         "AnyLog-Agent": "AnyLog/1.23",
         **({"destination": remote_destination} if remote_destination else {})
     }
-    await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
+    return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
+    
 
 def reset_echo_queue(anylog_conn: AnyLogRest, remote_destination: str | None = None, exec_mode=ExecMode.EXECUTE):
     """
@@ -198,7 +215,10 @@ def reset_echo_queue(anylog_conn: AnyLogRest, remote_destination: str | None = N
     :params:
         headers:dict - REST request headers
     """
-    asyncio.run(async_reset_echo_queue(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_reset_error_log)
+
+    return asyncio.run(async_reset_echo_queue(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
 
 
 async def async_echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, remote_destination:str|None=None,
@@ -218,6 +238,9 @@ async def async_echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, rem
             - disable == False -> on
         headers:dict - REST request headers
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_echo_queue_state)
+
     queue_state = "on"
     if disable:
         queue_state = "off"
@@ -228,7 +251,7 @@ async def async_echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, rem
         **({"destination": remote_destination} if remote_destination else {})
     }
 
-    await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
+    return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
 
 
 def echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, remote_destination:str|None=None,
@@ -248,5 +271,8 @@ def echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, remote_destinat
             - disable == False -> on
         headers:dict - REST request headers
     """
-    asyncio.run(async_echo_queue_state(anylog_conn=anylog_conn, disable=disable, remote_destination=remote_destination,
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=echo_queue_state)
+
+    return asyncio.run(async_echo_queue_state(anylog_conn=anylog_conn, disable=disable, remote_destination=remote_destination,
                                        exec_mode=exec_mode))

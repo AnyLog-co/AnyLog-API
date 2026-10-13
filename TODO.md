@@ -15,8 +15,8 @@ Rough priority order for what's left before this is something to hand to custome
 
 ### 1. Finish `ExecMode.INFO` support
 
-Every function in `generic/config.py` and `generic/logs.py` still needs its `if exec_mode == ExecMode.INFO:` check 
-added (see **Sample method** below). `generic/status.py` already has this — use it as the reference.
+~~Every function in `generic/config.py` and `generic/logs.py` still needs its `if exec_mode == ExecMode.INFO:` check 
+added (see **Sample method** below). `generic/status.py` already has this — use it as the reference.~~
 
 ### 2. Node deployment as REST calls
 

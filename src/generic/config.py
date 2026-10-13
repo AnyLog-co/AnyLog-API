@@ -4,7 +4,7 @@ The following provides configuration params
 import asyncio
 
 from src.core.anylog_rest_api import AnyLogRest
-from src.core.support import ExecMode
+from src.core.support import ExecMode, exec_info
 
 
 async def async_get_dictionary(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
@@ -21,6 +21,9 @@ async def async_get_dictionary(anylog_conn:AnyLogRest, json_format:bool=True, re
     :return:
         dictionary
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_get_dictionary)
+
     headers = {
         "command": "get dictionary where format=json" if json_format else "get dictionary",
         "AnyLog-Agent": "AnyLog/1.23",
@@ -43,6 +46,9 @@ def get_dictionary(anylog_conn:AnyLogRest, json_format:bool=True, remote_destina
     :return:
         dictionary
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=get_dictionary)
+
     return asyncio.run(async_get_dictionary(anylog_conn=anylog_conn, json_format=json_format,
                                             remote_destination=remote_destination, exec_mode=exec_mode))
 
@@ -61,6 +67,9 @@ async def async_get_value(anylog_conn:AnyLogRest, param_name:str|None=None, remo
     :return:
         value associated with param
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_get_value)
+
     dictionary = await async_get_dictionary(anylog_conn=anylog_conn, remote_destination=remote_destination,
                                             exec_mode=exec_mode)
 
@@ -84,8 +93,34 @@ def get_value(anylog_conn:AnyLogRest, param_name:str|None=None, remote_destinati
     :return:
         value associated with param
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=get_value)
+
     return asyncio.run(async_get_value(anylog_conn=anylog_conn, param_name=param_name,
                                        remote_destination=remote_destination, exec_mode=exec_mode))
+
+async def async_exit_service(anylog_conn:AnyLogRest, service:str, exec_mode=ExecMode.EXECUTE):
+    """
+    Execute an `exit` command on a specific service - not supported 2x remote or taking down the actual node
+    :args:
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        service:str - Service to stop
+        exec_mode - type of execution request
+    :params:
+        headers:dict - REST request headers
+    :raise:
+        ValueError: if user attempts to exit node via REST
+    """
+    if service == "node":
+        raise ValueError(f"'{service}' not supported for `exit` command")
+    elif exec_mode == ExecMode.INFO:
+        return exec_info(func=async_exit_service)
+
+    headers = {
+        "command": f"exit {service}",
+        "AnyLog-Agent": "AnyLog/1.23"
+    }
+    return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
 
 
 async def async_set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kwargs):
@@ -99,14 +134,18 @@ async def async_set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kw
     :params:
         headers:dict - REST headers
     """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_set_var)
+
     for key, value in kwargs.items():
         headers = {
             "command": f"set {key.lower()}={value}",
             "AnyLog-Agent": "AnyLog/1.23"
         }
 
-        await anylog_conn.async_post(headers=headers, payload=None, exec_mode=exec_mode)
+        return await anylog_conn.async_post(headers=headers, payload=None, exec_mode=exec_mode)
 
+    
 
 def set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kwargs):
     """
@@ -119,5 +158,8 @@ def set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kwargs):
     :params:
         headers:dict - REST headers
     """
-    asyncio.run(async_set_var(anylog_conn=anylog_conn, exec_mode=exec_mode, **kwargs))
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=set_var)
 
+    return asyncio.run(async_set_var(anylog_conn=anylog_conn, exec_mode=exec_mode, **kwargs))
+    
