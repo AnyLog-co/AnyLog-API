@@ -122,6 +122,24 @@ async def async_exit_service(anylog_conn:AnyLogRest, service:str, exec_mode=Exec
     }
     return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
 
+def exit_service(anylog_conn:AnyLogRest, service:str, exec_mode=ExecMode.EXECUTE):
+    """
+    Execute an `exit` command on a specific service - not supported 2x remote or taking down the actual node
+    :args:
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        service:str - Service to stop
+        exec_mode - type of execution request
+    :params:
+        headers:dict - REST request headers
+    :raise:
+        ValueError: if user attempts to exit node via REST
+    """
+    if service == "node":
+        raise ValueError(f"'{service}' not supported for `exit` command")
+    elif exec_mode == ExecMode.INFO:
+        return exec_info(func=exit_service)
+
+    return asyncio.run(async_exit_service(anylog_conn=anylog_conn, service=service, exec_mode=exec_mode))
 
 async def async_set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kwargs):
     """
