@@ -1,5 +1,9 @@
+import asyncio
+import json
 from enum import Enum
 import inspect
+
+from src.core.support_logging import LevelMode, async_exec_logging
 
 class ListCommands:
     """
@@ -56,3 +60,17 @@ def exec_info(func):
     info = f"method: {func.__name__}\ndescription: {summary}"
     print(info)
     return None
+
+def serialize_data(payload)->str|None:
+    """
+    Serialize payload to a JSON string for publishing
+    :return:
+        JSON string, or None if the payload can't be serialized (raises TypeError when FORCE_EXCEPTION is on)
+    """
+    if isinstance(payload, str):
+        return payload
+    try:
+        return json.dumps(payload)
+    except (TypeError, ValueError) as error:
+        return asyncio.run(async_exec_logging(message=f"Failed to serialize content to be published (Error: {error})",
+                                              level=LevelMode.ERROR, exception_type=TypeError, cause=error))

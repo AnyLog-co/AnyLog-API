@@ -53,10 +53,8 @@ specifically [`config_policy.al`](https://github.com/AnyLog-co/deployment-script
 
 ### 3. Data support
 
-The package should let a user send data into AnyLog via PUT or POST, and query data — plus query the blockchain — via 
-GET and/or POST.
+~~The package should let a user send data into AnyLog via PUT or POST, and query data — plus query the blockchain — via  GET and/or POST.~~
 
-> **Do this before Advanced (below).**
 
 ### 4. Advanced
 

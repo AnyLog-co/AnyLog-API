@@ -6,6 +6,9 @@ import asyncio
 from src.core.anylog_rest_api import AnyLogRest
 from src.core.support import ExecMode, exec_info
 
+from src.core.support_exceptions import AnyLogError
+from src.core.support_logging import LevelMode, async_exec_logging
+
 
 async def async_get_dictionary(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
                                exec_mode=ExecMode.EXECUTE):
@@ -111,8 +114,9 @@ async def async_exit_service(anylog_conn:AnyLogRest, service:str, exec_mode=Exec
     :raise:
         ValueError: if user attempts to exit node via REST
     """
-    if service == "node":
-        raise ValueError(f"'{service}' not supported for `exit` command")
+    if service.strip().lower() == "node":
+        return await async_exec_logging(message=f"'{service}' not supported for `exit` command - request not sent",
+                                        level=LevelMode.WARNING, exception_type=ValueError)
     elif exec_mode == ExecMode.INFO:
         return exec_info(func=async_exit_service)
 
@@ -134,12 +138,15 @@ def exit_service(anylog_conn:AnyLogRest, service:str, exec_mode=ExecMode.EXECUTE
     :raise:
         ValueError: if user attempts to exit node via REST
     """
-    if service == "node":
-        raise ValueError(f"'{service}' not supported for `exit` command")
+    if service.strip().lower() == "node":
+        return asyncio.run(async_exec_logging(message=f"'{service}' not supported for `exit` command - request not sent",
+                                        level=LevelMode.WARNING, exception_type=ValueError))
+
     elif exec_mode == ExecMode.INFO:
         return exec_info(func=exit_service)
 
     return asyncio.run(async_exit_service(anylog_conn=anylog_conn, service=service, exec_mode=exec_mode))
+
 
 async def async_set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kwargs):
     """
@@ -155,15 +162,36 @@ async def async_set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kw
     if exec_mode == ExecMode.INFO:
         return exec_info(func=async_set_var)
 
+    if not kwargs:
+        return await async_exec_logging(message="Missing key/value pairs for defining params as AnyLog variables",
+                                        level=LevelMode.WARNING, exception_type=ValueError)
+
+    responses = []
+    completed = []
     for key, value in kwargs.items():
         headers = {
             "command": f"set {key.lower()}={value}",
             "AnyLog-Agent": "AnyLog/1.23"
         }
 
-        return await anylog_conn.async_post(headers=headers, payload=None, exec_mode=exec_mode)
+        if exec_mode == ExecMode.HELP:
+            # help text is the same for every `set`, so only show it once
+            return await anylog_conn.async_post(headers=headers, payload=None, exec_mode=exec_mode)
 
-    
+        try:
+            responses.append(await anylog_conn.async_post(headers=headers, payload=None, exec_mode=exec_mode))
+        except AnyLogError as error:
+            remaining = [k for k in kwargs if k != key and k not in completed]
+            await async_exec_logging(
+                message=f"Failed to set '{key}' against {anylog_conn.conn} - "
+                        f"already set: {completed or 'none'}, not attempted: {remaining or 'none'}",
+                level=LevelMode.ERROR, raise_exception=False, cause=error)
+            raise  # re-raise the original AnyLogRest error unchanged
+
+        completed.append(key)
+
+    return responses
+
 
 def set_var(anylog_conn:AnyLogRest, exec_mode=ExecMode.EXECUTE, **kwargs):
     """

@@ -47,6 +47,9 @@ from src.core.support import ExecMode
 from src.core.support import load_json
 from src.core.support import url_builder
 
+import src.core.support_exceptions as api_exceptions
+from src.core.support_logging import LevelMode, async_exec_logging
+
 ROOT_DIR = os.path.dirname(__file__)
 
 # Human-readable text for HTTP status codes, used only to make error
@@ -108,11 +111,13 @@ class AnyLogRest(ListCommands):
                 write=write_timeout,
                 pool=pool
             )
-        except Exception as error:
+        except (TypeError, ValueError) as error:
             # httpx.Timeout() raises plain ValueError/TypeError on bad args
             # (not an httpx-specific exception type), so we catch broadly
             # here rather than a narrow httpx exception class.
-            raise Exception(f"Failed to define connection timeout information (Error: {error})")
+
+            asyncio.run(async_exec_logging(message=f"Invalid timeout configuration for {self.conn} (Error: {error})",
+                                           level=LevelMode.ERROR, exception_type=ValueError, cause=error))
 
     def update_exec_mode(self, exec_mode:str):
         """
@@ -163,32 +168,29 @@ class AnyLogRest(ListCommands):
             await self.async_help(command)
             return None
 
-        # exec_mode == EXECUTE from here down: actually send the request.
+        method = cmd_type.upper()
+        await async_exec_logging(message=f"{method} {self.conn} command={command!r}", level=LevelMode.DEBUG, raise_exception=False)
+
         try:
             async with httpx.AsyncClient(auth=self.auth, timeout=self.timeout) as client:
-                response = await client.request(method=cmd_type.upper(), url=self.conn, headers=headers,
+                response = await client.request(method=method, url=self.conn, headers=headers,
                                                 json=payload if isinstance(payload, dict) else None,
                                                 content=payload if isinstance(payload, str) else None)
-
-                status_code = int(response.status_code)
-                if response is not None and not 200 <= status_code < 300:
-                    # NETWORK_ERRORS / NETWORK_ERRORS_GENERIC are both keyed
-                    # by int (see load_json in support.py) — look up with
-                    # int keys here too, or the lookup silently misses and
-                    # status_code_str ends up unset/None.
-                    if status_code in NETWORK_ERRORS:
-                        status_code_str = NETWORK_ERRORS[status_code]
-                    elif int(str(status_code)[0]) in NETWORK_ERRORS_GENERIC:
-                        # Fall back to the coarse "4xx / 5xx" category when
-                        # the exact status code isn't in NETWORK_ERRORS.
-                        status_code_str = NETWORK_ERRORS_GENERIC[int(str(status_code)[0])]
-                    else:
-                        status_code_str = "Unknown Error"
-                    raise httpx.NetworkError(f"Failed to execute {cmd_type.upper()} against {self.conn} (Network Error {status_code}: {status_code_str})")
         except httpx.TimeoutException as error:
-            raise httpx.TimeoutException(f"Request timed out against {self.conn} (Error: {error})")
-        except Exception as error:
-            raise Exception(f"Failed to execute {cmd_type.upper()} against {self.conn} (Error: {error})")
+            exec_logging(message=f"Request timed out against {self.conn} ({type(error).__name__})",
+                         level=LevelMode.ERROR, exception_type=AnyLogTimeoutError,
+                         raise_exception=True, cause=error)
+        except (httpx.HTTPError, httpx.InvalidURL) as error:
+            exec_logging(message=f"Failed to execute {method} against {self.conn} (Error: {error})",
+                         level=LevelMode.ERROR, exception_type=AnyLogConnectionError,
+                         raise_exception=True, cause=error)
+
+        if not response.is_success:
+            code = response.status_code
+            status_text = NETWORK_ERRORS.get(code) or NETWORK_ERRORS_GENERIC.get(code // 100, "Unknown Error")
+            message = f"Failed to execute {method} against {self.conn} (Network Error {code}: {status_text})"
+            asyncio.run(async_exec_logging(message=message, level=LevelMode.ERROR, raise_exception=False))
+            raise api_exceptions.AnyLogHTTPError(message, status_code=code)
 
         return response
 
