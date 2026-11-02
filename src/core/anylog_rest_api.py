@@ -46,7 +46,7 @@ from src.core.support import ListCommands
 from src.core.support import ExecMode
 from src.core.support import load_json
 from src.core.support import url_builder
-
+from src.core.support_exceptions import AnyLogTimeoutError
 import src.core.support_exceptions as api_exceptions
 from src.core.support_logging import LevelMode, async_exec_logging
 
@@ -161,35 +161,54 @@ class AnyLogRest(ListCommands):
             - exec_mode == EXECUTE: the raw httpx.Response
             - exec_mode == INFO: print python function name + description
         """
-        command = headers["command"]
-        if exec_mode == ExecMode.COMMAND:
-            return command
-        elif exec_mode == ExecMode.HELP:
-            await self.async_help(command)
-            return None
+        command = headers.get("command")
+        if exec_mode in [ExecMode.COMMAND, ExecMode.HELP]:
+            if not command and payload:
+                try:
+                    body = json.loads(payload) if isinstance(payload, str) else payload
+                    command = body.get("command") if isinstance(body, dict) else None
+                except json.JSONDecodeError as error:
+                    await async_exec_logging(message=f"Could not read command from request payload (Error: {error})",
+                                             level=LevelMode.DEBUG, raise_exception=False, cause=error)
 
-        method = cmd_type.upper()
-        await async_exec_logging(message=f"{method} {self.conn} command={command!r}", level=LevelMode.DEBUG, raise_exception=False)
+            if not command:
+                return await async_exec_logging(message=f"No AnyLog command found for {cmd_type.upper()} request "
+                                                        f"against {self.conn} - nothing to show for "
+                                                        f"{exec_mode.value} mode",
+                                                level=LevelMode.WARNING, exception_type=ValueError)
+
+            if exec_mode == ExecMode.HELP:
+                await self.async_help(command)
+                return None
+            return command
+
+        # method = cmd_type.upper()
+        # await async_exec_logging(message=f"{method} {self.conn} command={command if command else ''}", level=LevelMode.DEBUG, raise_exception=False)
+
+        if "AnyLog-Agent" in headers and payload:
+            headers.pop("AnyLog-Agent")
 
         try:
             async with httpx.AsyncClient(auth=self.auth, timeout=self.timeout) as client:
-                response = await client.request(method=method, url=self.conn, headers=headers,
+                response = await client.request(method=cmd_type, url=self.conn, headers=headers,
                                                 json=payload if isinstance(payload, dict) else None,
                                                 content=payload if isinstance(payload, str) else None)
         except httpx.TimeoutException as error:
-            exec_logging(message=f"Request timed out against {self.conn} ({type(error).__name__})",
+            await async_exec_logging(message=f"Request timed out against {self.conn} ({type(error).__name__})",
                          level=LevelMode.ERROR, exception_type=AnyLogTimeoutError,
                          raise_exception=True, cause=error)
         except (httpx.HTTPError, httpx.InvalidURL) as error:
-            exec_logging(message=f"Failed to execute {method} against {self.conn} (Error: {error})",
+            await async_exec_logging(message=f"Failed to execute {cmd_type} against {self.conn} (Error: {error})",
                          level=LevelMode.ERROR, exception_type=AnyLogConnectionError,
                          raise_exception=True, cause=error)
 
         if not response.is_success:
             code = response.status_code
             status_text = NETWORK_ERRORS.get(code) or NETWORK_ERRORS_GENERIC.get(code // 100, "Unknown Error")
-            message = f"Failed to execute {method} against {self.conn} (Network Error {code}: {status_text})"
-            asyncio.run(async_exec_logging(message=message, level=LevelMode.ERROR, raise_exception=False))
+            print(payload)
+            print(headers)
+            message = f"Failed to execute {cmd_type} against {self.conn} (Network Error {code}: {status_text})"
+            await async_exec_logging(message=message, level=LevelMode.ERROR, raise_exception=False)
             raise api_exceptions.AnyLogHTTPError(message, status_code=code)
 
         return response

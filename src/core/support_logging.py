@@ -57,7 +57,7 @@ def update_force_exception(force_exception:bool=FORCE_EXCEPTION):
     global FORCE_EXCEPTION
     FORCE_EXCEPTION = force_exception
 
-def update_minimal_level_mode(level_mode=DEFAULT_LevelMode):
+def update_minimal_level_mode(level_mode=MINIMAL_LevelMode):
     global MINIMAL_LevelMode
     if isinstance(level_mode, str):
         level_mode = LevelMode.__members__.get(level_mode.upper(), LevelMode.ERROR)

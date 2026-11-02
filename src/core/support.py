@@ -1,7 +1,9 @@
 import asyncio
 import json
-from enum import Enum
 import inspect
+import os
+
+from enum import Enum
 
 from src.core.support_logging import LevelMode, async_exec_logging
 
@@ -20,7 +22,6 @@ class ListCommands:
         }
 
 class ExecMode(Enum):
-    INFO = None
     EXECUTE = "execute" # execute command
     COMMAND = "command" # return
     HELP = "help" # print command help
