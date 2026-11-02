@@ -6,6 +6,7 @@ import dotenv
 from src.core.anylog_rest_api import AnyLogRest
 from src.generic.status import get_status
 from src.generic.config import get_dictionary
+from src.data_management.dbms import connect_dbms, create_table
 from src.metadata.blockchain import connect_blockchain, create_table_ledger
 from src.generic.status import ExecMode
 
@@ -76,11 +77,20 @@ def main():
     if not db_type:
         raise ValueError(f"Failed to define physical database type")
 
-    if node_type in ["master", "master-operator", "standalone", "standalone-operator", "publisher", "standalone-publisher"]:
+    if node_type in ["master", "master-operator", "standalone", "standalone-operator", "master-publisher", "standalone-publisher"]:
         connect_blockchain(anylog_conn=anylog_conn, db_type=db_type, db_user=db_user, db_password=db_passwd,
                            db_ip=db_ip, db_port=db_port, exec_mode=EXEC_MODE)
 
         create_table_ledger(anylog_conn=anylog_conn, exec_mode=EXEC_MODE)
+
+    if "operator" in node_type or "publisher" in node_type or "standalone" in node_type:
+        connect_dbms(anylog_conn=anylog_conn, db_name="almgm", db_type=db_type, db_user=db_user, db_password=db_passwd,
+                     db_ip=db_ip, db_port=db_port, exec_mode=EXEC_MODE)
+        create_table(anylog_conn=anylog_conn, db_name="almgm", table_name="tsd_info", exec_mode=EXEC_MODE)
+
+    if "operator" in node_type:
+        connect_dbms(anylog_conn=anylog_conn, db_name=default_db, db_type=db_type, db_user=db_user, db_password=db_passwd,
+                     db_ip=db_ip, db_port=db_port, exec_mode=EXEC_MODE)
 
 if __name__ == "__main__":
     main()

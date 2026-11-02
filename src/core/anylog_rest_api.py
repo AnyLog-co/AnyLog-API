@@ -46,7 +46,7 @@ from src.core.support import ListCommands
 from src.core.support import ExecMode
 from src.core.support import load_json
 from src.core.support import url_builder
-from src.core.support_exceptions import AnyLogTimeoutError
+from src.core.support_exceptions import AnyLogTimeoutError, AnyLogConnectionError
 import src.core.support_exceptions as api_exceptions
 from src.core.support_logging import LevelMode, async_exec_logging
 

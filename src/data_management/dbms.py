@@ -174,9 +174,9 @@ def connect_dbms(anylog_conn:AnyLogRest, db_name:str, db_type:str, db_ip:str|Non
        in_memory:bool - whether to run in memory mode for SQLite or unlogged for PSQL
        exec_mode:ExecMode - Execution mode
    """
-    return async_connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=db_type, db_ip=db_ip, db_port=db_port,
+    return asyncio.run(async_connect_dbms(anylog_conn=anylog_conn, db_name=db_name, db_type=db_type, db_ip=db_ip, db_port=db_port,
                               db_user=db_user, db_password=db_password, in_memory=in_memory, destination=destination,
-                              exec_mode=exec_mode)
+                              exec_mode=exec_mode))
 
 
 # Step 3: Check if table(s) exists
