@@ -225,7 +225,7 @@ async def async_query(anylog_conn: AnyLogRest, db_name: str, table_name: str,
                       response_format: str | None = "table", timezone: str | None = "utc",
                       include_tables: str | list | None = None, extend_params: str | list | None = None,
                       remote_destination: str | None = "network", exec_mode: ExecMode = ExecMode.EXECUTE):
-    """
+    r"""
     Run a SQL query against AnyLog
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -247,6 +247,10 @@ async def async_query(anylog_conn: AnyLogRest, db_name: str, table_name: str,
         exec_mode:ExecMode - Execution mode
     :cmd:
         sql {db_name} [format=... and timezone=... and include=(...) and extend=(...)] "SELECT ... FROM {table_name} ..."
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "sql mydb format=table and timezone=utc \"SELECT increments(hour, 1, insert_timestamp), min(insert_timestamp) as min_ts, max(insert_timestamp) as max_ts, min(value) as min_value, max(value) as max_value, avg(value) as avg_value FROM rand_data WHERE device = '\''pump-1'\''\"", "AnyLog-Agent": "AnyLog/1.23", "destination": "network"}'
     :return:
         query result, or None if the input was invalid
     :raise:

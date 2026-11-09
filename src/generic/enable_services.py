@@ -18,7 +18,7 @@ async def async_enable_operator(anylog_conn:AnyLogRest, operator_id:str, create_
                                 archive_json:bool=True, archive_sql:bool=True, master_node:str="!ledger_conn",
                                 operator_threads:int=6, remote_destination:str|None=None,
                                 exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Start the operator service - skipped if it's already running
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -37,6 +37,10 @@ async def async_enable_operator(anylog_conn:AnyLogRest, operator_id:str, create_
         run operator where create_table={create_table} and update_tsd_info={update_tsd_info} and
             compress_json={compress_json} and compress_sql={compress_sql} and archive_json={archive_json} and
             archive_sql={archive_sql} and master_node={master_node} and policy={operator_id} and threads={operator_threads}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: run operator where create_table=true and update_tsd_info=true and compress_json=true and compress_sql=true and archive_json=true and archive_sql=true and master_node=127.0.0.1:32048 and policy=d9399e9fe5ce9ec665cc1fd3a2951256 and threads=6" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the operator is already running
     """

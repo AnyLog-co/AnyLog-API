@@ -12,7 +12,7 @@ from src.core.support import ExecMode, build_headers, exec_info
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
                               exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get the node's error log
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -21,6 +21,10 @@ async def async_get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, rem
         exec_mode:ExecMode - Execution mode
     :cmd:
         get error log [where format=json]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get error log where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         table or JSON of the error log
     """
@@ -41,7 +45,7 @@ def get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destinat
 
 async def async_get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
                               exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get the node's event log
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -50,6 +54,10 @@ async def async_get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, rem
         exec_mode:ExecMode - Execution mode
     :cmd:
         get event log [where format=json]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get event log where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         table or JSON of the event log
     """
@@ -70,7 +78,7 @@ def get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destinat
 
 async def async_reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|None=None,
                                 exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Clear the node's error log
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -78,6 +86,10 @@ async def async_reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|N
         exec_mode:ExecMode - Execution mode
     :cmd:
         reset error log
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: reset error log" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node
     """
@@ -96,7 +108,7 @@ def reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, ex
 
 async def async_reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None,
                                 exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Clear the node's event log
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -104,6 +116,10 @@ async def async_reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|N
         exec_mode:ExecMode - Execution mode
     :cmd:
         reset event log
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: reset event log" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node
     """
@@ -125,7 +141,7 @@ def reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, ex
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get the node's echo queue
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -133,6 +149,10 @@ async def async_get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|No
         exec_mode:ExecMode - Execution mode
     :cmd:
         get echo queue
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get echo queue", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         echo queue content
     """
@@ -151,7 +171,7 @@ def get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exe
 
 async def async_reset_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None,
                                  exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Clear the node's echo queue
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -159,6 +179,10 @@ async def async_reset_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|
         exec_mode:ExecMode - Execution mode
     :cmd:
         reset echo queue
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: reset echo queue" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node
     """
@@ -177,7 +201,7 @@ def reset_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, e
 
 async def async_echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, remote_destination:str|None=None,
                                  exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Enable or disable the echo queue
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -188,6 +212,10 @@ async def async_echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, rem
         queue_state:str - "off" when disable is True, otherwise "on"
     :cmd:
         set echo queue [on|off]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: set echo queue on" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node
     """

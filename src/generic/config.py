@@ -14,7 +14,7 @@ from src.core.support_logging import LevelMode, async_exec_logging
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_get_dictionary(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get the node's dictionary (AnyLog variables)
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -23,6 +23,10 @@ async def async_get_dictionary(anylog_conn:AnyLogRest, json_format:bool=True, re
         exec_mode:ExecMode - Execution mode
     :cmd:
         get dictionary [where format=json]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get dictionary where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         dictionary
     """
@@ -43,7 +47,7 @@ def get_dictionary(anylog_conn:AnyLogRest, json_format:bool=True, remote_destina
 
 async def async_get_value(anylog_conn:AnyLogRest, param_name:str|None=None, remote_destination:str|None=None,
                           exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get a single variable from the node's dictionary
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -54,6 +58,10 @@ async def async_get_value(anylog_conn:AnyLogRest, param_name:str|None=None, remo
         dictionary:dict - `get dictionary` result
     :cmd:
         get dictionary where format=json
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get dictionary where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         value of param_name (None if not set), or the full dictionary
     """
@@ -76,7 +84,7 @@ def get_value(anylog_conn:AnyLogRest, param_name:str|None=None, remote_destinati
 
 async def async_set_var(anylog_conn:AnyLogRest, remote_destination:str|None=None,
                         exec_mode:ExecMode=ExecMode.EXECUTE, **kwargs):
-    """
+    r"""
     Set one or more AnyLog variables - one `set` command per key
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -87,6 +95,10 @@ async def async_set_var(anylog_conn:AnyLogRest, remote_destination:str|None=None
         completed:list - keys already set (reported if a later key fails)
     :cmd:
         set {key}={value}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: set node_name=anylog-operator" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         list of responses, one per key
     :raise:
@@ -135,7 +147,7 @@ def set_var(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode:
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_exit_service(anylog_conn:AnyLogRest, service:str, remote_destination:str|None=None,
                              exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Stop a specific service - stopping the node itself (`exit node`) isn't supported via REST
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -144,6 +156,10 @@ async def async_exit_service(anylog_conn:AnyLogRest, service:str, remote_destina
         exec_mode:ExecMode - Execution mode
     :cmd:
         exit {service}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: exit scheduler" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node
     :raise:

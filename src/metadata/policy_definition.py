@@ -104,7 +104,7 @@ async def _missing_params(policy_type:str, params:dict)->bool:
 
 async def _async_create_policy_defaults(anylog_conn:AnyLogRest, policy_type:str, where:dict,
                                         remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Have the node build a policy, filling in the defaults it knows (IPs, ports, ...)
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -114,6 +114,10 @@ async def _async_create_policy_defaults(anylog_conn:AnyLogRest, policy_type:str,
         exec_mode:ExecMode - Execution mode
     :cmd:
         create policy {policy_type} with defaults where {key}={value} and ...
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: create policy master with defaults where name=anylog-master and company=\"Smart City\"" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         {policy_type: {...}} - policy built by the node
         str / None - COMMAND / HELP mode
@@ -264,7 +268,7 @@ async def async_node_policy(anylog_conn:AnyLogRest, node_type:str, name:str, com
                             broker_port:int|None=None, broker_bind:bool|str=False,
                             remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE,
                             **kwargs)->dict|str|None:
-    """
+    r"""
     Build a node policy (master, operator, query, publisher) - node defaults, overridden by the params given
     :args:
         anylog_conn:AnyLogRest - connection to the node the policy is for
@@ -296,6 +300,10 @@ async def async_node_policy(anylog_conn:AnyLogRest, node_type:str, name:str, com
         rest_bind / broker_bind=True - adds "rest_ip" / "broker_ip" = the same IP
     :cmd:
         create policy {node_type} with defaults where name={name} and company={company} [and cluster={cluster}]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: create policy operator with defaults where name=water-plant-operator1 and company=\"Smart City\" and cluster=64999c0d4d8762f67f6fe4f120c7a54b" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         {node_type: {...}}
         str - COMMAND mode
@@ -369,7 +377,7 @@ def node_policy(anylog_conn:AnyLogRest, node_type:str, name:str, company:str, cl
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_cluster_policy(anylog_conn:AnyLogRest, name:str, company:str, remote_destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE, **kwargs)->dict|str|None:
-    """
+    r"""
     Build a cluster policy - operators reference it by ID ("cluster" in the operator policy)
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -380,6 +388,10 @@ async def async_cluster_policy(anylog_conn:AnyLogRest, name:str, company:str, re
         kwargs - additional cluster params, override the node's defaults (None / empty values are skipped)
     :cmd:
         create policy cluster with defaults where name={name} and company={company}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: create policy cluster with defaults where name=water-plant and company=\"Smart City\"" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         {"cluster": {...}}
         str - COMMAND mode

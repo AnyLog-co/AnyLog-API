@@ -31,7 +31,7 @@ def _is_running(details)->bool:
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_get_status(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
                            exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get the node's status
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -40,6 +40,10 @@ async def async_get_status(anylog_conn:AnyLogRest, json_format:bool=True, remote
         exec_mode:ExecMode - Execution mode
     :cmd:
         get status [where format=json]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get status where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         node status
     :sample-output:
@@ -62,7 +66,7 @@ def get_status(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination
 
 async def async_get_processes(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
                               exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get the node's services (processes) and their state
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -71,6 +75,10 @@ async def async_get_processes(anylog_conn:AnyLogRest, json_format:bool=True, rem
         exec_mode:ExecMode - Execution mode
     :cmd:
         get processes [where format=json]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get processes where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         table or JSON of node processes
     """
@@ -92,7 +100,7 @@ def get_processes(anylog_conn:AnyLogRest, json_format:bool=True, remote_destinat
 async def async_check_service_status(anylog_conn:AnyLogRest, service_name:str|None=None,
                                      remote_destination:str|None=None,
                                      exec_mode:ExecMode=ExecMode.EXECUTE)->bool|dict|str|None:
-    """
+    r"""
     Check whether a service is running, based on `get processes`
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -107,6 +115,10 @@ async def async_check_service_status(anylog_conn:AnyLogRest, service_name:str|No
         services:dict - `get processes` result
     :cmd:
         get processes where format=json
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get processes where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         bool - service_name set: True if the service is running
         dict - service_name not set: `get processes` result as-is
@@ -150,13 +162,17 @@ def check_service_status(anylog_conn:AnyLogRest, service_name:str|None=None, rem
 # Connectivity
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_test_node(anylog_conn:AnyLogRest, exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Test the connected node's TCP / REST services and its connection to the metadata
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
         exec_mode:ExecMode - Execution mode
     :cmd:
         test node
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "test node", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         node test results
     """
@@ -173,13 +189,17 @@ def test_node(anylog_conn:AnyLogRest, exec_mode:ExecMode=ExecMode.EXECUTE):
 
 
 async def async_test_network(anylog_conn:AnyLogRest, exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Test the connection from the connected node to every node in the network
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
         exec_mode:ExecMode - Execution mode
     :cmd:
         test network
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "test network", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         network communication status
     """

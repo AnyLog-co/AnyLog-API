@@ -11,7 +11,7 @@ PUT_MODES = {"streaming", "file"}
 
 
 async def async_post(anylog_conn:AnyLogRest, topic:str, payload:dict|list|str, exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Publish data via POST - routed by the node's message client, mapped by `topic`
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -20,6 +20,13 @@ async def async_post(anylog_conn:AnyLogRest, topic:str, payload:dict|list|str, e
         exec_mode:ExecMode - Execution mode
     :cmd:
         data (header) + topic={topic}; rows sent as the body
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: data" \
+          -H "topic: sample-data" \
+          -H "AnyLog-Agent: AnyLog/1.23" \
+          -H "Content-Type: application/json" \
+          -d '[{"timestamp": "2026-11-09 13:00:00", "value": 10.5}]'
     :return:
         response from node, or None if the input was invalid / there was nothing to send
     :raise:
@@ -54,7 +61,7 @@ def post(anylog_conn:AnyLogRest, topic:str, payload:dict|list|str, exec_mode:Exe
 
 async def async_put(anylog_conn:AnyLogRest, db_name:str, table_name:str, payload:dict|list|str,
                     mode:str="streaming", exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Publish data via PUT - written directly into db_name.table_name, no topic mapping needed
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -65,6 +72,14 @@ async def async_put(anylog_conn:AnyLogRest, db_name:str, table_name:str, payload
         exec_mode:ExecMode - Execution mode
     :cmd:
         PUT headers type=json, dbms={db_name}, table={table_name}, mode={mode}; rows sent as the body
+    :curl:
+        curl -X PUT http://[IP:Port] \
+          -H "type: json" \
+          -H "dbms: mydb" \
+          -H "table: rand_data" \
+          -H "mode: streaming" \
+          -H "Content-Type: application/json" \
+          -d '[{"timestamp": "2026-11-09 13:00:00", "value": 10.5}]'
     :return:
         response from node, or None if the input was invalid / there was nothing to send
     :raise:

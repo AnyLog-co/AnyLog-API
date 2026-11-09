@@ -15,7 +15,7 @@ SUPPORTED_DB_TYPES = ["psql", "mongo", "sqlite"]
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_list_databases(anylog_conn:AnyLogRest, json_format:bool=False, remote_destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     List the logical databases the node is connected to
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -24,6 +24,10 @@ async def async_list_databases(anylog_conn:AnyLogRest, json_format:bool=False, r
         exec_mode:ExecMode - Execution mode
     :cmd:
         get databases [where format=json]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get databases where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         databases and their type, as a table (str) or JSON; {} if the node has no databases
     """
@@ -48,7 +52,7 @@ def list_databases(anylog_conn:AnyLogRest, json_format:bool=False, remote_destin
 
 async def async_is_database(anylog_conn:AnyLogRest, db_name:str, remote_destination:str|None=None,
                             exec_mode:ExecMode=ExecMode.EXECUTE)->bool|str|None:
-    """
+    r"""
     Check whether the node is connected to a logical database
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -57,6 +61,10 @@ async def async_is_database(anylog_conn:AnyLogRest, db_name:str, remote_destinat
         exec_mode:ExecMode - Execution mode
     :cmd:
         get databases where format=json
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get databases where format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         True if the database exists, otherwise False
         str / None - COMMAND / HELP mode
@@ -82,7 +90,7 @@ async def async_connect_dbms(anylog_conn:AnyLogRest, db_name:str, db_type:str, d
                              db_port:int|None=None, db_user:str|None=None, db_password:str|None=None,
                              in_memory:bool=False, remote_destination:str|None=None,
                              exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Connect the node to a logical database - skipped if it's already connected
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -98,6 +106,10 @@ async def async_connect_dbms(anylog_conn:AnyLogRest, db_name:str, db_type:str, d
     :cmd:
         connect dbms {db_name} where type={db_type} [and ip={db_ip}] [and port={db_port}] [and user={db_user}]
             [and password={db_password}] [and memory=true | unlog=true]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: connect dbms mydb where type=psql and ip=127.0.0.1 and port=5432 and user=admin and password=passwd" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if already connected / invalid db_type
     :raise:
@@ -146,7 +158,7 @@ def connect_dbms(anylog_conn:AnyLogRest, db_name:str, db_type:str, db_ip:str|Non
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_list_tables(anylog_conn:AnyLogRest, db_name:str, json_format:bool=False,
                             remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     List the tables of a logical database
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -156,6 +168,10 @@ async def async_list_tables(anylog_conn:AnyLogRest, db_name:str, json_format:boo
         exec_mode:ExecMode - Execution mode
     :cmd:
         get tables where dbms={db_name} [and format=json]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get tables where dbms=mydb and format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         tables, as a table (str) or JSON
     """
@@ -176,7 +192,7 @@ def list_tables(anylog_conn:AnyLogRest, db_name:str, json_format:bool=False, rem
 
 async def async_is_table(anylog_conn:AnyLogRest, db_name:str, table_name:str, remote_destination:str|None=None,
                          exec_mode:ExecMode=ExecMode.EXECUTE)->bool|str|None:
-    """
+    r"""
     Check whether a table exists locally on the node
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -188,6 +204,10 @@ async def async_is_table(anylog_conn:AnyLogRest, db_name:str, table_name:str, re
         tables:dict - `get tables` result ({db_name: {table_name: {"local": bool, ...}}})
     :cmd:
         get tables where dbms={db_name} and format=json
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get tables where dbms=mydb and format=json", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         True if the table exists locally, otherwise False
         str / None - COMMAND / HELP mode
@@ -213,7 +233,7 @@ def is_table(anylog_conn:AnyLogRest, db_name:str, table_name:str, remote_destina
 
 async def async_create_table(anylog_conn:AnyLogRest, db_name:str, table_name:str, remote_destination:str|None=None,
                              exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Create a table in a logical database - skipped if it already exists
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -223,6 +243,10 @@ async def async_create_table(anylog_conn:AnyLogRest, db_name:str, table_name:str
         exec_mode:ExecMode - Execution mode
     :cmd:
         create table {table_name} where dbms={db_name}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: create table tsd_info where dbms=almgm" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the table already exists
     """

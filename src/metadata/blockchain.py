@@ -20,7 +20,7 @@ NODE_POLICY_KEYS = ["name", "company", "ip", "port"]     # keys that identify a 
 async def async_connect_blockchain(anylog_conn:AnyLogRest, db_type:str, db_ip:str|None=None, db_port:int|None=None,
                                    db_user:str|None=None, db_password:str|None=None,
                                    remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Connect the node to the `blockchain` logical database (master nodes) - skipped if it's already connected
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -33,6 +33,10 @@ async def async_connect_blockchain(anylog_conn:AnyLogRest, db_type:str, db_ip:st
         exec_mode:ExecMode - Execution mode
     :cmd:
         connect dbms blockchain where type={db_type} [and ip=...] [and port=...] [and user=...] [and password=...]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: connect dbms blockchain where type=sqlite" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if already connected
     """
@@ -60,7 +64,7 @@ def connect_blockchain(anylog_conn:AnyLogRest, db_type:str, db_ip:str|None=None,
 
 async def async_create_table_ledger(anylog_conn:AnyLogRest, remote_destination:str|None=None,
                                     exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Create the `ledger` table in the `blockchain` database - skipped if it already exists
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -68,6 +72,10 @@ async def async_create_table_ledger(anylog_conn:AnyLogRest, remote_destination:s
         exec_mode:ExecMode - Execution mode
     :cmd:
         create table ledger where dbms=blockchain
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: create table ledger where dbms=blockchain" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the table already exists
     """
@@ -174,7 +182,7 @@ async def async_blockchain_get(anylog_conn:AnyLogRest, policy_type:str|list|tupl
                                bring_mode:str|None=None, local_bring:bool=False, flatten:bool=True,
                                separator:str|None=None, remote_destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get policies from the blockchain, with an optional bring - done either by AnyLog or locally
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -191,6 +199,10 @@ async def async_blockchain_get(anylog_conn:AnyLogRest, policy_type:str|list|tupl
         exec_mode:ExecMode - Execution mode
     :cmd:
         blockchain get {policy_type} [where {where}] [bring[.{bring_mode}] {bring}] [separator={separator}]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "blockchain get operator where name=\"XYZ\" and company=\"ABC\"", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         policies (JSON), AnyLog's bring text, or the locally extracted bring
     :raise:
@@ -241,7 +253,7 @@ def blockchain_get(anylog_conn:AnyLogRest, policy_type:str|list|tuple="*", where
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_publish_policy(anylog_conn:AnyLogRest, policy:dict, remote_destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Publish a policy to the blockchain - skipped if a matching policy already exists
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -255,6 +267,11 @@ async def async_publish_policy(anylog_conn:AnyLogRest, policy:dict, remote_desti
     :cmd:
         blockchain get {policy_type} where ...
         blockchain insert where policy=!new_policy and local=true and master=!ledger_conn
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: blockchain insert where policy=!new_policy and local=true and master=!ledger_conn" \
+          -H "AnyLog-Agent: AnyLog/1.23" \
+          -d '<new_policy={"cluster": {"name": "water-plant", "company": "Smart City", "status": "active"}}>'
     :return:
         response from node, or None if the policy already exists
     """
@@ -291,7 +308,7 @@ def publish_policy(anylog_conn:AnyLogRest, policy:dict, remote_destination:str|N
 async def async_blockchain_sync_master(anylog_conn:AnyLogRest, sync_time:str="30 seconds", source:str="master",
                                        dest:str="file", ledger_conn:str="!ledger_conn",
                                        remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Start syncing the node's copy of the metadata with the master - skipped if the sync is already running
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -303,6 +320,10 @@ async def async_blockchain_sync_master(anylog_conn:AnyLogRest, sync_time:str="30
         exec_mode:ExecMode - Execution mode
     :cmd:
         run blockchain sync where source={source} and time={sync_time} and dest={dest} and connection={ledger_conn}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: run blockchain sync where source=master and time=30 seconds and dest=file and connection=127.0.0.1:32048" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the sync is already running
     """

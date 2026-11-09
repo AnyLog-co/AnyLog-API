@@ -55,7 +55,7 @@ async def _is_declared(anylog_conn:AnyLogRest, schedule_id:int, remote_destinati
 # ---------------------------------------------------------------------------------------------------------------------
 async def async_run_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_destination:str|None=None,
                               exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Start a scheduler - skipped if it's already declared
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -64,6 +64,10 @@ async def async_run_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_de
         exec_mode:ExecMode - Execution mode
     :cmd:
         run scheduler {schedule_id}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: run scheduler 1" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the ID is invalid or the scheduler is already declared
     """
@@ -89,7 +93,7 @@ def run_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_destination:st
 
 async def async_get_scheduler(anylog_conn:AnyLogRest, schedule_id:int|None=None, remote_destination:str|None=None,
                               exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Get one scheduler, or all of them
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -98,6 +102,10 @@ async def async_get_scheduler(anylog_conn:AnyLogRest, schedule_id:int|None=None,
         exec_mode:ExecMode - Execution mode
     :cmd:
         get scheduler [{schedule_id}]
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "Content-Type: application/json" \
+          -d '{"command": "get scheduler 1", "AnyLog-Agent": "AnyLog/1.23"}'
     :return:
         scheduler if declared, otherwise "Scheduler X not declared"; None if the ID is invalid
     """
@@ -120,7 +128,7 @@ def get_scheduler(anylog_conn:AnyLogRest, schedule_id:int|None=None, remote_dest
 
 async def async_reset_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_destination:str|None=None,
                                 exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Reset a scheduler - declares it first if it doesn't exist yet
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -129,6 +137,10 @@ async def async_reset_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_
         exec_mode:ExecMode - Execution mode
     :cmd:
         reset scheduler {schedule_id}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: reset scheduler 1" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the ID is invalid
     """
@@ -155,7 +167,7 @@ def reset_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_destination:
 
 async def async_exit_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Stop a scheduler - skipped if it isn't declared
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -164,6 +176,10 @@ async def async_exit_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_d
         exec_mode:ExecMode - Execution mode
     :cmd:
         exit scheduler {schedule_id}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: exit scheduler 1" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the ID is invalid or the scheduler isn't declared
     """
@@ -193,7 +209,7 @@ def exit_scheduler(anylog_conn:AnyLogRest, schedule_id:int, remote_destination:s
 async def async_run_task(anylog_conn:AnyLogRest, task:str, task_name:str, task_time:str="60 seconds",
                          schedule_id:int|None=None, remote_destination:str|None=None,
                          exec_mode:ExecMode=ExecMode.EXECUTE):
-    """
+    r"""
     Schedule a task - declares the scheduler first if one is given and it doesn't exist yet
     :args:
         anylog_conn:AnyLogRest - connection to AnyLog node
@@ -205,6 +221,10 @@ async def async_run_task(anylog_conn:AnyLogRest, task:str, task_name:str, task_t
         exec_mode:ExecMode - Execution mode
     :cmd:
         schedule time="{task_time}" and name="{task_name}" [and scheduler={schedule_id}] task {task}
+    :curl:
+        curl -X POST http://[IP:Port] \
+          -H "command: schedule time=\"60 seconds\" and name=\"check-status\" and scheduler=1 task get status" \
+          -H "AnyLog-Agent: AnyLog/1.23"
     :return:
         response from node, or None if the schedule ID is invalid
     """
