@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import os.path
 import dotenv
 
@@ -7,8 +8,12 @@ from src.core.anylog_rest_api import AnyLogRest
 from src.generic.status import get_status
 from src.generic.config import get_dictionary
 from src.data_management.dbms import connect_dbms, create_table
-from src.metadata.blockchain import connect_blockchain, create_table_ledger
+from src.metadata.blockchain import connect_blockchain, create_table_ledger, blockchain_sync_master, publish_policy, blockchain_get
 from src.generic.status import ExecMode
+from src.metadata.policy_definition import cluster_policy, node_policy
+from src.core.support_logging import LevelMode, async_exec_logging
+
+
 
 def _check_file(env_file):
     env_file = os.path.expanduser(os.path.expandvars(env_file))
@@ -83,14 +88,111 @@ def main():
 
         create_table_ledger(anylog_conn=anylog_conn, exec_mode=EXEC_MODE)
 
-    if "operator" in node_type or "publisher" in node_type or "standalone" in node_type:
+    # define connection to ledger (`run ledger`)
+    blockchain_sync_master(anylog_conn=anylog_conn, sync_time=env_configs.get("BLOCKCHAIN_SYNC", "30 seconds"),
+                           source=env_configs.get("BLOCKCHAIN_SOURCE", "master"),
+                           dest=env_configs.get("BLOCKCHAIN_DESTINATION", "file"),
+                           ledger_conn=env_configs.get("LEDGER_CONN", f"{dict_configs.get('ip')}:{dict_configs.get('anylog_server_port')}"),
+                           exec_mode=EXEC_MODE)
+
+    if "operator" in node_type or "publisher" in node_type:
         connect_dbms(anylog_conn=anylog_conn, db_name="almgm", db_type=db_type, db_user=db_user, db_password=db_passwd,
                      db_ip=db_ip, db_port=db_port, exec_mode=EXEC_MODE)
         create_table(anylog_conn=anylog_conn, db_name="almgm", table_name="tsd_info", exec_mode=EXEC_MODE)
 
+    cluster_id = None
+    query_count = 0
+    cluster_where_condiiton = [
+        f'name={env_configs.get("CLUSTER_NAME", "My Cluster") if env_configs.get("CLUSTER_NAME", "My Cluster") != '' else "My Cluster"}',
+        f'company={env_configs.get("COMPANY_NAME", "My Company")}'
+    ]
+
     if "operator" in node_type:
         connect_dbms(anylog_conn=anylog_conn, db_name=default_db, db_type=db_type, db_user=db_user, db_password=db_passwd,
                      db_ip=db_ip, db_port=db_port, exec_mode=EXEC_MODE)
+
+        # cluster policy
+        while not cluster_id:
+            cluster_id = blockchain_get(anylog_conn=anylog_conn, policy_type="cluster", where=cluster_where_condiiton,
+                                        bring="id", bring_mode="first", exec_mode=EXEC_MODE)
+            if not cluster_id and query_count == 0:
+                _cluster_policy = cluster_policy(anylog_conn=anylog_conn,
+                                                 policy_name=env_configs.get("CLUSTER_NAME", "My Cluster") if env_configs.get(
+                                                     "CLUSTER_NAME", "My Cluster") != '' else "My Cluster",
+                                                 company_name=env_configs.get("COMPANY_NAME", "My Company"),
+                                                 exec_mode=EXEC_MODE)
+                publish_policy(anylog_conn=anylog_conn, policy=_cluster_policy, exec_mode=EXEC_MODE)
+                query_count += 1
+            elif not cluster_id:
+                asyncio.run(async_exec_logging(
+                    message=f"Failed to declare and/or locate cluster policy (name={cluster_name}, "
+                            f"company={env_configs.get("COMPANY_NAME", "My Company")}) in blockchain",
+                    level=LevelMode.ERROR, raise_exception=False))
+                return None
+
+
+    policy_id = None
+    query_count = 0
+    node_name = env_configs.get("NODE_NAME") or dict_configs.get("node_name") or f"My {node_type}"
+
+    where_conditions = [
+        f'name={node_name}'
+        f'company={env_configs.get("COMPANY_NAME", "My Company")}',
+        f'ip={dict_configs.get("external_ip") if not dict_configs.get("tcp_bind") else dict_configs.get("ip")}'
+        f'port={dict_configs.get("anylog_server_port")}',
+    ]
+    if node_type == 'operator' and cluster_id:
+        where_conditions.append(f"cluster_id={cluster_id}")
+
+    _node_policy = None
+
+    while not policy_id:
+
+        policy_id = blockchain_get(anylog_conn=anylog_conn, policy_type=node_type.split('-')[-1],
+                                   where=where_conditions, bring="id", bring_mode="first", exec_mode=EXEC_MODE)
+
+        if not policy_id and query_count == 0:
+            if True if str(dict_configs.get("tcp_bind")).lower() == "true" else False:
+                _node_policy = node_policy(policy_type=node_type.split('-')[-1],
+                                           policy_name=node_name, company_name=env_configs.get("COMPANY_NAME", "My Company"),
+                                           ip=dict_configs.get("ip"), port=int(dict_configs.get("anylog_server_port")),
+                                           cluster_id=cluster_id, rest_port=int(dict_configs.get("anylog_rest_port")),
+                                           rest_bind=True if str(dict_configs.get("rest_bind")).lower() == "true" else False,
+                                           broker_port=int(dict_configs.get("anylog_broker_port")),
+                                           broker_bind=True if str(dict_configs.get("broker_bind")).lower() == "true" else False
+               )
+            else:
+                _node_policy = node_policy(policy_type=node_type.split('-')[-1],
+                                           policy_name=node_name, company_name=env_configs.get("COMPANY_NAME", "My Company"),
+                                           ip=dict_configs.get("external_ip"), local_ip=dict_configs.get("ip"),
+                                           port=int(dict_configs.get("anylog_server_port")), cluster_id=cluster_id,
+                                           rest_port=int(dict_configs.get("anylog_rest_port")),
+                                           rest_bind=dict_configs.get("rest_bind"),
+                                           broker_port=int(dict_configs.get("anylog_broker_port")),
+                                           broker_bind=dict_configs.get("broker_bind")
+
+            )
+        elif not policy_id:
+            asyncio.run(async_exec_logging(
+                message=f"Failed to declare and/or locate {node_type} policy (name={node_name}, "
+                        f"company={env_configs.get("COMPANY_NAME", "My Company")}) in blockchain",
+                level=LevelMode.ERROR, raise_exception=False))
+            return None
+
+        if _node_policy:
+            publish_policy(anylog_conn=anylog_conn, policy=_node_policy, exec_mode=EXEC_MODE)
+        else:
+            asyncio.run(async_exec_logging(
+                message=f"Failed to declare {node_type} policy (name={node_name}, "
+                        f"company={env_configs.get("COMPANY_NAME", "My Company")}) in blockchain",
+                level=LevelMode.ERROR, raise_exception=False))
+
+            return None
+
+        query_count += 1
+
+    # print(policy_id)
+
 
 if __name__ == "__main__":
     main()

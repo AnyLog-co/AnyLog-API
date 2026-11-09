@@ -2,6 +2,7 @@ import asyncio
 import json
 import inspect
 import os
+import re
 
 from enum import Enum
 
@@ -75,3 +76,47 @@ def serialize_data(payload)->str|None:
     except (TypeError, ValueError) as error:
         return asyncio.run(async_exec_logging(message=f"Failed to serialize content to be published (Error: {error})",
                                               level=LevelMode.ERROR, exception_type=TypeError, cause=error))
+
+
+def format_value(value) -> str:
+    """
+    Format a value for an AnyLog where condition
+        bool / 'true' / 'false' -> true / false
+        int / float / numeric string -> as is
+        string -> "quoted" (left alone if already quoted)
+    """
+    if isinstance(value, bool):          # check before int - bool is a subclass of int
+        return str(value).lower()
+    if isinstance(value, (int, float)):
+        return str(value)
+
+    value = str(value).strip()
+    if value.lower() in ("true", "false"):
+        return value.lower()
+    if re.fullmatch(r"-?\d+(\.\d+)?", value):
+        return value
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):  # already quoted
+        return value
+    return f"'{value}'" if '"' in value else f'"{value}"'
+
+
+def format_conditions(conditions) -> list[str]:
+    """
+    ['name=My Cluster', 'status=active'] -> ['name="My Cluster"', 'status="active"']
+    Also accepts a dict, or a stringified list (e.g. from a CLI / env var).
+    """
+    if isinstance(conditions, str):
+        conditions = conditions.strip().strip('"')
+        try:
+            conditions = ast.literal_eval(conditions)
+        except (ValueError, SyntaxError):
+            conditions = [conditions]
+
+    if isinstance(conditions, dict):
+        return [f"{k}={format_value(v)}" for k, v in conditions.items()]
+
+    formatted = []
+    for cond in conditions:
+        key, sep, val = str(cond).partition("=")   # split on first '=' only
+        formatted.append(f"{key.strip()}={format_value(val)}" if sep else str(cond))
+    return formatted

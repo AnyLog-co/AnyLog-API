@@ -185,8 +185,10 @@ class AnyLogRest(ListCommands):
         # method = cmd_type.upper()
         # await async_exec_logging(message=f"{method} {self.conn} command={command if command else ''}", level=LevelMode.DEBUG, raise_exception=False)
 
-        if "AnyLog-Agent" in headers and payload:
-            headers.pop("AnyLog-Agent")
+        if "User-Agent" in headers and not "AnyLog-Agent" in headers:
+            headers["AnyLog-Agent"] = headers.pop("User-Agent")
+        elif isinstance(payload, dict) and "User-Agent" in payload and not "AnyLog-Agent" in payload:
+            payload["AnyLog-Agent"] = payload.pop("User-Agent")
 
         try:
             async with httpx.AsyncClient(auth=self.auth, timeout=self.timeout) as client:
