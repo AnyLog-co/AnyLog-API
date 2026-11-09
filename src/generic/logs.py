@@ -1,278 +1,206 @@
+"""
+Node logs - error log, event log and echo queue
+"""
 import asyncio
 
 from src.core.anylog_rest_api import AnyLogRest
-from src.core.support import ExecMode, exec_info
+from src.core.support import ExecMode, build_headers, exec_info
 
-async def async_get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Error / event log
+# ---------------------------------------------------------------------------------------------------------------------
+async def async_get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
+                              exec_mode:ExecMode=ExecMode.EXECUTE):
     """
-    Asynchronized `get error log` against AnyLog node
+    Get the node's error log
     :args:
-        anylog_conn:AnyLogRest - connection to node
-        json_format:bool - whether to return results in JSON format
-        remote_destination:str - run request against a remote node, if so provide IP and port
-    :params:
-        headers:dict - REST headers
-        cmd:str - command to execute
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        json_format:bool - return results in JSON format
+        remote_destination:str - send the request through the connected node to another agent
+        exec_mode:ExecMode - Execution mode
+    :cmd:
+        get error log [where format=json]
     :return:
-        table or JSON of error log
+        table or JSON of the error log
     """
     if exec_mode == ExecMode.INFO:
         return exec_info(func=async_get_error_log)
 
-    headers = {
-        "command": f"get error log where format=json" if json_format is True else "get error log",
-        "AnyLog-Agent": "AnyLog/1.23",
-        **({"destination": remote_destination} if remote_destination else {})
-    }
-
+    headers = build_headers(command="get error log where format=json" if json_format else "get error log",
+                            remote_destination=remote_destination)
     return await anylog_conn.async_get_via_post(headers=headers, exec_mode=exec_mode)
 
 
-def get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
-    """
-    `get error log` against AnyLog node
-    :args:
-        anylog_conn:AnyLogRest - connection to node
-        json_format:bool - whether to return results in JSON format
-        remote_destination:str - run request against a remote node, if so provide IP and port
-    :return:
-        table or JSON of error log
-    """
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=get_error_log)
-
-
+def get_error_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
+                  exec_mode:ExecMode=ExecMode.EXECUTE):
+    """Sync wrapper around `async_get_error_log` - see that function for details"""
     return asyncio.run(async_get_error_log(anylog_conn=anylog_conn, json_format=json_format,
                                            remote_destination=remote_destination, exec_mode=exec_mode))
 
 
-async def async_get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
+async def async_get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
+                              exec_mode:ExecMode=ExecMode.EXECUTE):
     """
-    Asynchronized `get event log` against AnyLog node
+    Get the node's event log
     :args:
-        anylog_conn:AnyLogRest - connection to node
-        json_format:bool - whether to return results in JSON format
-        remote_destination:str - run request against a remote node, if so provide IP and port
-    :params:
-        headers:dict - REST headers
-        cmd:str - command to execute
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        json_format:bool - return results in JSON format
+        remote_destination:str - send the request through the connected node to another agent
+        exec_mode:ExecMode - Execution mode
+    :cmd:
+        get event log [where format=json]
     :return:
-        table or JSON of event log
+        table or JSON of the event log
     """
     if exec_mode == ExecMode.INFO:
         return exec_info(func=async_get_event_log)
 
-    headers = {
-        "command": f"get event log where format=json" if json_format is True else "get event log",
-        "AnyLog-Agent": "AnyLog/1.23",
-        **({"destination": remote_destination} if remote_destination else {})
-    }
-
+    headers = build_headers(command="get event log where format=json" if json_format else "get event log",
+                            remote_destination=remote_destination)
     return await anylog_conn.async_get_via_post(headers=headers, exec_mode=exec_mode)
 
 
-def get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
-    """
-    `get event log` against AnyLog node
-    :args:
-        anylog_conn:AnyLogRest - connection to node
-        json_format:bool - whether to return results in JSON format
-        remote_destination:str - run request against a remote node, if so provide IP and port
-    :return:
-        table or JSON of event log
-    """
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=get_event_log)
+def get_event_log(anylog_conn:AnyLogRest, json_format:bool=True, remote_destination:str|None=None,
+                  exec_mode:ExecMode=ExecMode.EXECUTE):
+    """Sync wrapper around `async_get_event_log` - see that function for details"""
     return asyncio.run(async_get_event_log(anylog_conn=anylog_conn, json_format=json_format,
                                            remote_destination=remote_destination, exec_mode=exec_mode))
 
-async def async_get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
+
+async def async_reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|None=None,
+                                exec_mode:ExecMode=ExecMode.EXECUTE):
     """
-    Asynchronized `get echo queue`
-    """
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=async_get_echo_queue)
-    headers = {
-        "command": "get echo queue",
-        "AnyLog-Agent": "AnyLog/1.23",
-        **({"destination": remote_destination} if remote_destination else {})
-    }
-
-    return await anylog_conn.async_get_via_post(headers=headers, exec_mode=exec_mode)
-
-
-def get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
-
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=get_echo_queue)
-
-    return asyncio.run(async_get_echo_queue(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
-
-
-async def async_reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
-    """
-    Asynchronously  reset event logs
+    Clear the node's error log
     :args:
-        anylog_Conn:AnyLogRest - connection to Anylog node
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
-    :params:
-        headers:dict - REST request headers
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        remote_destination:str - send the request through the connected node to another agent
+        exec_mode:ExecMode - Execution mode
+    :cmd:
+        reset error log
+    :return:
+        response from node
+    """
+    if exec_mode == ExecMode.INFO:
+        return exec_info(func=async_reset_error_log)
+
+    headers = build_headers(command="reset error log", remote_destination=remote_destination)
+    return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
+
+
+def reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
+    """Sync wrapper around `async_reset_error_log` - see that function for details"""
+    return asyncio.run(async_reset_error_log(anylog_conn=anylog_conn, remote_destination=remote_destination,
+                                             exec_mode=exec_mode))
+
+
+async def async_reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None,
+                                exec_mode:ExecMode=ExecMode.EXECUTE):
+    """
+    Clear the node's event log
+    :args:
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        remote_destination:str - send the request through the connected node to another agent
+        exec_mode:ExecMode - Execution mode
+    :cmd:
+        reset event log
+    :return:
+        response from node
     """
     if exec_mode == ExecMode.INFO:
         return exec_info(func=async_reset_event_log)
 
-    headers = {
-        "command": "reset event log",
-        "AnyLog-Agent": "AnyLog/1.23",
-        **({"destination": remote_destination} if remote_destination else {})
-    }
-    return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
-    
-
-def reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
-    """
-    reset event logs
-    :args:
-        anylog_Conn:AnyLogRest - connection to Anylog node
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
-    :params:
-        headers:dict - REST request headers
-    """
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=reset_event_log)
-
-    return asyncio.run(async_reset_event_log(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
-    
-
-async def async_reset_error_log(anylog_conn:AnyLogRest, remote_destination: str|None=None, exec_mode=ExecMode.EXECUTE):
-    """
-    Asynchronously  reset error logs
-    :args:
-        anylog_Conn:AnyLogRest - connection to Anylog node
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
-    :params:
-        headers:dict - REST request headers
-    """
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=async_reset_error_log)
-
-    headers = {
-        "command": "reset error log",
-        "AnyLog-Agent": "AnyLog/1.23",
-        **({"destination": remote_destination} if remote_destination else {})
-    }
+    headers = build_headers(command="reset event log", remote_destination=remote_destination)
     return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
 
 
-def reset_error_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
+def reset_event_log(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
+    """Sync wrapper around `async_reset_event_log` - see that function for details"""
+    return asyncio.run(async_reset_event_log(anylog_conn=anylog_conn, remote_destination=remote_destination,
+                                             exec_mode=exec_mode))
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Echo queue
+# ---------------------------------------------------------------------------------------------------------------------
+async def async_get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None,
+                               exec_mode:ExecMode=ExecMode.EXECUTE):
     """
-    reset error logs
+    Get the node's echo queue
     :args:
-        anylog_Conn:AnyLogRest - connection to Anylog node
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
-    :params:
-        headers:dict - REST request headers
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        remote_destination:str - send the request through the connected node to another agent
+        exec_mode:ExecMode - Execution mode
+    :cmd:
+        get echo queue
+    :return:
+        echo queue content
     """
     if exec_mode == ExecMode.INFO:
-        return exec_info(func=reset_error_log)
+        return exec_info(func=async_get_echo_queue)
 
-    return asyncio.run(async_reset_error_log(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
+    headers = build_headers(command="get echo queue", remote_destination=remote_destination)
+    return await anylog_conn.async_get_via_post(headers=headers, exec_mode=exec_mode)
 
 
+def get_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
+    """Sync wrapper around `async_get_echo_queue` - see that function for details"""
+    return asyncio.run(async_get_echo_queue(anylog_conn=anylog_conn, remote_destination=remote_destination,
+                                            exec_mode=exec_mode))
 
-async def async_reset_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode=ExecMode.EXECUTE):
+
+async def async_reset_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None,
+                                 exec_mode:ExecMode=ExecMode.EXECUTE):
     """
-    Asynchronously  reset echo queue logs
+    Clear the node's echo queue
     :args:
-        anylog_Conn:AnyLogRest - connection to Anylog node
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
-    :params:
-        headers:dict - REST request headers
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        remote_destination:str - send the request through the connected node to another agent
+        exec_mode:ExecMode - Execution mode
+    :cmd:
+        reset echo queue
+    :return:
+        response from node
     """
     if exec_mode == ExecMode.INFO:
         return exec_info(func=async_reset_echo_queue)
 
-    headers = {
-        "command": "reset echo queue",
-        "AnyLog-Agent": "AnyLog/1.23",
-        **({"destination": remote_destination} if remote_destination else {})
-    }
+    headers = build_headers(command="reset echo queue", remote_destination=remote_destination)
     return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
-    
 
-def reset_echo_queue(anylog_conn: AnyLogRest, remote_destination: str | None = None, exec_mode=ExecMode.EXECUTE):
-    """
-    reset echo queue
-    :args:
-        anylog_Conn:AnyLogRest - connection to Anylog node
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
-    :params:
-        headers:dict - REST request headers
-    """
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=async_reset_error_log)
 
-    return asyncio.run(async_reset_echo_queue(anylog_conn=anylog_conn, remote_destination=remote_destination, exec_mode=exec_mode))
+def reset_echo_queue(anylog_conn:AnyLogRest, remote_destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
+    """Sync wrapper around `async_reset_echo_queue` - see that function for details"""
+    return asyncio.run(async_reset_echo_queue(anylog_conn=anylog_conn, remote_destination=remote_destination,
+                                              exec_mode=exec_mode))
 
 
 async def async_echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, remote_destination:str|None=None,
-                                 exec_mode=ExecMode.EXECUTE):
+                                 exec_mode:ExecMode=ExecMode.EXECUTE):
     """
-    Asynchronously enable or disable echo queue
+    Enable or disable the echo queue
     :args:
-        anylog_conn:AnyLogREST - connection to AnyLog
-        disable - whether to disable echo queue
-            - True: disable echo queue
-            - False (default): enable echo queue
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
+        anylog_conn:AnyLogRest - connection to AnyLog node
+        disable:bool - True disables the echo queue, False (default) enables it
+        remote_destination:str - send the request through the connected node to another agent
+        exec_mode:ExecMode - Execution mode
     :params:
-        queue_state:str - whether on or off
-            - disable == True -> off
-            - disable == False -> on
-        headers:dict - REST request headers
+        queue_state:str - "off" when disable is True, otherwise "on"
+    :cmd:
+        set echo queue [on|off]
+    :return:
+        response from node
     """
     if exec_mode == ExecMode.INFO:
         return exec_info(func=async_echo_queue_state)
 
-    queue_state = "on"
-    if disable:
-        queue_state = "off"
-
-    headers = {
-        "command": f"set echo queue {queue_state}",
-        "AnyLog-Agent": "AnyLog/1.23",
-        **({"destination": remote_destination} if remote_destination else {})
-    }
-
+    queue_state = "off" if disable else "on"
+    headers = build_headers(command=f"set echo queue {queue_state}", remote_destination=remote_destination)
     return await anylog_conn.async_post(headers=headers, exec_mode=exec_mode)
 
 
 def echo_queue_state(anylog_conn:AnyLogRest, disable:bool=False, remote_destination:str|None=None,
-                     exec_mode=ExecMode.EXECUTE):
-    """
-    enable or disable echo queue
-    :args:
-        anylog_conn:AnyLogREST - connection to AnyLog
-        disable - whether to disable echo queue
-            - True: disable echo queue
-            - False (default): enable echo queue
-        remote_destination:str - remote node to execute request against
-        exec_mode:ExecMode - mode to execute request
-    :params:
-        queue_state:str - whether on or off
-            - disable == True -> off
-            - disable == False -> on
-        headers:dict - REST request headers
-    """
-    if exec_mode == ExecMode.INFO:
-        return exec_info(func=echo_queue_state)
-
-    return asyncio.run(async_echo_queue_state(anylog_conn=anylog_conn, disable=disable, remote_destination=remote_destination,
-                                       exec_mode=exec_mode))
+                     exec_mode:ExecMode=ExecMode.EXECUTE):
+    """Sync wrapper around `async_echo_queue_state` - see that function for details"""
+    return asyncio.run(async_echo_queue_state(anylog_conn=anylog_conn, disable=disable,
+                                              remote_destination=remote_destination, exec_mode=exec_mode))

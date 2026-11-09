@@ -1,6 +1,6 @@
 """
-anylog_rest_api.py
-===================
+REST client - the only module that talks HTTP to an AnyLog/EdgeLake node
+
 This module is the CORE of the AnyLog-API package. Every other module in
 `src/` (generic/, data/, blockchain/, ...) is built on top of the single
 class defined here: `AnyLogRest`.
@@ -42,10 +42,7 @@ import asyncio
 import httpx
 import os
 
-from src.core.support import ListCommands
-from src.core.support import ExecMode
-from src.core.support import load_json
-from src.core.support import url_builder
+from src.core.support import ANYLOG_AGENT, ExecMode, ListCommands, load_json, url_builder
 from src.core.support_exceptions import AnyLogTimeoutError, AnyLogConnectionError
 import src.core.support_exceptions as api_exceptions
 from src.core.support_logging import LevelMode, async_exec_logging
@@ -84,7 +81,7 @@ class AnyLogRest(ListCommands):
             they're not exposed in the URL and are less likely to be logged in a way that leaks data.
             As such, AnyLog/EdgeLake's GET commands can be executed via POST with:
             - HEADERS: {"Content-Type": "application/json"}
-            - DATA: {"command": [GET COMMAND], "AnyLog-Agent": "AnyLog/1.23", ["destination": "network"]}
+            - DATA: {"command": [GET COMMAND], "AnyLog-Agent": ANYLOG_AGENT, ["destination": "network"]}
         :args:
             conn:str - REST connection information (host:port, or a full URL)
             auth:tuple - (username, password) if the node requires basic auth. Passing
@@ -151,15 +148,14 @@ class AnyLogRest(ListCommands):
         :params:
             status_code_str - human-readable text for a failing HTTP status code
             response - the raw httpx.Response (only reached when exec_mode == EXECUTE)
-        :exception:
-            httpx.NetworkError - node responded with a non-2xx status
-            httpx.TimeoutException - request timed out
-            Exception - anything else that goes wrong making the request
         :return:
             - exec_mode == COMMAND: the AnyLog command string (nothing is sent)
             - exec_mode == HELP: None (help text is printed, not returned)
             - exec_mode == EXECUTE: the raw httpx.Response
-            - exec_mode == INFO: print python function name + description
+        :raise:
+            AnyLogTimeoutError - request timed out
+            AnyLogConnectionError - could not reach the node
+            AnyLogHTTPError - node responded with a non-2xx status
         """
         command = headers.get("command")
         if exec_mode in [ExecMode.COMMAND, ExecMode.HELP]:
@@ -207,8 +203,6 @@ class AnyLogRest(ListCommands):
         if not response.is_success:
             code = response.status_code
             status_text = NETWORK_ERRORS.get(code) or NETWORK_ERRORS_GENERIC.get(code // 100, "Unknown Error")
-            print(payload)
-            print(headers)
             message = f"Failed to execute {cmd_type} against {self.conn} (Network Error {code}: {status_text})"
             await async_exec_logging(message=message, level=LevelMode.ERROR, raise_exception=False)
             raise api_exceptions.AnyLogHTTPError(message, status_code=code)
@@ -256,7 +250,7 @@ class AnyLogRest(ListCommands):
         if "User-Agent" in headers:
             headers["AnyLog-Agent"] = headers.pop("User-Agent")
         elif headers.get("AnyLog-Agent") is None:
-            headers["AnyLog-Agent"] = "AnyLog/1.23"
+            headers["AnyLog-Agent"] = ANYLOG_AGENT
 
         return await self.__async_exec__(cmd_type="POST", headers=headers, payload=payload, exec_mode=exec_mode)
 
@@ -266,8 +260,8 @@ class AnyLogRest(ListCommands):
 
     async def async_get_via_post(self, headers:dict, exec_mode=ExecMode.EXECUTE):
         """
-        Execute a GET-style AnyLog command by sending it as an HTTP POST
-        instead of a real GET. See the `:logic:` note in `__init__` for why
+        Execute a GET-style AnyLog command by sending it as an HTTP POST.
+        Sent as a POST instead of a real GET - see the `:logic:` note in `__init__` for why
         (keeps the command out of the URL / access logs). The GET command's
         headers are serialized as JSON into the POST body.
         :args:
@@ -278,7 +272,7 @@ class AnyLogRest(ListCommands):
         if "User-Agent" in headers:
             headers["AnyLog-Agent"] = headers.pop("User-Agent")
         else:
-            headers["AnyLog-Agent"] = "AnyLog/1.23"
+            headers["AnyLog-Agent"] = ANYLOG_AGENT
         payload = json.dumps(headers)
         request_headers = {
             "Content-Type": "application/json"
@@ -313,8 +307,7 @@ class AnyLogRest(ListCommands):
 
     async def async_help(self, command:str=None, exec_mode=ExecMode.EXECUTE):
         """
-        Print AnyLog's own help text: either the full command list (no
-        `command` given) or help for one specific command.
+        Print AnyLog's help text - the full command list, or help for one command.
         Note this is the one method that prints instead of returning a
         value — call `async_get`/`get` yourself with a "help ..." command
         if you need the text back as a value instead of printed to stdout.
@@ -323,7 +316,7 @@ class AnyLogRest(ListCommands):
         """
         headers = {
             "command": f"help {command}" if command else "help",
-            "User-Agent": "AnyLog/1.23"
+            "AnyLog-Agent": ANYLOG_AGENT
         }
 
         output = await self.async_get(headers=headers, exec_mode=exec_mode)

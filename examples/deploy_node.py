@@ -130,8 +130,8 @@ def main():
                 query_count += 1
             elif not cluster_id:
                 asyncio.run(async_exec_logging(
-                    message=f"Failed to declare and/or locate cluster policy (name={cluster_name}, "
-                            f"company={env_configs.get("COMPANY_NAME", "My Company")}) in blockchain",
+                    message=f"Failed to declare and/or locate cluster policy ({', '.join(cluster_where_condition)}) "
+                            f"in blockchain",
                     level=LevelMode.ERROR, raise_exception=False))
                 return None
 
@@ -157,7 +157,7 @@ def main():
         if not policy_id and query_count == 0:
             _node_policy = node_policy(anylog_conn=anylog_conn,node_type=node_type, name=node_name,
                                        company=env_configs.get("COMPANY_NAME", "My Company"), cluster=cluster_id,
-                                       tcp_port=dict_configs.get("anylog_server_port"),
+                                       port=dict_configs.get("anylog_server_port"),
                                        rest_port=dict_configs.get("anylog_rest_port"),
                                        tcp_bind=dict_configs.get("tcp_bind", False),
                                        broker_port=dict_configs.get("anylog_broker_port", None),

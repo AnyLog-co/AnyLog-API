@@ -9,6 +9,6 @@ class AnyLogTimeoutError(AnyLogError, TimeoutError):
 
 class AnyLogHTTPError(AnyLogError):
     """Node responded with a non-2xx status."""
-    def __init__(self, messag:str, status_code:int|None=None):
+    def __init__(self, message:str, status_code:int|None=None):
         super().__init__(message)
         self.status_code = status_code
