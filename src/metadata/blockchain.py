@@ -1,6 +1,8 @@
 import asyncio
 import json
 
+from certifi import where
+
 from src.core.anylog_rest_api import AnyLogRest
 from src.core.support import ExecMode, exec_info, LevelMode, format_conditions
 from src.data_management.dbms import async_connect_dbms, async_is_database, async_create_table
@@ -237,8 +239,16 @@ def blockchain_get(anylog_conn: AnyLogRest, policy_type: str | list | tuple = "*
 async def async_publish_policy(anylog_conn:AnyLogRest, policy:dict, destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE):
     policy_type = list(policy)[0]
+    where_conditions = [
+        f'name={policy.get(policy_type).get("name")}',
+        f'company={policy.get(policy_type).get("company")}',
+        f'ip={policy.get(policy_type).get("ip")}',
+        f'port={policy.get(policy_type).get("port")}'
+    ] if policy_type in ["master", "operator", "query", "publisher"] else [f"{key}={value}" for key, value in policy.get(policy_type).items()]
+
+
     is_policy  = await async_blockchain_get(anylog_conn, policy_type=policy_type,
-                                            where=[f"{key}={value}" for key, value in policy.get(policy_type).items()],
+                                            where=where_conditions,
                                             bring=None, destination=destination, exec_mode=exec_mode)
     if not is_policy:
         headers = {

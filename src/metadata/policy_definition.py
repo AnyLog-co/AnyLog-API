@@ -15,17 +15,18 @@ Policy builders:
 import ast
 import asyncio
 
+from src.core.anylog_rest_api import AnyLogRest
 from src.core.support import ExecMode, exec_info
 from src.core.support_logging import LevelMode, async_exec_logging
 
 
 POLICY_REQUIRED_PARAMS = {
     "config": ["company", "name"],
-    "master":    ["ip", "port", "company", "name"],
+    "master":    ["company", "name"],
     "cluster": ["company", "name"],
-    "operator":  ["ip", "port", "company", "name", "cluster"],
-    "query":     ["ip", "port", "company", "name"],
-    "publisher": ["ip", "port", "company", "name"],
+    "operator":  ["company", "name", "cluster"],
+    "query":     ["company", "name"],
+    "publisher": ["company", "name"],
     "object": ["name"],
     "uns": ["namespace", "object"]
 }
@@ -39,11 +40,21 @@ def _clean(params:dict)->dict:
     return {key: value for key, value in params.items() if value is not None and value != ""}
 
 
-def _format_val(value):
+def _format_val(value, is_loc:bool=False):
     """
     convert value to int or boolean
     """
-    if isinstance(value, str) and value.strip().isdigit():
+
+    if value is None or value == "":
+        return None
+    elif is_loc:
+        """Location -> "lat, lon" string (format Grafana expects); accepts tuple / list / string"""
+        if isinstance(value, (tuple, list)) and len(value) == 2:
+            lat, lon = value
+        else:
+            lat, lon = str(value).strip("()[] ").split(",")
+        return f"{float(lat):.4f}, {float(lon):.4f}"
+    elif isinstance(value, str) and value.strip().isdigit():
         return int(value.strip())
     elif isinstance(value, str) and value.strip().lower() in ("true", "false"):
         return True if value.strip().lower() == "true" else False
@@ -175,33 +186,63 @@ async def async_config_policy(name:str, company:str, node_type:str, version:str|
 # ---------------------------------------------------------------------------------------------------------------------
 # Node
 # ---------------------------------------------------------------------------------------------------------------------
-async def async_node_policy(node_type:str, name:str, company:str, ip:str, port:int|str,
-                            rest_port:int|str|None=None, broker_port:int|str|None=None,
-                            local_ip:str|None=None, tcp_bind:bool|str=False, hostname:str|None=None,
-                            cluster:str|None=None, main:bool|str|None=None,
-                            loc:str|None=None, country:str|None=None, state:str|None=None, city:str|None=None,
-                            exec_mode:ExecMode=ExecMode.EXECUTE, **kwargs)->dict|None:
+async def _async_create_policy_defaults(anylog_conn:AnyLogRest, policy_type:str, name:str, company:str,
+                                       cluster_id:str|None=None, destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE):
+    """
+    Using the minimal requirements, this generates blockchain metadata policy for node types. Automatically integrating the
+    built-in / already used IPs + ports for the node
+    :args:
+        anylog_conn:AnyLogREST - connection to AnyLog
+        policy_type:str - Node policy type
+        name:str - node name
+        company:str - company name
+        cluster_id:Str - for operator node the associated cluster ID
+    :return:
+        generate node policy
+    """
+    if exec_mode == ExecMode.INFO:
+        exec_info(func=_async_create_policy_defaults)
+        return None
+
+    headers = {
+        "command": f"create policy {policy_type} with defaults where name={name} and company={company} {f'and cluster={cluster_id}' if policy_type == 'operator' else ''}",
+        "AnyLog-Agent": "AnyLog/1.23",
+        **({"destination": destination} if destination else {})
+    }
+
+    response = await anylog_conn.async_post(headers=headers, payload=None, exec_mode=exec_mode)
+    return response.json()
+
+
+async def async_node_policy(anylog_conn:AnyLogRest,node_type:str, name:str, company:str,
+                            cluster:str|None=None, ip:str|None=None, tcp_port:int|None=None, tcp_bind:bool|str=False,
+                            rest_port:int|None=None, rest_bind:bool|str=False, broker_port:int|None=None,
+                            broker_bind:bool|str=False, destination:str|None=None, exec_mode:ExecMode=ExecMode.EXECUTE,
+                            **kwargs)->dict|None:
     """
     Build a node policy (master, operator, query, publisher)
     :args:
         node_type:str - master, operator, query, publisher, master-operator or master-publisher
         name:str - node name
         company:str - company name
-        ip:str - external IP other nodes connect to
-        port:int|str - TCP port
-        rest_port:int|str - REST port
-        broker_port:int|str - message broker port
-        local_ip:str - internal IP
-        tcp_bind:bool|str - TCP bound to a single IP; publishes only local_ip as "ip" (external IP is dropped)
-        hostname:str - node hostname
-        cluster:str - cluster policy ID (required for operator / master-operator)
-        main:bool|str - operator is the main member of its cluster
-        loc:str - "latitude,longitude"
-        country:str - country
-        state:str - state
-        city:str - city
-        exec_mode:ExecMode - Execution mode (only INFO changes behavior)
+        ip:str - force use a specific IP address if bidning is true
+        tcp_port:int|None - TCP port
+        rest_port:int|None - REST port
+        broker_port:int|None - message broker port
+
+        tcp_bind:bool|str - TCP bound to a single IP
+        rest_bind:bool|str - REST bound to a single IP
+        broker_bind:bool|str - Broker bound to a single IP
+
         kwargs - additional node params (None / empty values are skipped)
+            hostname:str - node hostname
+            cluster:str - cluster policy ID (required for operator / master-operator)
+            main:bool|str - operator is the main member of its cluster
+            loc:str - "latitude,longitude"
+            country:str - country
+            state:str - state
+            city:str - city
+        exec_mode:ExecMode - Execution mode (only INFO changes behavior)
     :binding:
         tcp_bind=False - policy publishes ip (external) and local_ip (internal)
         tcp_bind=True  - policy publishes a single "ip" = local_ip (or ip if local_ip isn't set)
@@ -214,53 +255,70 @@ async def async_node_policy(node_type:str, name:str, company:str, ip:str, port:i
                       "cluster": "64999c0d4d8762f67f6fe4f120c7a54b", "main": true,
                       "loc": "33.7490,-84.3880", "country": "US", "state": "GA", "city": "Atlanta"}}
     """
-    if node_type in ["standalone", "standalone-operator", "master-operator"]:
-        node_type = "operator"
-    elif node_type in ["standalone-publisher", "master-publisher"]:
-        node_type = "publisher"
-    supported_node_types = [node not in ['object', 'uns'] for node in POLICY_REQUIRED_PARAMS]
-    # cluster_nodes_types = ['operator' in node for node in POLICY_REQUIRED_PARAMS]
-
     if exec_mode == ExecMode.INFO:
         exec_info(func=async_node_policy)
         return None
+    elif node_type in ["standalone", "standalone-operator", "master-operator"]:
+        node_type = "operator"
+    elif node_type in ["standalone-publisher", "master-publisher"]:
+        node_type = "publisher"
 
-    if node_type not in POLICY_REQUIRED_PARAMS:
+    supported_node_types = [node for node in POLICY_REQUIRED_PARAMS if node not in ["object", "uns", "cluster"]]
+    if node_type not in supported_node_types:
+        # if not a valid node type: master, operator, query, publisher
         return await async_exec_logging(message=f"Invalid node type {node_type!r} - supported: { ','.join(supported_node_types)} "
                                                 f"- policy not created",
                                         level=LevelMode.ERROR, exception_type=ValueError)
+    elif (not name or not company) or (node_type == "operator" and not cluster):
+        # if valid node type but missing config - operator also requires cluster (ID)
+        return await async_exec_logging(
+            message=f"Invalid base configurations for type {node_type!r} - required params: {','.join(POLICY_REQUIRED_PARAMS.get(node_type))} "
+                    f"- policy not created",
+            level=LevelMode.ERROR, exception_type=ValueError)
 
-    # required = ["name", "company", "ip", "port"] + (["cluster"] if node_type in cluster_nodes_types else [])
-    params = {"name": name, "company": company, "ip": ip, "port": port, "cluster": cluster}
-    if await _missing_params(policy_type=node_type, params=params):
-        return None
 
-    tcp_bind = _format_val(tcp_bind) is True
-    node = _clean({
-        "name": name,
-        "company": company,
-        "hostname": hostname,
-        "ip": (local_ip or ip) if tcp_bind else ip,
-        "local_ip": None if tcp_bind else local_ip,
-        "port": _format_val(port),
-        "rest_port": _format_val(rest_port),
-        "broker_port": _format_val(broker_port),
-        "cluster": cluster if node_type in CLUSTER_NODE_TYPES else None,
-        "main": _format_val(main),
-        "loc": loc,
-        "country": country,
-        "state": state,
-        "city": city,
-    })
-    node.update(_clean(kwargs))
+    default_config = await _async_create_policy_defaults(anylog_conn=anylog_conn, policy_type=node_type, name=name,
+                                                         company=company, cluster_id=cluster, destination=destination,
+                                                         exec_mode=exec_mode)
 
-    return {node_type: node}
 
+    node = default_config.get(node_type)
+    if not ip:
+        ip = node.pop("internal_ip", None) or node.pop("local_ip", None) if _format_val(tcp_bind) is True else node.get("ip")
+
+    node["ip"] = ip if _format_val(tcp_bind) is True else node["ip"]
+    node["port"] = _format_val(tcp_port) if tcp_port else node["port"]
+    node["rest_port"] = _format_val(rest_port) if rest_port else node["rest_port"]
+    if _format_val(rest_bind):
+        node["rest_ip"] = ip
+    if broker_port:
+        node["broker_port"] = _format_val(broker_port)
+        if _format_val(broker_bind):
+            node["broker_ip"] = ip
+
+    if kwargs:
+        for key, value in kwargs.items():
+            if value:
+                node[key] = _format_val(value, is_loc=True if key.startswith("loc") else False)
+
+    return {node_type: _clean(node)}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Cluster
 # ---------------------------------------------------------------------------------------------------------------------
-async def async_cluster_policy(name:str, company:str, status:str|None="active",
+async def _async_cluster_policy_defaults(anylog_conn:AnyLogRest, name:str, company:str, destination:str|None=None,
+                                         exec_mode:ExecMode=ExecMode.EXECUTE):
+
+    headers = {
+        "command": f"create policy cluster with defaults where name={name} and company={company}",
+        "AnyLog-Agent": "AnyLog/1.23",
+        **({"destination": destination} if destination else {})
+    }
+
+    response = await anylog_conn.async_post(headers=headers, payload=None, exec_mode=exec_mode)
+    return  response.json()
+
+async def async_cluster_policy(anylog_conn:AnyLogRest, name:str, company:str, destination:str|None=None,
                                exec_mode:ExecMode=ExecMode.EXECUTE, **kwargs)->dict|None:
     """
     Build a cluster policy - operators reference it by ID ("cluster" in the operator policy)
@@ -280,11 +338,13 @@ async def async_cluster_policy(name:str, company:str, status:str|None="active",
         exec_info(func=async_cluster_policy)
         return None
 
-    params = {"company": company, "name": name}
-    if await _missing_params(policy_type="cluster", params=params):
-        return None
+    default_policy = await _async_cluster_policy_defaults(anylog_conn, name=name, company=company, destination=destination,
+                                                    exec_mode=exec_mode)
 
-    return {"cluster": {**params, **_clean({"status": status, **kwargs})}}
+    if not kwargs:
+        return default_policy
+
+    return {"cluster": {**default_policy.get("cluster"), **_clean(**kwargs)}}
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -359,14 +419,21 @@ def config_policy(*args, **kwargs)->dict|None:
     return asyncio.run(async_config_policy(*args, **kwargs))
 
 
-def node_policy(*args, **kwargs)->dict|None:
+def node_policy(anylog_conn:AnyLogRest,node_type:str, name:str, company:str,  cluster:str|None=None, ip:str|None=None,
+                tcp_port:int|None=None, tcp_bind:bool|str=False, rest_port:int|None=None, rest_bind:bool|str=False,
+                broker_port:int|None=None, broker_bind:bool|str=False, destination:str|None=None,
+                exec_mode:ExecMode=ExecMode.EXECUTE, **kwargs)->dict|None:
     """Sync wrapper around `async_node_policy`"""
-    return asyncio.run(async_node_policy(*args, **kwargs))
+    return asyncio.run(async_node_policy(anylog_conn=anylog_conn, node_type=node_type, name=name, company=company,
+                                         cluster=cluster, ip=ip, tcp_port=tcp_port, tcp_bind=tcp_bind,
+                                         rest_port=rest_port, rest_bind=rest_bind, broker_port=broker_port,
+                                         broker_bind=broker_bind, destination=destination, exec_mode=exec_mode,
+                                         **kwargs))
 
 
-def cluster_policy(*args, **kwargs)->dict|None:
+def cluster_policy(name:str, company:str, *args, **kwargs)->dict|None:
     """Sync wrapper around `async_cluster_policy`"""
-    return asyncio.run(async_cluster_policy(*args, **kwargs))
+    return asyncio.run(async_cluster_policy(name=name, company=company, *args, **kwargs))
 
 
 def object_policy(*args, **kwargs)->dict|None:
